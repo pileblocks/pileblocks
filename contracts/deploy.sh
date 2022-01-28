@@ -34,9 +34,9 @@ NONCE=$(date +%s)
 echo $TW_CODE
 
 echo "Deploying the root token contract..."
-ROOT_TOKEN_ADDRESS=$(tondev contract deploy RootTokenContract.abi.json -n $NWK -s $SIGNER -v 200000000 -d _randomNonce:$NONCE,name:"576562206d756c7469736967204669646f736166652e636f6d",symbol:"4649444f",decimals:9,wallet_code:\"$TW_CODE\" -i root_public_key_:$PUBKEY,root_owner_address_:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
+ROOT_TOKEN_ADDRESS=$(tondev contract deploy RootTokenContract.abi.json -n $NWK -s $SIGNER -v 1000000000 -d _randomNonce:$NONCE,name:"576562206d756c7469736967204669646f736166652e636f6d",symbol:"4649444f",decimals:9,wallet_code:\"$TW_CODE\" -i root_public_key_:$PUBKEY,root_owner_address_:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
 echo "Root token address: ${ROOT_TOKEN_ADDRESS}"
 
 echo "Deploying the game contract..."
-GAME_ADDRESS=$(tondev contract deploy PBGame.abi.json -n $NWK -s $SIGNER -v 100000000 -d walletCode:\"$TW_CODE\",tokenRootAddress:\"$ROOT_TOKEN_ADDRESS\",gameId:$NONCE | grep "Address:" | cut -d " " -f 4)
+GAME_ADDRESS=$(tondev contract deploy PBGame.abi.json -n $NWK -s $SIGNER -v 1000000000 -d walletCode:\"$TW_CODE\",tokenRootAddress:\"$ROOT_TOKEN_ADDRESS\",gameId:$NONCE -i '{"tmp": [[1,2,3],[4,5,4],[1,2,1]]}' | grep "Address:" | cut -d " " -f 4)
 echo "Game address: ${GAME_ADDRESS}"

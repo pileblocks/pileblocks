@@ -1,4 +1,4 @@
-# crazylut
+# PileBlocks 1.0
 
 ## Project setup
 ```

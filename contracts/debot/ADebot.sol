@@ -6,6 +6,7 @@ pragma AbiHeader pubkey;
 import "./imports/Debot.sol";
 import "./imports/Terminal.sol";
 import "./imports/UserInfo.sol";
+import "../interfaces/IPBGame.sol";
 
 interface SafeAccount {
    function sendTransaction(address dest, uint128 value, bool bounce, uint8 flags, TvmCell payload) external;
@@ -13,6 +14,7 @@ interface SafeAccount {
 
 interface IPBWallet {
     function claimTiles(address gameAddress) external;
+    function putTiles(address gameAddress, uint128 tokensNum, ColorTile[] tiles) external;
 }
 
 
@@ -48,11 +50,11 @@ contract ADebot is Debot {
 
     function start() public override {
         address OWNER_ADDRESS = address.makeAddrStd(0, 0xe6fa82115b834d6a74810c6774aa32408abbcc72dfb20d4ca61750097f22b969);
-        address GAME_ADDRESS = address.makeAddrStd(0, 0x352e6dfd27e80fca1e39a17251f86d30fb3e0624f6252b97bc307c4cdcac5361);
-        address WALLET_ADDRESS = address.makeAddrStd(0, 0xf86b76ac1da6ae1295a90e12a8ab13cc1546b531639572a6d4f133e4d22ac610);
+        address GAME_ADDRESS = address.makeAddrStd(0, 0xa9530374f82ebc8ddb09fb52ed87cb6d448b8d3e1bc042482bbacffd9f38bfcb);
+        address WALLET_ADDRESS = address.makeAddrStd(0, 0x14be872d82276b2f6d929e4a88e356482266a61ad827a5daed27689e2437bb61);
 
         uint32 id = 1;
-        TvmCell body = tvm.encodeBody(IPBWallet.claimTiles, GAME_ADDRESS);
+        TvmCell body = tvm.encodeBody(IPBWallet.putTiles, GAME_ADDRESS, uint128(50000000000), [ColorTile(1,2,3)]);
 
         optional(uint256) pubkey = 0;
         SafeAccount(OWNER_ADDRESS).sendTransaction{
@@ -65,6 +67,6 @@ contract ADebot is Debot {
             callbackId: 0,
             onErrorId: 0
         }
-        (WALLET_ADDRESS, 1000000000, false, 3, body);
+        (WALLET_ADDRESS, 1500000000, false, 3, body);
     }
 }

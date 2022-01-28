@@ -36,7 +36,7 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
     address bounced_callback;
     bool allow_non_notifiable;
 
-    uint128 public tilesNum;
+    uint128 tilesNum;
     uint128 tilesChangeTime;
     uint128 prevBalance;
     uint128 totalTime;
@@ -457,7 +457,7 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
             uint128 reserve = math.max(TONTokenWalletConstants.target_gas_balance, address(this).balance - msg.value);
             require(address(this).balance > reserve + TONTokenWalletConstants.target_gas_balance, TONTokenWalletErrors.error_low_message_value);
             tvm.rawReserve(reserve, 2);
-            tvm.rawReserve(math.max(TONTokenWalletConstants.target_gas_balance, address(this).balance - msg.value), 2);
+            //tvm.rawReserve(math.max(TONTokenWalletConstants.target_gas_balance, address(this).balance - msg.value), 2);
         } else {
             require(msg.value > TONTokenWalletConstants.target_gas_balance, TONTokenWalletErrors.error_low_message_value);
             tvm.rawReserve(address(this).balance - msg.value, 2);
@@ -468,7 +468,7 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
 
         allowance_.set(AllowanceInfo(allowance_.get().remaining_tokens - tokens, allowance_.get().spender));
 
-        ITONTokenWallet(to).internalTransfer{ value: 0, bounce: true, flag: 129 }(
+        ITONTokenWallet(to).internalTransfer{ value: 0, bounce: true, flag: 128 }(
             tokens,
             wallet_public_key,
             owner_address,
@@ -706,7 +706,7 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
     fallback() external {
     }
 
-    function log_2(uint128 x) public pure returns (uint128) {
+    function log_2(uint128 x) private pure returns (uint128) {
         require(x >= 1);
         uint128 n = 0;
         if (x >= 2**128) { x >>= 128; n += 128; }
@@ -747,10 +747,6 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
         tvm.log(format("New timeDelta: {}", timeDelta));
         tvm.log(format("New tiles: {}", tilesNum));
     }
-
-    function getTilesNum() external view returns(uint128) {
-        return tilesNum;
-    }
 /*
     @dev The owner wallet sends the request to claim tiles, and the wallet sends them to a game
 */
@@ -760,5 +756,13 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
         tilesChangeTime = now;
         IPBGame(gameAddress).onClaimTiles{value: 0, flag: 64}(owner_address, existingTiles);
     }
-
+/*
+    @dev The owner wallet sends the request to put tiles, and the wallet sends the data to a game
+*/
+    function putTiles(address gameAddress, uint128 tokensNum, ColorTile[] tiles) external onlyInternalOwner {
+        ColorTile t = tiles[0];
+        tvm.log(format("x: {}, y: {}, color: {}", t.x, t.y, t.color));
+        allowance_.set(AllowanceInfo(tokensNum, getExpectedAddress(0, gameAddress)));
+        IPBGame(gameAddress).onPutTiles{value: 0, flag: 64}(owner_address, tiles, tokensNum, balance_);
+    }
 }
