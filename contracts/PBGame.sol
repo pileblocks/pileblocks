@@ -62,8 +62,8 @@ contract PBGame is PBConstants {
         //TODO: Change the way the data is filled-in
         //template = tmp;
         //Idea: create a mapping of 16x8 pieces
-        tvm.setGasLimit(10_000_000_000);
-        for (uint8 n=0; n < 8; n++) {
+        tvm.setGasLimit(2_000_000_000);
+        for (uint8 n=0; n < 16; n++) {
             uint8[][] fieldPiece;
             for (uint8 i=0; i < ROW_COUNT; i++) {
                 fieldPiece.push(new uint8[](COL_COUNT));
