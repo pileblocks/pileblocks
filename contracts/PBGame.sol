@@ -44,16 +44,15 @@ contract PBGame is PBConstants {
         _;
     }
 
-    constructor (address _gameHost, mapping(uint8 => uint8[][]) tmp) public {
-        require(msg.sender == _gameHost, INVALID_GAME_HOST);
+    constructor (mapping(uint8 => uint8[][]) tmp) public {
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
-        gameId = optSalt
+        (gameId, gameHost) = optSalt
             .get()
             .toSlice()
-            .decode(uint32);
-        tvm.log(format("Game id: {}", gameId));
-        gameHost = _gameHost;
+            .decode(uint32, address);
+
+        require(msg.sender == gameHost, INVALID_GAME_HOST);
 
         //TODO: Change the way the data is filled-in
         //Idea: create a mapping of 16x8 pieces

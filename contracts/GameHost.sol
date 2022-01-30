@@ -42,7 +42,8 @@ contract GameHost is PBConstants {
     */
     function getGameCode(uint32 gameId) public view returns (TvmCell) {
         TvmBuilder salt;
-        salt.store(gameId);
+        //We Salt also with the game host address to distinguish between games of different hosts
+        salt.store(gameId, address(this));
         return tvm.setCodeSalt(gameCode, salt.toCell());
     }
 
@@ -60,7 +61,7 @@ contract GameHost is PBConstants {
     */
     function getGameHash(uint32 gameId) public view returns (uint256) {
         TvmBuilder salt;
-        salt.store(gameId);
+        salt.store(gameId, address(this));
         return tvm.hash(tvm.setCodeSalt(gameCode, salt.toCell()));
     }
 
@@ -106,7 +107,7 @@ contract GameHost is PBConstants {
             stateInit: stateInit,
             value: 0,
             flag: 128
-        }(address(this), tmp);
+        }(tmp);
         tvm.log(format("New game: {}", game));
         return game;
     }
