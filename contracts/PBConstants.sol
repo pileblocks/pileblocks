@@ -13,12 +13,21 @@ contract PBConstants {
     uint16 constant TOKEN_BALANCE_LOW = 1009;
     uint16 constant FAILED_FETCH_GAME_ID = 1010;
     uint16 constant INVALID_GAME_HOST = 1011;
+    uint16 constant WRONG_GAME_STATUS = 1012;
+    uint16 constant CALLER_NOT_GAME_HOST = 1013;
+    uint16 constant WRONG_INDEX_OWNER = 1014;
 
     uint8 constant ROW_COUNT = 8;
     uint8 constant COL_COUNT = 16;
     uint8 constant MAX_COLORS = 5;
+    uint8 constant NUM_FRAGMENTS = 16;
+
+    uint8 constant STATUS_GAME_DRAFT = 1;
+    uint8 constant STATUS_GAME_ACTIVE = 2;
+    uint8 constant STATUS_GAME_COMPLETED = 3;
 
     uint128 constant MIN_PUT_AMOUNT = 999_000_000;
     uint128 constant SERVICE_FEE = 500_000_000;
+
 
 }

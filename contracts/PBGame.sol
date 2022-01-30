@@ -14,13 +14,14 @@ interface IGameHost {
 }
 
 contract PBGame is PBConstants {
-    // Game field
-    uint8[][] public field;
-    uint8[][] public template;
 
     // PILE token info
     TvmCell static walletCode;
     address static tokenRootAddress;
+
+    // Game field
+    uint8[][] public field;
+    uint8[][] public template;
 
     // Game params
     uint64 static created;
@@ -29,26 +30,21 @@ contract PBGame is PBConstants {
     uint32 remainingTiles;
     uint32 gameId;
     address gameHost;
+    uint8 public status;
 
     // TODO: Receive from GameHost on create
     uint128 constant TOKENS_PER_PUT = 50_000_000_000;
 
-    function getInfo() external externalMsg view returns (GameInfo) {
-        return GameInfo(
-                    tokenRootAddress,
-                    created,
-                    imageOwner,
-                    gameId,
-                    gameWallet,
-                    remainingTiles,
-                    gameHost
-               );
-    }
-
     mapping(address => PlayerInfo) public players;
     mapping(uint8 => uint8[][]) public newfield;
+    mapping(uint8 => uint8[][]) public newtemplate;
 
-    constructor (address _gameHost, uint8[][] tmp) public {
+    modifier onlyHost() {
+        require(msg.sender == gameHost, CALLER_NOT_GAME_HOST);
+        _;
+    }
+
+    constructor (address _gameHost, mapping(uint8 => uint8[][]) tmp) public {
         require(msg.sender == _gameHost, INVALID_GAME_HOST);
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
@@ -56,14 +52,15 @@ contract PBGame is PBConstants {
             .get()
             .toSlice()
             .decode(uint32);
+        tvm.log(format("Game id: {}", gameId));
         gameHost = _gameHost;
 
-        //require(tmp.length == ROW_COUNT, WRONG_NUM_ROWS);
         //TODO: Change the way the data is filled-in
-        //template = tmp;
         //Idea: create a mapping of 16x8 pieces
         tvm.setGasLimit(2_000_000_000);
-        for (uint8 n=0; n < 16; n++) {
+        status = STATUS_GAME_DRAFT;
+        newtemplate = tmp;
+        for (uint8 n=0; n < NUM_FRAGMENTS; n++) {
             uint8[][] fieldPiece;
             for (uint8 i=0; i < ROW_COUNT; i++) {
                 fieldPiece.push(new uint8[](COL_COUNT));
@@ -74,9 +71,10 @@ contract PBGame is PBConstants {
 
         gameWallet = getWalletAddress(address(this));
         tvm.log(format("Game wallet: {}", gameWallet));
-        remainingTiles = ROW_COUNT * COL_COUNT;
+        remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(NUM_FRAGMENTS);
+        tvm.log(format("remainingTiles: {}", remainingTiles));
 
-        IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0.5 ton, flag: 0}(
+        IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
             0.3 ton,
             0,
             address(this),
@@ -85,10 +83,19 @@ contract PBGame is PBConstants {
     }
 
     /*
+        @notice A game host approves one of the games, and then players can start interacting with it.
+        @param newStatus - new status, can be among the STATUS_GAME_* constants
+    */
+    function setGameStatus(uint8 newStatus) public internalMsg onlyHost {
+        status = newStatus;
+    }
+
+    /*
         @notice A wallet owner sends this request to turn all their tiles into colored tiles.
         @dev If the PILE wallet does not exist, the EVERs will be bounced back to the game.
     */
     function claimColoredTiles() external internalMsg view {
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         address walletAddress = getWalletAddress(msg.sender);
         IPBWallet(walletAddress).claimTiles{value: 0, flag: 64, bounce: true, callback: PBGame.onClaimTiles}();
     }
@@ -103,6 +110,7 @@ contract PBGame is PBConstants {
     */
     function onClaimTiles(address ownerAddress, uint16 tilesNum) external internalMsg {
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
 
         PlayerInfo player = getPlayer(ownerAddress);
         uint16[] coloredTiles = getColoredTiles(tilesNum);
@@ -123,6 +131,7 @@ contract PBGame is PBConstants {
         @param balance - the balance of the sending token wallet
     */
     function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum, uint128 balance) external {
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(msg.value > MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
         require(tokensNum == TOKENS_PER_PUT, INVALID_TOKENS_PER_PUT);
@@ -154,7 +163,7 @@ contract PBGame is PBConstants {
     }
 
 //
-//        Internal service functions
+//        Service functions
 //
 
     /*
@@ -245,10 +254,23 @@ contract PBGame is PBConstants {
     }
 
     function addTilesToFieldTest(ColorTile[] tiles) public returns (bool, PlayerInfo) {
+        //TODO: Remove this in prod!
         tvm.accept();
         uint16[] colTiles = [uint16(10),uint16(10),uint16(10),uint16(10),uint16(10)];
         PlayerInfo player = PlayerInfo(address(0), colTiles, 0, false, false, 0);
         return addTilesToField (tiles, player);
+    }
+
+    function getInfo() external externalMsg view returns (GameInfo) {
+        return GameInfo(
+                    tokenRootAddress,
+                    created,
+                    imageOwner,
+                    gameId,
+                    gameWallet,
+                    remainingTiles,
+                    gameHost
+               );
     }
 
 }
