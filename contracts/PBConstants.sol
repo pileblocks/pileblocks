@@ -17,10 +17,13 @@ contract PBConstants {
     uint16 constant CALLER_NOT_GAME_HOST = 1013;
     uint16 constant WRONG_INDEX_OWNER = 1014;
 
+    // Game cell is 16 x 8
     uint8 constant ROW_COUNT = 8;
     uint8 constant COL_COUNT = 16;
+
     uint8 constant MAX_COLORS = 5;
-    uint8 constant NUM_FRAGMENTS = 16;
+    uint8 constant VERT_FRAGMENTS = 2;
+    uint8 constant HORIZ_FRAGMENTS = 1;
 
     uint8 constant STATUS_GAME_DRAFT = 1;
     uint8 constant STATUS_GAME_ACTIVE = 2;

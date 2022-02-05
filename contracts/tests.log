@@ -1,0 +1,21 @@
+//second is wrong
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":0, "x":0, "y":0, "color":1},{"f":0, "x":1, "y":0, "color":2},{"f":0, "x":2, "y":0, "color":3},{"f":0, "x":0, "y":1, "color":2}]}'
+
+//all good
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":0, "x":0, "y":0, "color":1},{"f":0, "x":1, "y":0, "color":2},{"f":0, "x":2, "y":0, "color":3},{"f":0, "x":0, "y":1, "color":2}]}'
+
+//all good + next fragment
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":1, "x":0, "y":0, "color":3},{"f":1, "x":1, "y":0, "color":3},{"f":1, "x":2, "y":0, "color":2},{"f":1, "x":0, "y":1, "color":4}]}'
+
+//same + new tile
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":0, "x":0, "y":0, "color":1},{"f":0, "x":1, "y":2, "color":1}]}'
+
+
+//two new + old
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":0,"x":0, "y":3, "color":1},{"f":0,"x":1, "y":3, "color":1},{"f":0,"x":0, "y":0, "color":1}]}'
+
+//two new
+tondev contract run PBGame.abi.json --address 0:15b685c6333e4f4366ed552b808e6d238908363d5f0e96be2f20d895b7bcfc54 addTilesToFieldTest -i '{"tiles": [{"f":0,"x":0, "y":3, "color":1},{"f":0,"x":1, "y":3, "color":1}]}'
+
+//first wrong
+tondev contract run PBGame.abi.json --address 0:087850fce77fe667aef2f9444d465cf96733cbbc779b9c529bd8d86f3d59c229 addTilesToFieldTest -i '{"tiles": [{"x":0, "y":0, "color":3}]}'

@@ -59,7 +59,7 @@ contract GameHost is PBConstants {
         @dev to find the upcoming games
         @param gameId - ID of a game one wants to deploy
     */
-    function getGameHash(uint32 gameId) public view returns (uint256) {
+    function getGameHash(uint32 gameId) external view returns (uint256) {
         TvmBuilder salt;
         salt.store(gameId, address(this));
         return tvm.hash(tvm.setCodeSalt(gameCode, salt.toCell()));
@@ -70,7 +70,7 @@ contract GameHost is PBConstants {
         @dev Use this to launch modified games under the same host.
         @param gameId - ID of a game one wants to deploy
     */
-    function setGameCode(TvmCell _gameCode) public externalMsg onlyOwner {
+    function setGameCode(TvmCell _gameCode) external externalMsg onlyOwner {
         tvm.accept();
         gameCode = _gameCode;
     }
@@ -79,14 +79,14 @@ contract GameHost is PBConstants {
         @notice Activates a game (without it, getting colored / putting tiles is not possible).
         @param game - The address of a game to activate
     */
-    function activateGame(address game) public externalMsg onlyOwner {
+    function activateGame(address game) external externalMsg onlyOwner {
         tvm.accept();
         IPBGame(game).setGameStatus(STATUS_GAME_ACTIVE);
         deployIndex(currentGameId, game);
         currentGameId += 1;
     }
 
-    function deployGame(address imageOwner, mapping(uint8 => uint8[][]) tmp) public returns (address) {
+    function deployGame(address imageOwner, mapping(uint8 => uint8[][]) tmp) external returns (address) {
         //TODO: Remove after testing in favor of msg.value
         // imageOwner we then can take from msg.sender
         require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
@@ -130,7 +130,7 @@ contract GameHost is PBConstants {
         return index;
     }
 
-    function getGameAddress(GameInfo gameInfo) public view returns (address) {
+    function getGameAddress(GameInfo gameInfo) external view returns (address) {
         TvmCell stateInit = tvm.buildStateInit({
             contr: PBGame,
             varInit: {
@@ -146,7 +146,7 @@ contract GameHost is PBConstants {
         return address(tvm.hash(stateInit));
     }
 
-    function getIndexAddress(uint32 _gameId) public view returns (address) {
+    function getIndexAddress(uint32 _gameId) external view returns (address) {
         TvmCell stateInit = tvm.buildStateInit({
             contr: GameIndex,
             varInit: {

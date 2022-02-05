@@ -706,7 +706,12 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
     fallback() external {
     }
 
+//
+// Pileblocks specifics
+//
+
     function log_2(uint128 x) private pure returns (uint128) {
+        //TODO: Move to a library
         require(x >= 1);
         uint128 n = 0;
         if (x >= 2**128) { x >>= 128; n += 128; }

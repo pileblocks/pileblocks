@@ -19,10 +19,6 @@ contract PBGame is PBConstants {
     TvmCell static walletCode;
     address static tokenRootAddress;
 
-    // Game field
-    uint8[][] public field;
-    uint8[][] public template;
-
     // Game params
     uint64 static created;
     address static imageOwner;
@@ -36,8 +32,8 @@ contract PBGame is PBConstants {
     uint128 constant TOKENS_PER_PUT = 50_000_000_000;
 
     mapping(address => PlayerInfo) public players;
-    mapping(uint8 => uint8[][]) public newfield;
-    mapping(uint8 => uint8[][]) public newtemplate;
+    mapping(uint8 => uint8[][]) public field;
+    mapping(uint8 => uint8[][]) public template;
 
     modifier onlyHost() {
         require(msg.sender == gameHost, CALLER_NOT_GAME_HOST);
@@ -58,19 +54,20 @@ contract PBGame is PBConstants {
         //Idea: create a mapping of 16x8 pieces
         tvm.setGasLimit(2_000_000_000);
         status = STATUS_GAME_DRAFT;
-        newtemplate = tmp;
-        for (uint8 n=0; n < NUM_FRAGMENTS; n++) {
+        template = tmp;
+        uint32 numFragments = VERT_FRAGMENTS * HORIZ_FRAGMENTS;
+        for (uint8 n=0; n < numFragments; n++) {
             uint8[][] fieldPiece;
             for (uint8 i=0; i < ROW_COUNT; i++) {
                 fieldPiece.push(new uint8[](COL_COUNT));
             }
-            newfield[n] = fieldPiece;
+            field[n] = fieldPiece;
             tvm.log(format("n: {}", n));
         }
 
         gameWallet = getWalletAddress(address(this));
         tvm.log(format("Game wallet: {}", gameWallet));
-        remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(NUM_FRAGMENTS);
+        remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(numFragments);
         tvm.log(format("remainingTiles: {}", remainingTiles));
 
         IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
@@ -85,7 +82,7 @@ contract PBGame is PBConstants {
         @notice A game host approves one of the games, and then players can start interacting with it.
         @param newStatus - new status, can be among the STATUS_GAME_* constants
     */
-    function setGameStatus(uint8 newStatus) public internalMsg onlyHost {
+    function setGameStatus(uint8 newStatus) external internalMsg onlyHost {
         status = newStatus;
     }
 
@@ -217,18 +214,18 @@ contract PBGame is PBConstants {
 
     function addTilesToField (ColorTile[] tiles, PlayerInfo player) private returns (bool, PlayerInfo) {
         bool isError = false;
-        uint8[][] fieldTemp;
+        mapping(uint8 => uint8[][]) fieldTemp;
         uint32 remainingTilesTemp;
 
         fieldTemp = field;
         remainingTilesTemp = remainingTiles;
 
         for (ColorTile tile: tiles) {
-            if ((template[tile.y][tile.x] == tile.color)
-            && (field[tile.y][tile.x] == 0)
+            if ((template[tile.f][tile.y][tile.x] == tile.color)
+            && (fieldTemp[tile.f][tile.y][tile.x] == 0)
             && (player.tiles[tile.color - 1] > 0))
             {
-                fieldTemp[tile.y][tile.x] = tile.color;
+                fieldTemp[tile.f][tile.y][tile.x] = tile.color;
                 player.tiles[tile.color - 1] -= 1;
                 player.captured += 1;
                 player.lastPutTime = now;
@@ -268,7 +265,8 @@ contract PBGame is PBConstants {
                     gameId,
                     gameWallet,
                     remainingTiles,
-                    gameHost
+                    gameHost,
+                    [VERT_FRAGMENTS, HORIZ_FRAGMENTS, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
                );
     }
 

@@ -1,6 +1,7 @@
 pragma ton-solidity >= 0.47.0;
 
 struct ColorTile {
+    uint8 f;
     uint8 x;
     uint8 y;
     uint8 color;
@@ -24,6 +25,7 @@ struct GameInfo {
     address gameWallet;
     uint32 remainingTiles;
     address gameHost;
+    uint24[] renderConfig;
 }
 
 interface IPBGame {
