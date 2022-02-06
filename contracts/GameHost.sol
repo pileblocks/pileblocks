@@ -86,10 +86,9 @@ contract GameHost is PBConstants {
         currentGameId += 1;
     }
 
-    function deployGame(address imageOwner, mapping(uint8 => uint8[][]) tmp) external returns (address) {
+    function deployGame(address imageOwner) external returns (address) {
         //TODO: Remove after testing in favor of msg.value
         // imageOwner we then can take from msg.sender
-        require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
         tvm.accept();
         //tvm.rawReserve(address(this).balance - msg.value, 2);
         TvmCell stateInit = tvm.buildStateInit({
@@ -107,7 +106,7 @@ contract GameHost is PBConstants {
             stateInit: stateInit,
             value: 0,
             flag: 128
-        }(tmp);
+        }();
         tvm.log(format("New game: {}", game));
         return game;
     }

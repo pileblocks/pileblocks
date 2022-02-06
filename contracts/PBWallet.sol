@@ -765,8 +765,6 @@ contract PBWallet is ITONTokenWallet, IDestroyable, IBurnableByOwnerTokenWallet,
     @dev The owner wallet sends the request to put tiles, and the wallet sends the data to a game
 */
     function putTiles(address gameAddress, uint128 tokensNum, ColorTile[] tiles) external onlyInternalOwner {
-        ColorTile t = tiles[0];
-        tvm.log(format("x: {}, y: {}, color: {}", t.x, t.y, t.color));
         allowance_.set(AllowanceInfo(tokensNum, getExpectedAddress(0, gameAddress)));
         IPBGame(gameAddress).onPutTiles{value: 0, flag: 64}(owner_address, tiles, tokensNum, balance_);
     }

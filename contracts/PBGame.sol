@@ -40,7 +40,12 @@ contract PBGame is PBConstants {
         _;
     }
 
-    constructor (mapping(uint8 => uint8[][]) tmp) public {
+    modifier onlyImageOwner() {
+        require(msg.sender == imageOwner, CALLER_NOT_IMAGE_OWNER);
+        _;
+    }
+
+    constructor () public {
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
         (gameId, gameHost) = optSalt
@@ -50,11 +55,10 @@ contract PBGame is PBConstants {
 
         require(msg.sender == gameHost, INVALID_GAME_HOST);
 
-        //TODO: Change the way the data is filled-in
-        //Idea: create a mapping of 16x8 pieces
-        tvm.setGasLimit(2_000_000_000);
+        //TODO: Remove in prod in favor of msg.value
+        tvm.accept();
+
         status = STATUS_GAME_DRAFT;
-        template = tmp;
         uint32 numFragments = VERT_FRAGMENTS * HORIZ_FRAGMENTS;
         for (uint8 n=0; n < numFragments; n++) {
             uint8[][] fieldPiece;
@@ -78,22 +82,44 @@ contract PBGame is PBConstants {
         );
     }
 
+    function isImageComplete() public view returns (bool) {
+        uint8 frNum = uint8(VERT_FRAGMENTS * HORIZ_FRAGMENTS);
+        uint8[] fragmentArr;
+
+        for ((uint8 id, ): template) {
+            fragmentArr.push(id);
+        }
+        if (fragmentArr.length == frNum) {
+            return true;
+        }
+        return false;
+    }
+
+    function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external {
+        tvm.accept();
+        require(fragmentNum < uint8(VERT_FRAGMENTS * HORIZ_FRAGMENTS), WRONG_FRAGMENT_COUNT);
+        require(tiles.length == ROW_COUNT, WRONG_NUM_ROWS);
+        for (uint8 i=0; i < ROW_COUNT; i++) {
+            require(tiles[i].length == COL_COUNT, WRONG_NUM_COLS);
+            for (uint8 j=0; j < COL_COUNT; j++) {
+                require(tiles[i][j] > 0 && tiles[i][j] <= MAX_COLORS, WRONG_TILE_COLOR);
+            }
+        }
+        template[fragmentNum] = tiles;
+    }
+
+    function setImageForReview() external internalMsg onlyImageOwner {
+        if (isImageComplete()) {
+            status = STATUS_GAME_IMAGE_READY;
+        }
+    }
+
     /*
         @notice A game host approves one of the games, and then players can start interacting with it.
         @param newStatus - new status, can be among the STATUS_GAME_* constants
     */
     function setGameStatus(uint8 newStatus) external internalMsg onlyHost {
         status = newStatus;
-    }
-
-    /*
-        @notice A wallet owner sends this request to turn all their tiles into colored tiles.
-        @dev If the PILE wallet does not exist, the EVERs will be bounced back to the game.
-    */
-    function claimColoredTiles() external internalMsg view {
-        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
-        address walletAddress = getWalletAddress(msg.sender);
-        IPBWallet(walletAddress).claimTiles{value: 0, flag: 64, bounce: true, callback: PBGame.onClaimTiles}();
     }
 
     /*
@@ -134,7 +160,6 @@ contract PBGame is PBConstants {
         require(balance >= TOKENS_PER_PUT, TOKEN_BALANCE_LOW);
         // Reserve a fee per put
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
-        //tvm.log(format("onPutTiles, tokensNum: {:t}", tokensNum));
         PlayerInfo player = getPlayer(ownerAddress);
         bool isError = false;
 
@@ -242,6 +267,9 @@ contract PBGame is PBConstants {
                 break;
             }
         }
+        if (tiles.length > MAX_PUT_PER_TURN) {
+            isError = true;
+        }
         if (!isError) {
             field = fieldTemp;
             remainingTiles = remainingTilesTemp;
@@ -252,7 +280,8 @@ contract PBGame is PBConstants {
     function addTilesToFieldTest(ColorTile[] tiles) public returns (bool, PlayerInfo) {
         //TODO: Remove this in prod!
         tvm.accept();
-        uint16[] colTiles = [uint16(10),uint16(10),uint16(10),uint16(10),uint16(10)];
+        tvm.log(format("Length: {}", tiles.length));
+        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
         PlayerInfo player = PlayerInfo(address(0), colTiles, 0, false, false, 0);
         return addTilesToField (tiles, player);
     }
@@ -267,7 +296,7 @@ contract PBGame is PBConstants {
                     remainingTiles,
                     gameHost,
                     [VERT_FRAGMENTS, HORIZ_FRAGMENTS, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
-               );
+        );
     }
 
 }
