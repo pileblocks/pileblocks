@@ -18,6 +18,10 @@ contract PBConstants {
     uint16 constant WRONG_INDEX_OWNER = 1014;
     uint16 constant CALLER_NOT_IMAGE_OWNER = 1015;
     uint16 constant WRONG_FRAGMENT_COUNT = 1016;
+    uint16 constant MAX_TILES_EXCEEDED = 1017;
+    uint16 constant WRONG_ROOT_TOKEN_ADDRESS = 1018;
+    uint16 constant WRONG_GAME_ADDRESS = 1019;
+
     // Game status
     uint8 constant STATUS_GAME_DRAFT = 1;
     uint8 constant STATUS_GAME_IMAGE_READY = 4;
@@ -37,7 +41,7 @@ contract PBConstants {
     uint128 constant MIN_PUT_AMOUNT = 1_999_000_000;
     uint128 constant SERVICE_FEE = 500_000_000;
 
-    uint8 constant MAX_PUT_PER_TURN = 64;
+    uint8 constant MAX_PUT_PER_TURN = 50;
 
 
 }

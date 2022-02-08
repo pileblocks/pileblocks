@@ -8,10 +8,13 @@ contract GameHost is PBConstants {
     uint64 static _randomNonce;
 
     uint32 public currentGameId;
+    address nextGameAddress;
     TvmCell public indexCode;
     TvmCell gameCode;
     TvmCell walletCode;
     address tokenRootAddress;
+    address walletAddress;
+    uint128 rewardPerGame;
 
     modifier onlyOwner() {
         require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
@@ -34,6 +37,22 @@ contract GameHost is PBConstants {
         walletCode = _walletCode;
         tokenRootAddress = _tokenRootAddress;
         currentGameId = 1;
+        rewardPerGame = 5_000_000_000_000;
+
+        IRootTokenContract(tokenRootAddress).getWalletAddress{value: 0.3 ton, callback: GameHost.onGetWalletAddress}(0, address(this));
+
+        IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
+        0.3 ton,
+        0,
+        address(this),
+        address(this)
+        );
+    }
+
+    function onGetWalletAddress(address _walletAddress) external internalMsg {
+        require(msg.sender == tokenRootAddress, WRONG_ROOT_TOKEN_ADDRESS);
+        walletAddress = _walletAddress;
+        tvm.log(format("Host wallet: {}", walletAddress));
     }
 
     /*
@@ -79,14 +98,19 @@ contract GameHost is PBConstants {
         @notice Activates a game (without it, getting colored / putting tiles is not possible).
         @param game - The address of a game to activate
     */
-    function activateGame(address game) external externalMsg onlyOwner {
+    function activateGame(address gameAddress) external externalMsg onlyOwner {
         tvm.accept();
-        IPBGame(game).setGameStatus(STATUS_GAME_ACTIVE);
-        deployIndex(currentGameId, game);
+        IPBGame(gameAddress).setGameStatus(STATUS_GAME_ACTIVE);
+        if (currentGameId == 1) {
+            deployIndex(currentGameId, gameAddress);
+        }
+        else {
+            nextGameAddress = gameAddress;
+        }
         currentGameId += 1;
     }
 
-    function deployGame(address imageOwner) external returns (address) {
+    function deployGame(address imageOwner, uint24[] _renderSettings) external returns (address) {
         //TODO: Remove after testing in favor of msg.value
         // imageOwner we then can take from msg.sender
         tvm.accept();
@@ -106,7 +130,7 @@ contract GameHost is PBConstants {
             stateInit: stateInit,
             value: 0,
             flag: 128
-        }();
+        }(_renderSettings);
         tvm.log(format("New game: {}", game));
         return game;
     }
@@ -129,7 +153,36 @@ contract GameHost is PBConstants {
         return index;
     }
 
-    function getGameAddress(GameInfo gameInfo) external view returns (address) {
+    function onGameCompleted(GameInfo gameInfo) external internalMsg {
+            require(getGameAddress(gameInfo) == msg.sender, WRONG_GAME_ADDRESS);
+            require(gameInfo.gameHost == address(this), INVALID_GAME_HOST);
+            require(gameInfo.status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
+
+            deployIndex(currentGameId, nextGameAddress);
+            nextGameAddress = address(0);
+
+            TvmCell payload;
+            ITONTokenWallet(walletAddress).transfer{value: 0.3 ton}(
+                gameInfo.gameWallet,
+                rewardPerGame,
+                0,
+                address(this),
+                false,
+                payload
+                );
+
+            IPBGame(msg.sender).completeGame{value: 1 ton}();
+    }
+
+    function setRewardPerGame(uint128 newRewardPerGame) external externalMsg onlyOwner {
+        rewardPerGame = newRewardPerGame;
+    }
+
+    function getRewardPerGame() external externalMsg returns (uint128) {
+        return rewardPerGame;
+    }
+
+    function getGameAddress(GameInfo gameInfo) public view returns (address) {
         TvmCell stateInit = tvm.buildStateInit({
             contr: PBGame,
             varInit: {

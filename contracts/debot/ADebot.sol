@@ -17,11 +17,12 @@ interface IPBWallet {
     function putTiles(address gameAddress, uint128 tokensNum, ColorTile[] tiles) external;
 }
 
+interface IGameHost {
+    function deployGame(address imageOwner, uint24[] _renderSettings) external returns (address);
+}
 
 contract ADebot is Debot {
     bytes mIcon;
-
-    address constant WALLET=address.makeAddrStd(0, 0xe6fa82115b834d6a74810c6774aa32408abbcc72dfb20d4ca61750097f22b969);
 
     function getRequiredInterfaces() public view override returns (uint256[] interfaces) {
         return [ Terminal.ID, UserInfo.ID ];
@@ -50,11 +51,19 @@ contract ADebot is Debot {
 
     function start() public override {
         address OWNER_ADDRESS = address.makeAddrStd(0, 0xe6fa82115b834d6a74810c6774aa32408abbcc72dfb20d4ca61750097f22b969);
-        address GAME_ADDRESS = address.makeAddrStd(0, 0xa9530374f82ebc8ddb09fb52ed87cb6d448b8d3e1bc042482bbacffd9f38bfcb);
-        address WALLET_ADDRESS = address.makeAddrStd(0, 0x14be872d82276b2f6d929e4a88e356482266a61ad827a5daed27689e2437bb61);
+        address GAME_ADDRESS = address.makeAddrStd(0, 0x8238fb0335a38ee0925462600720fa738101ea6fd32579d04f9aa4e62bb985f3);
+        address WALLET_ADDRESS = address.makeAddrStd(0, 0x448dfc48b8bac5e7543911b460fb69b5349582b145b2396485e7c877c8a65bf2);
+        //address GAME_HOST_ADDRESS = address.makeAddrStd(0, 0xa08f5459fb6c2d84b3f0ab7273537c7a217d7c3a4b6448a9b81b09f33c261c07);
 
         uint32 id = 1;
-        TvmCell body = tvm.encodeBody(IPBWallet.putTiles, GAME_ADDRESS, uint128(50000000000), [ColorTile(1,2,3)]);
+
+
+
+        ColorTile[] tiles = [ColorTile(0,0,6,1),ColorTile(0,1,6,1),ColorTile(0,2,6,1),ColorTile(0,3,6,1),ColorTile(0,4,6,1),ColorTile(0,5,6,1),ColorTile(0,6,6,1),ColorTile(0,7,6,1),ColorTile(0,8,6,1),ColorTile(0,9,6,1),ColorTile(0,10,6,1),ColorTile(0,11,6,1),ColorTile(0,12,6,1),ColorTile(0,13,6,1),ColorTile(0,14,6,1),ColorTile(0,15,6,1),ColorTile(0,0,7,1),ColorTile(0,1,7,1),ColorTile(0,2,7,1),ColorTile(0,3,7,1),ColorTile(0,4,7,1),ColorTile(0,5,7,1),ColorTile(0,6,7,1),ColorTile(0,7,7,1),ColorTile(0,8,7,1),ColorTile(0,9,7,1),ColorTile(0,10,7,1),ColorTile(0,11,7,1),ColorTile(0,12,7,1),ColorTile(0,13,7,1),ColorTile(0,14,7,1),ColorTile(0,15,7,1)];
+        //ColorTile[] tiles = [ColorTile(11,1,0,1),ColorTile(11,1,1,1)];
+        TvmCell body = tvm.encodeBody(IPBWallet.putTiles, GAME_ADDRESS, uint128(30000000000), tiles);
+        //TvmCell body = tvm.encodeBody(IPBWallet.claimTiles, GAME_ADDRESS);
+        //TvmCell body = tvm.encodeBody(IGameHost.deployGame, OWNER_ADDRESS, [2,1,5,16711422,11186364,6318459,3093818,1974824]);
 
         optional(uint256) pubkey = 0;
         SafeAccount(OWNER_ADDRESS).sendTransaction{
@@ -67,6 +76,6 @@ contract ADebot is Debot {
             callbackId: 0,
             onErrorId: 0
         }
-        (WALLET_ADDRESS, 1500000000, false, 3, body);
+        (WALLET_ADDRESS, 3000000000, false, 3, body);
     }
 }

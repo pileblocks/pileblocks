@@ -4,14 +4,9 @@ import "./PBWallet.sol";
 import "./PBConstants.sol";
 import "./interfaces/IRootTokenContract.sol";
 import "./interfaces/ITONTokenWallet.sol";
+import "./interfaces/IGameHost.sol";
+import "./interfaces/IPBWallet.sol";
 
-interface IPBWallet {
-    function claimTiles() external responsible returns (address, uint16);
-}
-
-interface IGameHost {
-    function onGameCompleted(address tokenRootAddress, uint64 created, address imageOwner, uint64 gameId) external;
-}
 
 contract PBGame is PBConstants {
 
@@ -22,14 +17,19 @@ contract PBGame is PBConstants {
     // Game params
     uint64 static created;
     address static imageOwner;
+
     address gameWallet;
     uint32 remainingTiles;
     uint32 gameId;
     address gameHost;
-    uint8 public status;
+    uint8 status;
 
-    // TODO: Receive from GameHost on create
-    uint128 constant TOKENS_PER_PUT = 50_000_000_000;
+    // Game render params
+    uint8 vertFragments;
+    uint8 horizFragments;
+    uint8 maxColors;
+    uint24[] renderSettings;
+    uint128 tokensPerPut;
 
     mapping(address => PlayerInfo) public players;
     mapping(uint8 => uint8[][]) public field;
@@ -40,12 +40,18 @@ contract PBGame is PBConstants {
         _;
     }
 
+    modifier onlyOwner() {
+        require(msg.pubkey() == tvm.pubkey(), CALLER_NOT_GAME_HOST);
+        _;
+    }
+
     modifier onlyImageOwner() {
         require(msg.sender == imageOwner, CALLER_NOT_IMAGE_OWNER);
         _;
     }
 
-    constructor () public {
+    constructor (uint24[] _renderSettings) public {
+
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
         (gameId, gameHost) = optSalt
@@ -55,24 +61,26 @@ contract PBGame is PBConstants {
 
         require(msg.sender == gameHost, INVALID_GAME_HOST);
 
-        //TODO: Remove in prod in favor of msg.value
-        tvm.accept();
+        //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
+        renderSettings = _renderSettings;
+        vertFragments = uint8(renderSettings[0]);
+        horizFragments = uint8(renderSettings[1]);
+        tokensPerPut = uint128(renderSettings[2]) * uint128(1e9);
+        maxColors = uint8(renderSettings[3]);
 
         status = STATUS_GAME_DRAFT;
-        uint32 numFragments = VERT_FRAGMENTS * HORIZ_FRAGMENTS;
+        uint32 numFragments = vertFragments * horizFragments;
         for (uint8 n=0; n < numFragments; n++) {
             uint8[][] fieldPiece;
             for (uint8 i=0; i < ROW_COUNT; i++) {
                 fieldPiece.push(new uint8[](COL_COUNT));
             }
             field[n] = fieldPiece;
-            tvm.log(format("n: {}", n));
         }
 
         gameWallet = getWalletAddress(address(this));
         tvm.log(format("Game wallet: {}", gameWallet));
         remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(numFragments);
-        tvm.log(format("remainingTiles: {}", remainingTiles));
 
         IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
             0.3 ton,
@@ -83,7 +91,7 @@ contract PBGame is PBConstants {
     }
 
     function isImageComplete() public view returns (bool) {
-        uint8 frNum = uint8(VERT_FRAGMENTS * HORIZ_FRAGMENTS);
+        uint8 frNum = uint8(vertFragments * horizFragments);
         uint8[] fragmentArr;
 
         for ((uint8 id, ): template) {
@@ -95,20 +103,21 @@ contract PBGame is PBConstants {
         return false;
     }
 
-    function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external {
-        tvm.accept();
-        require(fragmentNum < uint8(VERT_FRAGMENTS * HORIZ_FRAGMENTS), WRONG_FRAGMENT_COUNT);
+    function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external internalMsg onlyImageOwner {
+        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
+        require(fragmentNum < uint8(vertFragments * horizFragments), WRONG_FRAGMENT_COUNT);
         require(tiles.length == ROW_COUNT, WRONG_NUM_ROWS);
         for (uint8 i=0; i < ROW_COUNT; i++) {
             require(tiles[i].length == COL_COUNT, WRONG_NUM_COLS);
             for (uint8 j=0; j < COL_COUNT; j++) {
-                require(tiles[i][j] > 0 && tiles[i][j] <= MAX_COLORS, WRONG_TILE_COLOR);
+                require(tiles[i][j] > 0 && tiles[i][j] <= maxColors, WRONG_TILE_COLOR);
             }
         }
         template[fragmentNum] = tiles;
     }
 
     function setImageForReview() external internalMsg onlyImageOwner {
+        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
         if (isImageComplete()) {
             status = STATUS_GAME_IMAGE_READY;
         }
@@ -137,7 +146,7 @@ contract PBGame is PBConstants {
         PlayerInfo player = getPlayer(ownerAddress);
         uint16[] coloredTiles = getColoredTiles(tilesNum);
 
-        for (uint16 i=0; i < MAX_COLORS; i++) {
+        for (uint16 i=0; i < maxColors; i++) {
              player.tiles[i] = math.min(coloredTiles[i] + player.tiles[i], 1024);
         }
         player.lastPutTime = now;
@@ -156,8 +165,9 @@ contract PBGame is PBConstants {
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(msg.value > MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
-        require(tokensNum == TOKENS_PER_PUT, INVALID_TOKENS_PER_PUT);
-        require(balance >= TOKENS_PER_PUT, TOKEN_BALANCE_LOW);
+        require(tokensNum == tokensPerPut, INVALID_TOKENS_PER_PUT);
+        require(balance >= tokensPerPut, TOKEN_BALANCE_LOW);
+        require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
         // Reserve a fee per put
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
         PlayerInfo player = getPlayer(ownerAddress);
@@ -168,12 +178,13 @@ contract PBGame is PBConstants {
             players[ownerAddress] = player;
         }
         if (remainingTiles == 0) {
-        //TODO: Notify the GameHost about the game completion
+            status = STATUS_GAME_COMPLETED;
+            IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
         TvmCell payload;
         ITONTokenWallet(gameWallet).transferFrom{value: 0, flag: 128}(
             msg.sender,
-            gameWallet,
+            getWalletAddress(gameHost),
             tokensNum,
             0,
             ownerAddress,
@@ -181,6 +192,11 @@ contract PBGame is PBConstants {
             payload
         );
 
+    }
+
+    function completeGame() external internalMsg {
+        require(msg.sender == gameHost, INVALID_GAME_HOST);
+        //TODO: Implement money sharing with players
     }
 
 //
@@ -211,7 +227,7 @@ contract PBGame is PBConstants {
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(msg.sender, new uint16[](MAX_COLORS), 0, false, false, 0);
+            player = PlayerInfo(msg.sender, new uint16[](maxColors), 0, false, false, 0);
         }
     }
 
@@ -219,16 +235,16 @@ contract PBGame is PBConstants {
         @notice Calculates the number of tiles of each color to be claimed by a player in exchange for their tiles.
         @param tilesNum - the number of tiles a player wants to transform to colored tiles
     */
-    function getColoredTiles(uint16 tilesNum) private pure returns(uint16[] colorArr) {
+    function getColoredTiles(uint16 tilesNum) private view returns(uint16[] colorArr) {
 
         uint16 share = (tilesNum * 8) / 10;
-        uint16 rest = tilesNum - (share / MAX_COLORS) * MAX_COLORS;
+        uint16 rest = tilesNum - (share / maxColors) * maxColors;
 
-        for (uint8 i=0; i < MAX_COLORS; i++) {
-            colorArr.push(share / MAX_COLORS);
+        for (uint8 i=0; i < maxColors; i++) {
+            colorArr.push(share / maxColors);
         }
 
-        for (uint8 i=0; i < (MAX_COLORS - 1); i++) {
+        for (uint8 i=0; i < (maxColors - 1); i++) {
             uint16 rn = rnd.next(rest);
             rnd.shuffle();
             colorArr[i] += rn;
@@ -252,8 +268,6 @@ contract PBGame is PBConstants {
             {
                 fieldTemp[tile.f][tile.y][tile.x] = tile.color;
                 player.tiles[tile.color - 1] -= 1;
-                player.captured += 1;
-                player.lastPutTime = now;
                 remainingTilesTemp -= 1;
                 if (remainingTilesTemp == 1) {
                     player.isPrelast = true;
@@ -267,26 +281,17 @@ contract PBGame is PBConstants {
                 break;
             }
         }
-        if (tiles.length > MAX_PUT_PER_TURN) {
-            isError = true;
-        }
+
         if (!isError) {
+            player.lastPutTime = now;
+            player.captured += uint16(tiles.length);
             field = fieldTemp;
             remainingTiles = remainingTilesTemp;
         }
         return (isError, player);
     }
 
-    function addTilesToFieldTest(ColorTile[] tiles) public returns (bool, PlayerInfo) {
-        //TODO: Remove this in prod!
-        tvm.accept();
-        tvm.log(format("Length: {}", tiles.length));
-        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
-        PlayerInfo player = PlayerInfo(address(0), colTiles, 0, false, false, 0);
-        return addTilesToField (tiles, player);
-    }
-
-    function getInfo() external externalMsg view returns (GameInfo) {
+    function getInfo() public view returns (GameInfo) {
         return GameInfo(
                     tokenRootAddress,
                     created,
@@ -295,8 +300,43 @@ contract PBGame is PBConstants {
                     gameWallet,
                     remainingTiles,
                     gameHost,
-                    [VERT_FRAGMENTS, HORIZ_FRAGMENTS, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
+                    renderSettings,
+                    status
         );
+    }
+
+//
+//Only for testing
+//
+    function addTilesToFieldTest(ColorTile[] tiles) external onlyOwner returns (bool, PlayerInfo) {
+        //TODO: Remove this in prod!
+        tvm.accept();
+        tvm.log(format("Length: {}", tiles.length));
+        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
+        PlayerInfo player = PlayerInfo(address(0), colTiles, 0, false, false, 0);
+        return addTilesToField (tiles, player);
+    }
+
+    function addFakePlayer(address playerWallet) external onlyOwner {
+        //TODO: Remove this in prod!
+        tvm.accept();
+        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
+        players[address(0xe6fa82115b834d6a74810c6774aa32408abbcc72dfb20d4ca61750097f22b969)] = PlayerInfo(playerWallet, colTiles, 0, false, false, 0);
+    }
+
+    function saveImageFragmentTest(uint8 fragmentNum, uint8[][] tiles) external onlyOwner {
+        //TODO: Remove this in prod!
+        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
+        require(fragmentNum < uint8(vertFragments * horizFragments), WRONG_FRAGMENT_COUNT);
+        require(tiles.length == ROW_COUNT, WRONG_NUM_ROWS);
+        tvm.accept();
+        for (uint8 i=0; i < ROW_COUNT; i++) {
+            require(tiles[i].length == COL_COUNT, WRONG_NUM_COLS);
+            for (uint8 j=0; j < COL_COUNT; j++) {
+                require(tiles[i][j] > 0 && tiles[i][j] <= maxColors, WRONG_TILE_COLOR);
+            }
+        }
+        template[fragmentNum] = tiles;
     }
 
 }
