@@ -1,9 +1,9 @@
 pragma ton-solidity >= 0.47.0;
 
-import "./PBWallet.sol";
+import "./TokenWallet.sol";
 import "./PBConstants.sol";
-import "./interfaces/IRootTokenContract.sol";
-import "./interfaces/ITONTokenWallet.sol";
+import "./interfaces/ITokenRoot.sol";
+import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IGameHost.sol";
 import "./interfaces/IPBWallet.sol";
 
@@ -82,12 +82,13 @@ contract PBGame is PBConstants {
         tvm.log(format("Game wallet: {}", gameWallet));
         remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(numFragments);
 
-        IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
-            0.3 ton,
-            0,
+        ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: PBGame.onDeploy}(
             address(this),
-            address(this)
+            0.3 ton
         );
+    }
+
+    function onDeploy(address gameWallet) external {
     }
 
     function isImageComplete() public view returns (bool) {
@@ -161,12 +162,11 @@ contract PBGame is PBConstants {
         @param tokensNum - the allocated amount of tokens a game can receive
         @param balance - the balance of the sending token wallet
     */
-    function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum, uint128 balance) external {
+    function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum) external {
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(msg.value > MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
         require(tokensNum == tokensPerPut, INVALID_TOKENS_PER_PUT);
-        require(balance >= tokensPerPut, TOKEN_BALANCE_LOW);
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
         // Reserve a fee per put
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
@@ -181,17 +181,6 @@ contract PBGame is PBConstants {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
-        TvmCell payload;
-        ITONTokenWallet(gameWallet).transferFrom{value: 0, flag: 128}(
-            msg.sender,
-            getWalletAddress(gameHost),
-            tokensNum,
-            0,
-            ownerAddress,
-            false,
-            payload
-        );
-
     }
 
     function completeGame() external internalMsg {
@@ -207,14 +196,12 @@ contract PBGame is PBConstants {
         @notice Derive token wallet contract address from owner credentials
         @param owner_address_ Address of a wallet which owns the token wallet
     */
-    function getWalletAddress(address owner_address_) private inline view returns (address) {
+    function getWalletAddress(address walletOwner) private inline view returns (address) {
         TvmCell stateInit = tvm.buildStateInit({
-            contr: PBWallet,
+            contr: TokenWallet,
             varInit: {
-                root_address: tokenRootAddress,
-                code: walletCode,
-                wallet_public_key: 0,
-                owner_address: owner_address_
+                root_: tokenRootAddress,
+                owner_: walletOwner
             },
             pubkey: 0,
             code: walletCode

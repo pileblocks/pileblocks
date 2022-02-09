@@ -1,5 +1,6 @@
-pragma ton-solidity >= 0.47.0;
+pragma ton-solidity >= 0.57.0;
+
 
 interface IVersioned {
-    function getVersion() external pure responsible returns (uint32);
+    function version() external view responsible returns (uint32);
 }

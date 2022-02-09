@@ -39,14 +39,15 @@ contract GameHost is PBConstants {
         currentGameId = 1;
         rewardPerGame = 5_000_000_000_000;
 
-        IRootTokenContract(tokenRootAddress).getWalletAddress{value: 0.3 ton, callback: GameHost.onGetWalletAddress}(0, address(this));
+        ITokenRoot(tokenRootAddress).walletOf{value: 0.3 ton, callback: GameHost.onGetWalletAddress}(address(this));
 
-        IRootTokenContract(tokenRootAddress).deployEmptyWallet{value: 0, flag: 128}(
-        0.3 ton,
-        0,
-        address(this),
-        address(this)
+        ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: GameHost.onDeploy}(
+            address(this),
+            0.3 ton
         );
+    }
+
+    function onDeploy(address gameWallet) external {
     }
 
     function onGetWalletAddress(address _walletAddress) external internalMsg {
@@ -162,10 +163,9 @@ contract GameHost is PBConstants {
             nextGameAddress = address(0);
 
             TvmCell payload;
-            ITONTokenWallet(walletAddress).transfer{value: 0.3 ton}(
-                gameInfo.gameWallet,
+            ITokenWallet(walletAddress).transferToWallet{value: 0.3 ton}(
                 rewardPerGame,
-                0,
+                gameInfo.gameWallet,
                 address(this),
                 false,
                 payload

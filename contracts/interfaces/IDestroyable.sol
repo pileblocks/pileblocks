@@ -1,8 +1,5 @@
-pragma ton-solidity >= 0.47.0;
-
-pragma AbiHeader expire;
-pragma AbiHeader pubkey;
+pragma ton-solidity >= 0.57.0;
 
 interface IDestroyable {
-    function destroy(address gas_dest) external;
+    function destroy(address remainingGasTo) external;
 }
