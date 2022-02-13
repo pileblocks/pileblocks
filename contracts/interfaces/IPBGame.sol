@@ -10,11 +10,10 @@ struct ColorTile {
 
 struct PlayerInfo {
     address walletAddress;
-    uint16[] tiles; // tiles[0] = color 1, tiles[1] = color 2, etc.
     uint16 captured;
     bool isLast;
     bool isPrelast;
-    uint32 lastPutTime;
+    uint64 lastPutTime;
 }
 
 struct GameInfo {
@@ -33,5 +32,5 @@ interface IPBGame {
     function onClaimTiles(address ownerAddress, uint16 tilesNum) external;
     function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum) external;
     function setGameStatus(uint8 newStatus) external;
-    function completeGame() external;
+    function completeGame(uint128 _totalReward) external;
 }

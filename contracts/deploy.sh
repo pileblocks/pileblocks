@@ -29,6 +29,7 @@ tondev sol compile TokenWallet.sol
 tondev sol compile PBGame.sol
 tondev sol compile GameHost.sol
 tondev sol compile GameIndex.sol
+tondev sol compile Genesis.sol
 
 TW_CODE=$(tonos-cli decode stateinit --tvc TokenWallet.tvc | tail -n +5 | ../node_modules/node-jq/bin/jq -r .code)
 
@@ -39,9 +40,12 @@ INDEX_CODE=$(tonos-cli decode stateinit --tvc GameIndex.tvc | tail -n +5 | ../no
 NONCE=$(date +%s)
 #echo $GAME_CODE
 
-echo "Deploying the root token contract..."
+echo "Deploying genesis..."
+GENESIS_ADDRESS=$(tondev contract deploy Genesis.abi.json -n $NWK -s $SIGNER -v 2000000000 -d _randomNonce:$NONCE | grep "Address:" | cut -d " " -f 4)
+echo "Genesis address: ${GENESIS_ADDRESS}"
 
-ROOT_TOKEN_ADDRESS=$(tondev contract deploy TokenRoot.abi.json -n $NWK -s $SIGNER -v 2000000000 -d randomNonce_:$NONCE,deployer_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",name_:"576562206d756c7469736967204669646f736166652e636f6d",symbol_:"4649444f",decimals_:9,rootOwner_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",walletCode_:\"$TW_CODE\" -i initialSupplyTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\",initialSupply:0,deployWalletValue:0,mintDisabled:false,burnByRootDisabled:false,burnPaused:false,remainingGasTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
+echo "Deploying the root token contract..."
+ROOT_TOKEN_ADDRESS=$(tondev contract deploy TokenRoot.abi.json -n $NWK -s $SIGNER -v 2000000000 -d randomNonce_:$NONCE,deployer_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",name_:"576562206d756c7469736967204669646f736166652e636f6d",symbol_:"4649444f",decimals_:9,rootOwner_:\"$GENESIS_ADDRESS\",walletCode_:\"$TW_CODE\" -i initialSupplyTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\",initialSupply:0,deployWalletValue:0,mintDisabled:false,burnByRootDisabled:false,burnPaused:false,remainingGasTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
 echo "Root token address: ${ROOT_TOKEN_ADDRESS}"
 
 echo "Deploying game host..."

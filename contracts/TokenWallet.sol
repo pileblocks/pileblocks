@@ -13,6 +13,7 @@ import "./libraries/TokenMsgFlag.sol";
 import "./interfaces/IVersioned.sol";
 import "./interfaces/IPBGame.sol";
 import "./interfaces/ITokenWallet.sol";
+import "./interfaces/IGenesis.sol";
 
 
 /*
@@ -87,7 +88,7 @@ contract TokenWallet is
     /*
         @dev The owner wallet sends the request to put tiles, and the wallet sends the data to a game
     */
-    function putTiles(address gameHost, address gameAddress, uint128 tokensNum, ColorTile[] tiles) external onlyOwner {
+    function putTiles(address genesis, address gameHost, address gameAddress, uint128 tokensNum, ColorTile[] tiles) external onlyOwner {
         require(balance_ >= tokensNum, TokenErrors.NOT_ENOUGH_BALANCE);
         TvmCell payload;
         ITokenWallet(address(this)).transfer{value: 0.3 ton}(
@@ -98,6 +99,7 @@ contract TokenWallet is
             false,
             payload
         );
+        IGenesis(genesis).giveHomage();
         IPBGame(gameAddress).onPutTiles{value: 0, flag: 64}(owner_, tiles, tokensNum);
     }
 

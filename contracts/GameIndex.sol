@@ -8,13 +8,7 @@ contract GameIndex is PBConstants {
     uint32 static gameId;
 
     constructor(address _gameAddress) public {
-        optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
-        require(optSalt.hasValue(), WRONG_INDEX_OWNER);
-        (address hostAddress) = optSalt
-            .get()
-            .toSlice()
-            .decode(address);
-        require(msg.sender == hostAddress);
+        require(msg.pubkey() == tvm.pubkey(), WRONG_PUBLIC_KEY);
         tvm.accept();
         gameAddress = _gameAddress;
     }

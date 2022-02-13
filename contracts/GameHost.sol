@@ -48,6 +48,7 @@ contract GameHost is PBConstants {
     }
 
     function onDeploy(address gameWallet) external {
+        tvm.log(format("Really, the host wallet: {}", gameWallet));
     }
 
     function onGetWalletAddress(address _walletAddress) external internalMsg {
@@ -68,9 +69,7 @@ contract GameHost is PBConstants {
     }
 
     function getIndexCode() private view returns (TvmCell) {
-        TvmBuilder salt;
-        salt.store(address(this));
-        return tvm.setCodeSalt(indexCode, salt.toCell());
+        return indexCode;
     }
 
     /*
@@ -171,7 +170,7 @@ contract GameHost is PBConstants {
                 payload
                 );
 
-            IPBGame(msg.sender).completeGame{value: 1 ton}();
+            IPBGame(msg.sender).completeGame{value: 1 ton}(rewardPerGame);
     }
 
     function setRewardPerGame(uint128 newRewardPerGame) external externalMsg onlyOwner {
@@ -209,6 +208,11 @@ contract GameHost is PBConstants {
         });
 
         return address(tvm.hash(stateInit));
+    }
+
+    function drain(address receiver) onlyOwner external pure {
+        tvm.accept();
+        receiver.transfer({ value: 0, flag: 128 });
     }
 
 }

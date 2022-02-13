@@ -1,14 +1,15 @@
 pragma ton-solidity >= 0.47.0;
 
-import "./TokenWallet.sol";
-import "./PBConstants.sol";
 import "./interfaces/ITokenRoot.sol";
 import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IGameHost.sol";
 import "./interfaces/IPBWallet.sol";
 
+import "./TokenWallet.sol";
+import "./PBConstants.sol";
+import "./RewardCalculatorShouldering.sol";
 
-contract PBGame is PBConstants {
+contract PBGame is PBConstants, RewardCalculatorShouldering {
 
     // PILE token info
     TvmCell static walletCode;
@@ -32,6 +33,7 @@ contract PBGame is PBConstants {
     uint128 tokensPerPut;
 
     mapping(address => PlayerInfo) public players;
+    mapping(address => uint16[]) public playerColors;
     mapping(uint8 => uint8[][]) public field;
     mapping(uint8 => uint8[][]) public template;
 
@@ -88,7 +90,7 @@ contract PBGame is PBConstants {
         );
     }
 
-    function onDeploy(address gameWallet) external {
+    function onDeploy(address gWallet) external {
     }
 
     function isImageComplete() public view returns (bool) {
@@ -144,14 +146,16 @@ contract PBGame is PBConstants {
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
 
-        PlayerInfo player = getPlayer(ownerAddress);
+        uint16[] pColors = playerColors[ownerAddress];
+        if (pColors.empty()) {
+            pColors = new uint16[](maxColors);
+        }
         uint16[] coloredTiles = getColoredTiles(tilesNum);
 
         for (uint16 i=0; i < maxColors; i++) {
-             player.tiles[i] = math.min(coloredTiles[i] + player.tiles[i], 1024);
+             pColors[i] = math.min(coloredTiles[i] + pColors[i], 1024);
         }
-        player.lastPutTime = now;
-        players[ownerAddress] = player;
+        playerColors[ownerAddress] = pColors;
     }
 
     /*
@@ -173,19 +177,18 @@ contract PBGame is PBConstants {
         PlayerInfo player = getPlayer(ownerAddress);
         bool isError = false;
 
-        (isError, player) = addTilesToField(tiles, player);
-        if (!isError) {
-            players[ownerAddress] = player;
-        }
+        isError = addTilesToField(tiles, ownerAddress);
+
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
     }
 
-    function completeGame() external internalMsg {
+    function completeGame(uint128 totalReward) external internalMsg {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
         //TODO: Implement money sharing with players
+        //calculateRewards(totalReward);
     }
 
 //
@@ -214,7 +217,7 @@ contract PBGame is PBConstants {
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(msg.sender, new uint16[](maxColors), 0, false, false, 0);
+            player = PlayerInfo(msg.sender, 0, false, false, 0);
         }
     }
 
@@ -240,7 +243,7 @@ contract PBGame is PBConstants {
         colorArr[4] += rest;
     }
 
-    function addTilesToField (ColorTile[] tiles, PlayerInfo player) private returns (bool, PlayerInfo) {
+    function addTilesToField (ColorTile[] tiles, address ownerAddress) private returns (bool) {
         bool isError = false;
         mapping(uint8 => uint8[][]) fieldTemp;
         uint32 remainingTilesTemp;
@@ -248,13 +251,21 @@ contract PBGame is PBConstants {
         fieldTemp = field;
         remainingTilesTemp = remainingTiles;
 
+        PlayerInfo player = getPlayer(ownerAddress);
+        uint16[] pColors = playerColors[ownerAddress];
+
+        if (pColors.empty()) {
+            isError = true;
+            return isError;
+        }
+
         for (ColorTile tile: tiles) {
             if ((template[tile.f][tile.y][tile.x] == tile.color)
             && (fieldTemp[tile.f][tile.y][tile.x] == 0)
-            && (player.tiles[tile.color - 1] > 0))
+            && (pColors[tile.color - 1] > 0))
             {
                 fieldTemp[tile.f][tile.y][tile.x] = tile.color;
-                player.tiles[tile.color - 1] -= 1;
+                pColors[tile.color - 1] -= 1;
                 remainingTilesTemp -= 1;
                 if (remainingTilesTemp == 1) {
                     player.isPrelast = true;
@@ -274,8 +285,10 @@ contract PBGame is PBConstants {
             player.captured += uint16(tiles.length);
             field = fieldTemp;
             remainingTiles = remainingTilesTemp;
+            players[ownerAddress] = player;
+            playerColors[ownerAddress] = pColors;
         }
-        return (isError, player);
+        return isError;
     }
 
     function getInfo() public view returns (GameInfo) {
@@ -292,23 +305,12 @@ contract PBGame is PBConstants {
         );
     }
 
-//
-//Only for testing
-//
-    function addTilesToFieldTest(ColorTile[] tiles) external onlyOwner returns (bool, PlayerInfo) {
-        //TODO: Remove this in prod!
-        tvm.accept();
-        tvm.log(format("Length: {}", tiles.length));
-        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
-        PlayerInfo player = PlayerInfo(address(0), colTiles, 0, false, false, 0);
-        return addTilesToField (tiles, player);
-    }
-
-    function addFakePlayer(address playerWallet) external onlyOwner {
+    function addFakePlayer(address playerAddress, address playerWallet) external onlyOwner {
         //TODO: Remove this in prod!
         tvm.accept();
         uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
-        players[address(0xe6fa82115b834d6a74810c6774aa32408abbcc72dfb20d4ca61750097f22b969)] = PlayerInfo(playerWallet, colTiles, 0, false, false, 0);
+        playerColors[playerAddress] = colTiles;
+        players[playerAddress] = PlayerInfo(playerWallet, 0, false, false, 0);
     }
 
     function saveImageFragmentTest(uint8 fragmentNum, uint8[][] tiles) external onlyOwner {
@@ -326,4 +328,9 @@ contract PBGame is PBConstants {
         template[fragmentNum] = tiles;
     }
 
+    function sendReward(address playerAddress, uint128 rewardValue) override internal {
+        tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
+
+
+    }
 }
