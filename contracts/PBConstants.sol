@@ -38,7 +38,7 @@ contract PBConstants {
     uint8 constant VERT_FRAGMENTS = 2;
     uint8 constant HORIZ_FRAGMENTS = 1;
 
-    uint128 constant MIN_PUT_AMOUNT = 1_999_000_000;
+    uint128 constant MIN_PUT_AMOUNT = 1_799_000_000;
     uint128 constant SERVICE_FEE = 500_000_000;
 
     uint8 constant MAX_PUT_PER_TURN = 50;

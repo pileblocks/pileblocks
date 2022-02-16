@@ -1,5 +1,8 @@
 pragma ton-solidity >= 0.47.0;
 
+pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+
 import "./PBConstants.sol";
 
 contract GameIndex is PBConstants {
@@ -8,7 +11,12 @@ contract GameIndex is PBConstants {
     uint32 static gameId;
 
     constructor(address _gameAddress) public {
-        require(msg.pubkey() == tvm.pubkey(), WRONG_PUBLIC_KEY);
+        optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
+        (address hostAddress) = optSalt
+            .get()
+            .toSlice()
+            .decode(address);
+        require(msg.sender == hostAddress, WRONG_PUBLIC_KEY);
         tvm.accept();
         gameAddress = _gameAddress;
     }

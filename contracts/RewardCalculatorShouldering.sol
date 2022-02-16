@@ -4,49 +4,22 @@ import "./interfaces/IPBGame.sol";
 
 abstract contract RewardCalculatorShouldering  {
 
-    mapping(address => PlayerInfo) public fakePlayers;
     mapping (Sortable => address)  mSortablePlayers;
 
     uint128 rewardCoeff;
     uint16 lastTile;
+    uint16 numberOfTiles;
 
     struct Sortable {
         uint16 value;
         int64 created;
     }
 
-    function generateFakePlayers(uint16 playerNum) public {
-        tvm.accept();
-        rnd.shuffle();
-
-        uint16 remainingTiles = 2048;
-
-        for (uint8 i=0; i < playerNum; i++) {
-            uint256 addr = rnd.next();
-            uint64 lastPut = rnd.next(uint64(100));
-            uint16 captured = rnd.next(uint16(600));
-            if (remainingTiles < captured) {
-                captured = remainingTiles;
-                remainingTiles = 0;
-            }
-            else {
-                remainingTiles -= captured;
-            }
-            address playerAddress= address.makeAddrStd(0, addr);
-            fakePlayers[playerAddress] = PlayerInfo(playerAddress, captured, false, false, lastPut);
-            rnd.shuffle();
-            if (remainingTiles == 0) {
-                return;
-            }
-        }
-    }
-    function calculateRewards(uint128 totalReward) external returns(address[]){
-        //TODO: remove on prod + make internal
-        tvm.accept();
-
-        rewardCoeff = (totalReward / 10235) * 10;
+    function calculateRewards(uint128 totalReward, uint16 _numberOfTiles) internal returns(address[]){
+        numberOfTiles = _numberOfTiles;
+        rewardCoeff = totalReward * 2 / (numberOfTiles - 1);
+        tvm.log(format("rewardCoeff: {}", rewardCoeff));
         lastTile = 0;
-
         RewardCalculatorShouldering(this).fillSortable{value: 0, flag: 128}(address(0));
     }
 
@@ -54,12 +27,13 @@ abstract contract RewardCalculatorShouldering  {
         require(msg.sender == address(this), 1110);
         bool success;
         optional(address, PlayerInfo) fPlayer;
+        mapping(address => PlayerInfo) tempPlayers = getPlayers();
 
         if (startPlayerAddress.value == 0) {
-            fPlayer = fakePlayers.min();
+            fPlayer = tempPlayers.min();
         }
         else {
-            fPlayer = fakePlayers.next(startPlayerAddress);
+            fPlayer = tempPlayers.next(startPlayerAddress);
         }
         success = fPlayer.hasValue();
 
@@ -67,7 +41,7 @@ abstract contract RewardCalculatorShouldering  {
             if (success) {
                 (address pAddress, PlayerInfo pInfo) = fPlayer.get();
                 mSortablePlayers[Sortable(pInfo.captured, -int64(pInfo.lastPutTime))] = pAddress;
-                fPlayer = fakePlayers.next(pAddress);
+                fPlayer = tempPlayers.next(pAddress);
                 startPlayerAddress = pAddress;
                 success = fPlayer.hasValue();
             }
@@ -117,11 +91,13 @@ abstract contract RewardCalculatorShouldering  {
     }
 
     function getRewardPerCaptured(uint16 capturedTiles) internal returns (uint128) {
-        uint128 reward = uint128(capturedTiles) * (2048 * 2 - uint128(capturedTiles + 1 + 2 * lastTile)) * (rewardCoeff / (2048 * 2));
+        uint128 reward = uint128(capturedTiles) * (numberOfTiles * 2 - uint128(capturedTiles + 1 + 2 * lastTile)) * (rewardCoeff / (numberOfTiles * 2));
         lastTile += capturedTiles;
         return reward;
     }
 
     function sendReward(address playerAddress, uint128 rewardValue) virtual internal;
+
+    function getPlayers() virtual internal returns(mapping(address => PlayerInfo));
 }
 

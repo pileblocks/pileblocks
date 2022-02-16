@@ -1,5 +1,8 @@
 pragma ton-solidity >= 0.47.0;
 
+import "./PBStructs.sol";
+
 interface IPBWallet {
-    function claimTiles() external responsible returns (address, uint16);
+    function claimTiles(address gameAddress) external;
+    function putTiles(address genesis, address gameHost, address gameAddress, uint128 tokensNum, ColorTile[] tiles) external;
 }

@@ -1,5 +1,8 @@
 pragma ton-solidity >= 0.47.0;
 
+pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+
 import "./PBGame.sol";
 import "./GameIndex.sol";
 
@@ -48,7 +51,6 @@ contract GameHost is PBConstants {
     }
 
     function onDeploy(address gameWallet) external {
-        tvm.log(format("Really, the host wallet: {}", gameWallet));
     }
 
     function onGetWalletAddress(address _walletAddress) external internalMsg {
@@ -69,7 +71,9 @@ contract GameHost is PBConstants {
     }
 
     function getIndexCode() private view returns (TvmCell) {
-        return indexCode;
+        TvmBuilder salt;
+        salt.store(address(this));
+        return tvm.setCodeSalt(indexCode, salt.toCell());
     }
 
     /*
@@ -100,9 +104,11 @@ contract GameHost is PBConstants {
     */
     function activateGame(address gameAddress) external externalMsg onlyOwner {
         tvm.accept();
-        IPBGame(gameAddress).setGameStatus(STATUS_GAME_ACTIVE);
+        tvm.log(format("Sending status {} to the game", STATUS_GAME_ACTIVE));
+        IPBGame(gameAddress).setGameStatus{value: 0.1 ton}(STATUS_GAME_ACTIVE);
         if (currentGameId == 1) {
             deployIndex(currentGameId, gameAddress);
+            nextGameAddress = address(0);
         }
         else {
             nextGameAddress = gameAddress;
@@ -110,11 +116,20 @@ contract GameHost is PBConstants {
         currentGameId += 1;
     }
 
-    function deployGame(address imageOwner, uint24[] _renderSettings) external returns (address) {
-        //TODO: Remove after testing in favor of msg.value
-        // imageOwner we then can take from msg.sender
+    /*
+        @notice Forces to run a game.
+        @dev Use this in the situation, when no game was activated before the completion of the previous round
+        @dev Firstly run activateGame, and then runGame
+    */
+    function runGame() external externalMsg onlyOwner {
         tvm.accept();
-        //tvm.rawReserve(address(this).balance - msg.value, 2);
+        if (nextGameAddress.value != 0) {
+            deployIndex(currentGameId - 1, nextGameAddress);
+        }
+    }
+
+    function deployGame(uint24[] _renderSettings) external responsible returns (address) {
+        address imageOwner = msg.sender;
         TvmCell stateInit = tvm.buildStateInit({
             contr: PBGame,
             varInit: {
@@ -129,7 +144,7 @@ contract GameHost is PBConstants {
         address game = new PBGame{
             stateInit: stateInit,
             value: 0,
-            flag: 128
+            flag: 64
         }(_renderSettings);
         tvm.log(format("New game: {}", game));
         return game;
@@ -146,7 +161,7 @@ contract GameHost is PBConstants {
         });
         address index = new GameIndex{
             stateInit: stateInit,
-            value: 0.1 ton,
+            value: 0.2 ton,
             flag: 1
         }(gameAddress);
         tvm.log(format("New index: {}", index));
@@ -158,8 +173,11 @@ contract GameHost is PBConstants {
             require(gameInfo.gameHost == address(this), INVALID_GAME_HOST);
             require(gameInfo.status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
 
-            deployIndex(currentGameId, nextGameAddress);
-            nextGameAddress = address(0);
+            // Auto-start the new game if it was selected
+            if (nextGameAddress.value != 0) {
+                deployIndex(currentGameId - 1, nextGameAddress);
+                nextGameAddress = address(0);
+            }
 
             TvmCell payload;
             ITokenWallet(walletAddress).transferToWallet{value: 0.3 ton}(

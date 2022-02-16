@@ -1,9 +1,11 @@
 pragma ton-solidity >= 0.47.0;
 
+pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+
 import "./interfaces/ITokenRoot.sol";
 import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IGameHost.sol";
-import "./interfaces/IPBWallet.sol";
 
 import "./TokenWallet.sol";
 import "./PBConstants.sol";
@@ -20,7 +22,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     address static imageOwner;
 
     address gameWallet;
-    uint32 remainingTiles;
+    uint16 remainingTiles;
     uint32 gameId;
     address gameHost;
     uint8 status;
@@ -71,7 +73,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         maxColors = uint8(renderSettings[3]);
 
         status = STATUS_GAME_DRAFT;
-        uint32 numFragments = vertFragments * horizFragments;
+        uint8 numFragments = vertFragments * horizFragments;
         for (uint8 n=0; n < numFragments; n++) {
             uint8[][] fieldPiece;
             for (uint8 i=0; i < ROW_COUNT; i++) {
@@ -82,7 +84,8 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
 
         gameWallet = getWalletAddress(address(this));
         tvm.log(format("Game wallet: {}", gameWallet));
-        remainingTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(numFragments);
+        remainingTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(numFragments);
+        tvm.log(format("remainingTiles: {}", remainingTiles));
 
         ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: PBGame.onDeploy}(
             address(this),
@@ -124,6 +127,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         if (isImageComplete()) {
             status = STATUS_GAME_IMAGE_READY;
         }
+        msg.sender.transfer(0, false, 64);
     }
 
     /*
@@ -149,6 +153,8 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         uint16[] pColors = playerColors[ownerAddress];
         if (pColors.empty()) {
             pColors = new uint16[](maxColors);
+            //TODO: remove
+            pColors[0] = 1000;
         }
         uint16[] coloredTiles = getColoredTiles(tilesNum);
 
@@ -169,7 +175,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum) external {
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
-        require(msg.value > MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
+        require(msg.value >= MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
         require(tokensNum == tokensPerPut, INVALID_TOKENS_PER_PUT);
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
         // Reserve a fee per put
@@ -178,7 +184,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         bool isError = false;
 
         isError = addTilesToField(tiles, ownerAddress);
-
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
@@ -188,7 +193,9 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function completeGame(uint128 totalReward) external internalMsg {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
         //TODO: Implement money sharing with players
-        //calculateRewards(totalReward);
+        uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
+        tvm.log(format("_totalTiles: {}", _totalTiles));
+        calculateRewards(totalReward, _totalTiles);
     }
 
 //
@@ -246,8 +253,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function addTilesToField (ColorTile[] tiles, address ownerAddress) private returns (bool) {
         bool isError = false;
         mapping(uint8 => uint8[][]) fieldTemp;
-        uint32 remainingTilesTemp;
-
+        uint16 remainingTilesTemp;
         fieldTemp = field;
         remainingTilesTemp = remainingTiles;
 
@@ -258,7 +264,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
             isError = true;
             return isError;
         }
-
         for (ColorTile tile: tiles) {
             if ((template[tile.f][tile.y][tile.x] == tile.color)
             && (fieldTemp[tile.f][tile.y][tile.x] == 0)
@@ -279,7 +284,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
                 break;
             }
         }
-
         if (!isError) {
             player.lastPutTime = now;
             player.captured += uint16(tiles.length);
@@ -305,32 +309,11 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         );
     }
 
-    function addFakePlayer(address playerAddress, address playerWallet) external onlyOwner {
-        //TODO: Remove this in prod!
-        tvm.accept();
-        uint16[] colTiles = [uint16(1000),uint16(1000),uint16(1000),uint16(1000),uint16(1000)];
-        playerColors[playerAddress] = colTiles;
-        players[playerAddress] = PlayerInfo(playerWallet, 0, false, false, 0);
-    }
-
-    function saveImageFragmentTest(uint8 fragmentNum, uint8[][] tiles) external onlyOwner {
-        //TODO: Remove this in prod!
-        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
-        require(fragmentNum < uint8(vertFragments * horizFragments), WRONG_FRAGMENT_COUNT);
-        require(tiles.length == ROW_COUNT, WRONG_NUM_ROWS);
-        tvm.accept();
-        for (uint8 i=0; i < ROW_COUNT; i++) {
-            require(tiles[i].length == COL_COUNT, WRONG_NUM_COLS);
-            for (uint8 j=0; j < COL_COUNT; j++) {
-                require(tiles[i][j] > 0 && tiles[i][j] <= maxColors, WRONG_TILE_COLOR);
-            }
-        }
-        template[fragmentNum] = tiles;
-    }
-
     function sendReward(address playerAddress, uint128 rewardValue) override internal {
         tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
+    }
 
-
+    function getPlayers() override internal returns (mapping(address => PlayerInfo)) {
+        return players;
     }
 }

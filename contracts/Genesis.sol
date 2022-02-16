@@ -33,7 +33,7 @@ contract Genesis is PBConstants {
     ) onlyOwner external view
     {
         tvm.accept();
-        ITransferableOwnership(tokenRoot).transferOwnership(
+        ITransferableOwnership(tokenRoot).transferOwnership{0.3 ton}(
             newOwner,
             address(this),
             emptyMap
