@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="200" height="200" rx="25" fill="#282846"/>
+<line x1="35.5" y1="71" x2="35.5" y2="120" stroke="#FED049" stroke-width="9"/>
+<line x1="55.5" y1="100" x2="55.5" y2="71" stroke="#FED049" stroke-width="9"/>
+<line x1="33" y1="95.5" x2="60" y2="95.5" stroke="#FED049" stroke-width="9"/>
+<line x1="34" y1="75.5" x2="60" y2="75.5" stroke="#FED049" stroke-width="9"/>
+<line x1="145.5" y1="71" x2="145.5" y2="120" stroke="#FED049" stroke-width="9"/>
+<line x1="105.5" y1="71" x2="105.5" y2="120" stroke="#FED049" stroke-width="9"/>
+<line x1="130" y1="115.5" x2="102" y2="115.5" stroke="#FED049" stroke-width="9"/>
+<line x1="170" y1="115.5" x2="142" y2="115.5" stroke="#FED049" stroke-width="9"/>
+<line x1="170" y1="95.5" x2="142" y2="95.5" stroke="#FED049" stroke-width="9"/>
+<line x1="170" y1="75.5" x2="142" y2="75.5" stroke="#FED049" stroke-width="9"/>
+<line x1="75.5" y1="71" x2="75.5" y2="120" stroke="#FED049" stroke-width="9"/>
+<rect width="200" height="200" rx="25" fill="url(#pattern0)"/>
+<defs>
+<pattern id="pattern0" patternContentUnits="objectBoundingBox" width="0.05" height="0.05">
+<use xlink:href="#image0_1_5" transform="scale(0.0025)"/>
+</pattern>
+<image id="image0_1_5" width="20" height="20" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAqSURBVHgB7cwxAQAACMOwgRAOLvwbBBPjawQkqmfl5A5TZoSEhISET+EBvjIC9G/ZLhMAAAAASUVORK5CYII="/>
+</defs>
+</svg>
