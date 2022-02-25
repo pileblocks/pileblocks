@@ -1,0 +1,14 @@
+[ignore]
+<PROJECT_ROOT>/contracts/.*
+<PROJECT_ROOT>/src/assets/.*
+<PROJECT_ROOT>/public/.*
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+module.file_ext=.vue
+module.file_ext=.js
+[strict]

@@ -1,0 +1,5 @@
+15:44:00 [ERROR] Create run message failed: Invalid name: fetch
+15:44:02 [ERROR] Create run message failed: Invalid name: fetch
+15:44:02 [ERROR] Contract execution was terminated with error: Unknown error, exit code: 52
+Tip: If this error occurs in 100% cases then you specified the wrong ABI. If it appears occasionally then the contract supports timestamp-based replay protection and does not allow to call it so often (call it with 5 seconds timeout). (Replay protection exception). Try again.
+Tip: For more information about exit code check the contract source code or ask the contract developer

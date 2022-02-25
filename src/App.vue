@@ -16,20 +16,7 @@
       </div>
     </div>
     <div id="field">
-      <div class="stat-block text-left pl-3 pl-md-5 field-stats">
-        <p class="mb-0"><small>YOU CAPTURED:</small> 344</p>
-        <p class="mb-0"><small>REMAINING:</small> 1284</p>
-        <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
-      </div>
-      <div class="pb-containers">
-          <div class="d-flex mb-2 justify-content-center">
-            <b-button size="sm"><i class="bi bi-arrow-left"></i></b-button>
-            <p class="lead fragment-number mb-0 ml-2">1 of 16</p>
-          </div>
-          <div class="pb-container" v-for="(item, index) in items" :key="genIndex(index)">
-            <tile v-for="(item, index) in items" :key="index" :color="getColor()"></tile>
-          </div>
-      </div>
+        <router-view/>
     </div>
     <div id="bottom-menu" class="stat-block mt-2">
       <div id="pile-colors">
@@ -52,29 +39,13 @@
 </template>
 
 <script>
+// @flow
+//import Tile from "@/components/Tile";
 
-import Tile from "@/components/Tile";
-
-export default {
-  name: 'App',
-  data: function () {
-    return {
-      items: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      itemsHeight: [0, 0, 0, 0, 0, 0, 0, 0]
-    }
-  },
-  methods: {
-    genIndex: function () {
-        return Math.floor(Math.random() * 100000);
-    },
-    getColor: function () {
-        return Math.floor(Math.random() * 4) + 1;
-    }
-  },
-  components: {
-    Tile
-  }
+const App: {} = {
+  name: 'App'
 }
+export default App;
 </script>
 
 <style>
@@ -83,16 +54,9 @@ export default {
   grid-row: 2;
   overflow-y: scroll;
   margin-top: 0.5em;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
 }
 
 @media (min-width: 576px) {
-  #field {
-    justify-content: flex-start;
-  }
-
   body {
     height: 100vh;
   }
