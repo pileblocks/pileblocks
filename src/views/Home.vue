@@ -1,23 +1,18 @@
 <template>
-    <fragment>
-        <div id="field-parts-wrapper">
-            <div class="stat-block text-left field-stats">
-                <p class="mb-0"><small>YOU CAPTURED:</small> 344</p>
-                <p class="mb-0"><small>REMAINING:</small> 1284</p>
-                <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
-            </div>
-            <div class="d-flex flex-row justify-content-center">
-                <!--
-                <field-part :fragmentNumbers="[0,1,2,3]" :fragmentsCount="2"></field-part>
-                -->
-
-                <div v-for="index in 2" :key="index" class="d-grid">
-                    <field-part v-for="item in getPartsArray(totalFieldFragments, index)" :fragmentNumbers="item" :fragmentsCount="1" :key="_genKey(item)"></field-part>
-                </div>
-
-            </div>
+    <div id="field-parts-wrapper">
+        <div class="stat-block text-left field-stats">
+            <router-link :to="{ name: 'FieldTilesPart', params: { } }"><p class="mb-0"><small>YOU CAPTURED:</small> 344</p></router-link>
+            <p class="mb-0"><small>REMAINING:</small> 1284</p>
+            <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
         </div>
-    </fragment>
+        <div class="d-flex flex-row justify-content-center">
+
+            <div v-for="index in 2" :key="index" class="d-grid">
+                <field-part v-for="item in getPartsArray(totalFieldFragments, index)" :fragmentNumbers="item" :fragmentsCount="1" :key="_genKey(item)"></field-part>
+            </div>
+
+        </div>
+    </div>
 </template>
 
 <script>
@@ -25,7 +20,7 @@
 
 import FieldPart from "../components/FieldPart";
 
-const FieldParts: {} = {
+const Home: {} = {
     name: "FieldParts",
     data: function () {
         return {
@@ -58,7 +53,7 @@ const FieldParts: {} = {
         this.totalFieldFragments = this.$store.state.Game.totalFieldFragments;
     }
 }
-export default FieldParts;
+export default Home;
 </script>
 
 <style scoped>

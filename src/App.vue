@@ -199,4 +199,8 @@ body {
   justify-content: center;
 }
 
+.d-contents {
+    display: contents;
+}
+
 </style>

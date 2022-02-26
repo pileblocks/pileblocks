@@ -1,13 +1,27 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import FieldParts from '../views/FieldParts'
+import Home from '../views/Home'
+import FieldTilesPart from '../views/FieldTilesPart'
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: '/',
-    name: 'FieldParts',
-    component: FieldParts
+    name: 'Home',
+    component: Home
+  },
+  {
+    path: '/field/fragments/:items*',
+    name: 'FieldTilesPart',
+    component: FieldTilesPart,
+    props(route) {
+        if (Array.isArray(route.params.items)) {
+            return {items: route.params.items};
+        }
+        else {
+            return {items: route.params.items.split("/")};
+        }
+    }
   }
 ]
 

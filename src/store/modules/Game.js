@@ -15,6 +15,8 @@ export const Game: {
     actions: {},
 
     getters: {
-
+        getField: (state) => {
+            return state.field
+        }
     }
 };

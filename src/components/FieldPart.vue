@@ -1,7 +1,7 @@
 <template>
-    <fragment>
-        <canvas ref="fieldImage" width="80" v-bind:height="fragmentsCount * 80" style="border: 1px solid var(--primary);"></canvas>
-    </fragment>
+        <router-link :to="{ name: 'FieldTilesPart', params: {items: this.fragmentNumbers} }" class="d-inline-flex">
+            <canvas ref="fieldImage" width="80" v-bind:height="fragmentsCount * 80" style="border: 1px solid var(--primary);"></canvas>
+        </router-link>
 </template>
 
 <script>
