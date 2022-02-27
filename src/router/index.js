@@ -19,7 +19,7 @@ const routes = [
             return {items: route.params.items};
         }
         else {
-            return {items: route.params.items.split("/")};
+            return {items: route.params.items.split("/").map((item) => parseInt(item))};
         }
     }
   }

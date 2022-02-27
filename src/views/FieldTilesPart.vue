@@ -2,11 +2,13 @@
     <div>
         <div class="d-flex mb-2 justify-content-center">
             <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
-            <p class="lead fragment-number mb-0 ml-2">{{ currentFragment }} of 8</p>
+            <p class="lead fragment-number mb-0 ml-2">{{ currentFragment() }} of 8</p>
         </div>/
-        <div v-for="fragment in fragmentNums" :key="fragment">
-            <div class="pb-container" v-for="(row, rowindex) in _getFieldFragment(fragment)" :key="genIndex(rowindex)">
-                <tile v-for="(col, colindex) in row" :key="colindex" :color="_getColor(fragment, rowindex, colindex)"></tile>
+        <div v-for="fragment in this.items" :key="fragment">
+            <div class="pb-container" v-for="(row, rowindex) in _getFieldFragment(fragment)" :key="genIndex(fragment, rowindex, 0)">
+                <div v-for="(col, colindex) in row" :key="genIndex(fragment, rowindex, colindex)" v-on:click.capture="parentClick" class="d-inline">
+                    <tile :color="_getColor(fragment, rowindex, colindex)"></tile>
+                </div>
             </div>
 
         </div>
@@ -14,42 +16,43 @@
 </template>
 
 <script>
-import Tile from '@/components/Tile';
+// @flow
+import Tile from "../components/Tile";
 
-export default {
+const FieldTilesPart = {
     name: "FieldTilesPart",
-    data: function () {
+    data: function (): {} {
         return {
         }
     },
+    props: {
+      items: Array
+    },
     methods: {
-        genIndex: function () {
-            return Math.floor(Math.random() * 100000);
+        genIndex: function (fragment:number, row:number, col:number):number {
+            return fragment * 1000 + row * 100 + col;
         },
-        getColor: function () {
-            return Math.floor(Math.random() * 4) + 1;
+        _getFieldFragment: function (fragment: number):Array<Array<number>> {
+            return this.$store.state.Game.field[fragment.toString()];
         },
-        _getFieldFragment: function (fragment) {
-            return this.$store.state.Game.field[fragment];
+        _getColor: function (fragment: number, row: number , col: number):number {
+            return this.$store.state.Game.field[fragment.toString()][row][col];
         },
-        _getColor: function (fragment, row, col) {
-            return this.$store.state.Game.field[fragment][row][col];
+        parentClick: function (event: Object) {
+          console.log("Parent click");
+          event.stopPropagation();
+        },
+        currentFragment: function ():number {
+            return Math.ceil(this.items[1] / 2);
         }
     },
     components: {
         Tile
     },
     mounted() {
-    },
-    computed: {
-        fragmentNums: function ():Array<number> {
-            return this.$route.params.items;
-        },
-        currentFragment: function ():Array<number> {
-            return Math.ceil(this.$route.params.items[1] / 2);
-        }
     }
 }
+export default FieldTilesPart;
 </script>
 
 <style scoped>
