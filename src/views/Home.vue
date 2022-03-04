@@ -1,16 +1,16 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats">
-            <router-link :to="{ name: 'FieldTilesPart', params: { } }"><p class="mb-0"><small>YOU CAPTURED:</small> 344</p></router-link>
+            <p class="mb-0" v-on:click="updateColors"><small>YOU CAPTURED:</small> 344
+            </p>
             <p class="mb-0"><small>REMAINING:</small> 1284</p>
             <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
         </div>
         <div class="d-flex flex-row justify-content-center">
-
             <div v-for="index in 2" :key="index" class="d-grid">
-                <field-part v-for="item in getPartsArray(totalFieldFragments, index)" :fragmentNumbers="item" :fragmentsCount="1" :key="_genKey(item)"></field-part>
+                <field-part v-for="item in getPartsArray(totalFieldFragments, index)" :fragmentNumbers="item"
+                            :fragmentsCount="1" :key="_genKey(item)"></field-part>
             </div>
-
         </div>
     </div>
 </template>
@@ -28,8 +28,11 @@ const Home: {} = {
         }
     },
     methods: {
-        _genKey(item:Array<number>):string {
+        _genKey(item: Array<number>): string {
             return item.join("/");
+        },
+        updateColors: function () {
+            this.$store.commit('PlayerInfo/updateColors', [1, 2, 3, 4, 5]);
         },
         getPartsArray: function (numberOfFragments: number, part: number): Array<Array<number>> {
             let fragments: Array<number> = Array.from(Array(numberOfFragments).keys());

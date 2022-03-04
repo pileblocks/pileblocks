@@ -1,59 +1,67 @@
 <template>
-  <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass">{{color}}</div>
+    <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass">{{ color }}</div>
 </template>
 
 <script>
 export default {
-  name: "Tile",
-  props: {
-    color: Number
-  },
-  data: function() {
-    return {
-      showColor: false
+    name: "Tile",
+    props: {
+        color: Number,
+        isPut: Boolean
+    },
+    data: function () {
+        return {
+            filled: false
+        }
+    },
+    methods: {
+        toggleColor: function () {
+            if (!this.isPut) {
+                this.filled = !this.filled;
+                navigator.vibrate(10);
+                console.log("Changed!");
+            }
+
+        }
+    },
+    computed: {
+        getColorClass: function () {
+            if (this.filled) {
+                if (this.$props.color === 5)
+                    return "filled-tile filled-tile-light color-" + this.$props.color;
+                return "filled-tile color-" + this.$props.color;
+            } else {
+                return ""
+            }
+        }
+    },
+    mounted() {
+        this.filled = this.isPut;
     }
-  },
-  methods: {
-    toggleColor: function () {
-      this.showColor = !this.showColor;
-      console.log("Changed!");
-    }
-  },
-  computed: {
-    getColorClass: function () {
-      if (this.showColor) {
-        return "grey-" + this.$props.color;
-      }
-      else {
-        return ""
-      }
-    }
-  }
 
 }
 </script>
 
 <style scoped>
-.grey-2 {
-  background-color: #345B63 !important;
-  color: transparent;
-  background-image: url("/assets/tile-bg.svg");
-  background-repeat: repeat;
-  background-position: center;
-}
-.grey-4 {
-  background-color: #42b983 !important;
-  background-image: url("/assets/tile-bg.svg");
-  background-repeat: repeat;
-  background-position: center;
-  color: transparent;
+.pb-tile {
+    width: 19px;
+    height: 19px;
+    background-color: rgb(254, 208, 73);
+    margin: 1px;
+    padding-top: 3px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
 }
 
-.grey-3 {
-  background-color: red !important;
-  background-image: url("/assets/tile-bg.svg");
-  background-repeat: repeat;
-  background-position: center;
-  color: transparent;
+.filled-tile {
+    color: transparent;
+    background-image: url("~@/assets/tile-bg.svg");
+    background-repeat: repeat;
+    background-position: center;
+}
+
+.filled-tile-light {
+    background-image: url("~@/assets/tile-bg-light.svg");
 }
 </style>
