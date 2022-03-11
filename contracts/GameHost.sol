@@ -91,7 +91,7 @@ contract GameHost is PBConstants {
     /*
         @notice Updates the game code without changing the game host address.
         @dev Use this to launch modified games under the same host.
-        @param gameId - ID of a game one wants to deploy
+        @param _gameCode - the new game code
     */
     function setGameCode(TvmCell _gameCode) external externalMsg onlyOwner {
         tvm.accept();
@@ -229,6 +229,7 @@ contract GameHost is PBConstants {
     }
 
     function drain(address receiver) onlyOwner external pure {
+        //TODO: Add drain tokens to the host and to the game
         tvm.accept();
         receiver.transfer({ value: 0, flag: 128 });
     }

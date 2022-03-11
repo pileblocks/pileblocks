@@ -1,29 +1,11 @@
 <template>
     <div id="app" class="game-container">
-        <div id="top-menu" class="stat-block">
-            <div id="top-menu-logo">
-                <div id="color-1" class="color-1"></div>
-                <div id="color-2" class="color-2"></div>
-                <div id="color-3" class="color-3"></div>
-                <div id="color-4" class="color-4"></div>
-                <div id="color-5" class="color-5"></div>
-                <img src="./assets/logo.svg" alt="PileBlocks" class="logo-img"/>
-            </div>
-            <div id="top-menu-player-info">
-                <p class="mb-0">Balance: 1120<small>.75</small></p>
-                <p class="mb-0">Your Reward: 310<small>.00</small> (<span class="high-procent">38.5%</span>)</p>
-            </div>
-            <div id="top-menu-game-stats">
-                <b-button size="sm" variant="primary"><i class="bi bi-person-lines-fill"></i> 12</b-button>
-            </div>
-            <div id="top-menu-game-reload">
-                <b-button size="sm" variant="primary"><i class="bi bi-arrow-clockwise"></i></b-button>
-            </div>
-        </div>
+        <top-menu id="top-menu" class="stat-block"/>
         <div id="field">
             <router-view/>
         </div>
         <bottom-menu id="bottom-menu"/>
+        <toast-manager></toast-manager>
     </div>
 </template>
 
@@ -31,9 +13,11 @@
 // @flow
 
 import BottomMenu from "./components/BottomMenu";
+import ToastManager from "@/components/ToastManager";
+import TopMenu from "@/components/TopMenu";
 const App: {} = {
     name: 'App',
-    components: {BottomMenu},
+    components: {TopMenu, ToastManager, BottomMenu},
     computed: {
     }
 }
@@ -73,7 +57,7 @@ body {
 #top-menu {
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 2fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 3fr;
     border-bottom-color: #fefefe;
     border-bottom-style: solid;
     border-bottom-width: 1px;
@@ -87,6 +71,10 @@ body {
     font-family: 'Bebas Neue', cursive;
 }
 
+.fancy-font {
+    font-family: 'Bebas Neue', cursive;
+}
+
 #top-menu-logo {
     grid-row: 1;
     grid-column: 1;
@@ -96,7 +84,8 @@ body {
 
 #top-menu-player-info {
     grid-row: 1;
-    grid-column: 3;
+    grid-column: 4;
+    padding-right: 5px;
 }
 
 #top-menu-game-stats {
@@ -108,7 +97,7 @@ body {
 
 #top-menu-game-reload {
     grid-row: 1;
-    grid-column: 4;
+    grid-column: 3;
     display: flex;
     justify-content: center;
 }
@@ -169,22 +158,27 @@ body {
 
 .color-1 {
     background-color: #fefefe !important;
+    color: #1e2228;
 }
 
 .color-2 {
     background-color: #aab0bc !important;
+    color: #fefefe;
 }
 
 .color-3 {
     background-color: #60697b !important;
+    color: #fefefe;
 }
 
 .color-4 {
     background-color: #2f353a !important;
+    color: #fefefe;
 }
 
 .color-5 {
     background-color: #1e2228 !important;
+    color: #fefefe;
 }
 
 </style>

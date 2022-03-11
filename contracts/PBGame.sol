@@ -9,7 +9,7 @@ import "./interfaces/IGameHost.sol";
 
 import "./TokenWallet.sol";
 import "./PBConstants.sol";
-import "./RewardCalculatorShouldering.sol";
+import "./abstract/RewardCalculatorShouldering.sol";
 
 contract PBGame is PBConstants, RewardCalculatorShouldering {
 
@@ -96,18 +96,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function onDeploy(address gWallet) external {
     }
 
-    function isImageComplete() public view returns (bool) {
-        uint8 frNum = uint8(vertFragments * horizFragments);
-        uint8[] fragmentArr;
-
-        for ((uint8 id, ): template) {
-            fragmentArr.push(id);
-        }
-        if (fragmentArr.length == frNum) {
-            return true;
-        }
-        return false;
-    }
 
     function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external internalMsg onlyImageOwner {
         require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
@@ -201,6 +189,19 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
 //
 //        Service functions
 //
+
+    function isImageComplete() public view returns (bool) {
+        uint8 frNum = uint8(vertFragments * horizFragments);
+        uint8[] fragmentArr;
+
+        for ((uint8 id, ): template) {
+            fragmentArr.push(id);
+        }
+        if (fragmentArr.length == frNum) {
+            return true;
+        }
+        return false;
+    }
 
     /*
         @notice Derive token wallet contract address from owner credentials
@@ -316,4 +317,37 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function getPlayers() override internal returns (mapping(address => PlayerInfo)) {
         return players;
     }
+
+    function generateFakePlayers(uint16 playerNum) public {
+        tvm.accept();
+        rnd.shuffle();
+        //TODO: Remove this in prod!
+
+        for (uint8 i=0; i < playerNum; i++) {
+            uint256 addr = rnd.next();
+            uint64 lastPut = rnd.next(uint64(100));
+            uint16 captured = rnd.next(uint16(100));
+            if (remainingTiles < captured) {
+                captured = remainingTiles;
+                remainingTiles = 0;
+            }
+            else {
+                remainingTiles -= captured;
+            }
+            address playerAddress= address.makeAddrStd(0, addr);
+            players[playerAddress] = PlayerInfo(playerAddress, captured, false, false, lastPut);
+            rnd.shuffle();
+            if (remainingTiles == 0) {
+                return;
+            }
+        }
+    }
+
+    function cGame(uint128 totalReward) external {
+        tvm.accept();
+        uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
+        tvm.log(format("_totalTiles: {}", _totalTiles));
+        calculateRewards(totalReward, _totalTiles);
+    }
+
 }

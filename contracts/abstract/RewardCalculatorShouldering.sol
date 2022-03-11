@@ -1,6 +1,6 @@
 pragma ton-solidity >= 0.57.0;
 
-import "./interfaces/IPBGame.sol";
+import "../interfaces/IPBGame.sol";
 
 abstract contract RewardCalculatorShouldering  {
 

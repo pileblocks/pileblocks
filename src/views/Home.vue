@@ -1,7 +1,7 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats">
-            <p class="mb-0" v-on:click="updateColors"><small>YOU CAPTURED:</small> 344
+            <p class="mb-0" v-on:click="updateStandings"><small>YOU CAPTURED:</small> 344
             </p>
             <p class="mb-0"><small>REMAINING:</small> 1284</p>
             <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
@@ -28,11 +28,11 @@ const Home: {} = {
         }
     },
     methods: {
-        _genKey(item: Array<number>): string {
+        _genKey: function (item: Array<number>): string {
             return item.join("/");
         },
-        updateColors: function () {
-            this.$store.commit('PlayerInfo/updateColors', [1, 2, 3, 4, 5]);
+        updateStandings: function () {
+            this.$store.commit('Game/calculateRewards');
         },
         getPartsArray: function (numberOfFragments: number, part: number): Array<Array<number>> {
             let fragments: Array<number> = Array.from(Array(numberOfFragments).keys());
@@ -54,6 +54,7 @@ const Home: {} = {
     },
     mounted: function () {
         this.totalFieldFragments = this.$store.state.Game.totalFieldFragments;
+        this.$store.commit('Game/updateIsMainScreen', true);
     }
 }
 export default Home;
