@@ -1,5 +1,6 @@
 // @flow
 import Vue from 'vue';
+import {colors} from "@/store/modules/consts";
 export const PlayerInfo: {
     state: {
         walletAddress: string,
@@ -9,13 +10,14 @@ export const PlayerInfo: {
 } = {
     namespaced: true,
     state: {
+        playerAddress: "0:aaaa9dae49ed47b44d71bc89d282f2765230395f5f127849c33a20da52611578",
         walletAddress: "0:aaaa9dae49ed47b44d71bc89d282f2765230395f5f127849c33a20da52611577",
-        colors: [9, 4, 1, 2, 8],
+        colors: JSON.parse(JSON.stringify(colors)),
         currentColor: 1
     },
     mutations: {
-        updateColors(state, newColors) {
-            state.colors = newColors;
+        updateColors(state) {
+            state.colors = JSON.parse(JSON.stringify(colors));
         },
         updateWalletAddress(state, newWalletAddress) {
             state.walletAddress = newWalletAddress;

@@ -6,12 +6,12 @@
             </div>
         </div>
         <div id="claim-tiles">
-            <div v-if="!tilesArePut && isMainScreen">
+            <div v-if="isMainScreen">
                 <b-button size="lg" variant="primary">Claim <small>1011</small></b-button>
             </div>
-            <div v-if="tilesArePut" class="d-flex flex-column mt-2">
+            <div v-if="tilesArePut && !isMainScreen" class="d-flex flex-column mt-1">
                 <b-button size="lg" variant="primary">Put <small>{{ this.$store.state.Game.tilesToPut.length }}</small></b-button>
-                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut"><i class="bi bi-x-circle"></i></b-button>
+                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut">Cancel <i class="bi bi-x-circle"></i></b-button>
             </div>
         </div>
     </div>
@@ -32,7 +32,10 @@ export default {
         },
         cancelPut: function() {
             this.$store.commit('Game/cancelPut');
-            //this.$router.go();
+            this.$store.commit('PlayerInfo/updateColors');
+            this.$store.commit('Game/updateStandings');
+            this.$store.commit('Game/calculateRewards');
+            //TODO: update the remaining tiles
         }
     },
     computed: {

@@ -1,12 +1,16 @@
 <template>
-    <div id="app" class="game-container">
-        <top-menu id="top-menu" class="stat-block"/>
-        <div id="field">
-            <router-view/>
-        </div>
-        <bottom-menu id="bottom-menu"/>
-        <toast-manager></toast-manager>
-    </div>
+
+        <b-overlay :show="false" variant="secondary" spinner-variant="primary" opacity="0.97" id="app">
+            <div class="game-container">
+                <top-menu id="top-menu" class="stat-block"/>
+                <div id="field">
+                    <router-view/>
+                </div>
+                <bottom-menu id="bottom-menu"/>
+                <toast-manager></toast-manager>
+            </div>
+        </b-overlay>
+
 </template>
 
 <script>
@@ -15,10 +19,44 @@
 import BottomMenu from "./components/BottomMenu";
 import ToastManager from "@/components/ToastManager";
 import TopMenu from "@/components/TopMenu";
+import {Address, ProviderRpcClient, TvmException} from "everscale-inpage-provider";
+import {PBGameContract} from "@/contract_wrappers/PBGame"
 const App: {} = {
     name: 'App',
     components: {TopMenu, ToastManager, BottomMenu},
     computed: {
+    },
+    async mounted() {
+        /*
+        const ever = new ProviderRpcClient();
+          if (!(await ever.hasProvider())) {
+            throw new Error('Extension is not installed');
+          }
+          await ever.ensureInitialized();
+
+          const { accountInteraction } = await ever.requestPermissions({
+            permissions: ['basic', 'accountInteraction'],
+          });
+          if (accountInteraction == null) {
+            throw new Error('Insufficient permissions');
+          }
+          console.log(accountInteraction.address);
+          const gameAddress = new Address('0:260c2557486ba0c1ec1bfe98f429a78557d4f97a551061fcba489eda035d0c72');
+
+          const pbGame = new ever.Contract(PBGameContract.abi, gameAddress);
+
+          try {
+            const output = await pbGame
+              .methods
+              .template({})
+              .call();
+            console.log(output);
+          } catch (e) {
+            if (e instanceof TvmException) {
+              console.error(e.code);
+            }
+          }
+*/
     }
 }
 export default App;
@@ -30,6 +68,7 @@ export default App;
     grid-row: 2;
     overflow-y: scroll;
     margin-top: 0.5em;
+
 }
 
 @media (min-width: 576px) {
@@ -41,6 +80,12 @@ export default App;
     }
 }
 
+#loader {
+    display: flex;
+    justify-content: center;
+    height: calc(100vh - 60px);
+    overflow-y: hidden;
+}
 
 .game-container {
     display: grid;
@@ -117,10 +162,6 @@ body {
 .logo-img {
     height: 40px;
     width: 40px;
-}
-
-.high-procent {
-    color: var(--green);
 }
 
 .color-span {

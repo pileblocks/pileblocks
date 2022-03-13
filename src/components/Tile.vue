@@ -1,19 +1,23 @@
 <template>
-    <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass">{{ computedColor }}</div>
+    <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass" >{{
+            computedColor
+        }}
+    </div>
 </template>
 
 <script>
 // @flow
 /* eslint flowtype-errors/show-errors: 1 */
 
-import {SELF_PUT_OFFSET} from "@/appConst";
+import {SELF_PUT_OFFSET} from "@/AppConst";
 
 const Tile: {} = {
     name: "Tile",
     props: {
         color: Number,
         isPut: Boolean,
-        coordinates: Object
+        coordinates: Object,
+        lastModified: Number
     },
     data: function () {
         return {
@@ -26,7 +30,17 @@ const Tile: {} = {
             if (!this.isPut) {
                 // Incorrect color picked
                 if (this.computedColor !== this.$store.state.PlayerInfo.currentColor) {
-                    this.$store.commit('Toast/sendToast', {toastName: "wrong-color", data:{colorNumber: this.computedColor}});
+                    this.$store.commit('Toast/sendToast', {
+                        toastName: "wrong-color",
+                        data: {colorNumber: this.computedColor}
+                    });
+                    return;
+                }
+                // more than 50 tiles put
+                if (this.$store.state.Game.tilesToPut.length > 50) {
+                    this.$store.commit('Toast/sendToast', {
+                        toastName: "50-tiles-put"
+                    });
                     return;
                 }
                 // Player already filled this tile
@@ -42,7 +56,10 @@ const Tile: {} = {
                     }
                     // Not enough tiles
                     else {
-                        this.$store.commit('Toast/sendToast', {toastName: "zero-tiles-left", data:{colorNumber: this.computedColor}});
+                        this.$store.commit('Toast/sendToast', {
+                            toastName: "zero-tiles-left",
+                            data: {colorNumber: this.computedColor}
+                        });
                         return;
                     }
                 }
@@ -59,6 +76,16 @@ const Tile: {} = {
                 return "filled-tile color-" + this.computedColor;
             } else {
                 return ""
+            }
+        },
+        currentFieldCell: function() {
+            return this.$store.state.Game.field[this.coordinates.f.toString()][this.coordinates.y][this.coordinates.x];
+        }
+    },
+    watch: {
+        currentFieldCell: function (newValue) {
+            if (newValue < SELF_PUT_OFFSET) {
+                this.filled = this.isPut;
             }
         }
     },

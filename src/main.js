@@ -5,6 +5,7 @@ import './theme.scss'
 import 'bootstrap-icons/font/bootstrap-icons.scss'
 import router from './router'
 import store from './store'
+import './AppFilters'
 
 Vue.config.productionTip = false
 

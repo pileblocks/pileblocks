@@ -1,5 +1,5 @@
 // @flow
-import {type ToastWrongColor, type ToastZeroTilesLeft} from "../../appTypes";
+import {type ToastWrongColor, type ToastZeroTilesLeft} from "../../AppTypes";
 
 export const Toast: {
     state: {

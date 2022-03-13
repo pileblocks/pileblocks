@@ -1,10 +1,10 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats">
-            <p class="mb-0" v-on:click="updateStandings"><small>YOU CAPTURED:</small> 344
+            <p class="mb-0" v-on:click="updateStandings"><small>YOU CAPTURED:</small> {{ $store.getters["Game/getCapturedTiles"] }}
             </p>
-            <p class="mb-0"><small>REMAINING:</small> 1284</p>
-            <p class="mb-0"><small>TOTAL REWARD:</small> 5000</p>
+            <p class="mb-0"><small>REMAINING:</small> {{ $store.state.Game.remainingTiles }}</p>
+            <p class="mb-0"><small>TOTAL REWARD:</small> {{ $store.state.Game.totalReward }}</p>
         </div>
         <div class="d-flex flex-row justify-content-center">
             <div v-for="index in 2" :key="index" class="d-grid">

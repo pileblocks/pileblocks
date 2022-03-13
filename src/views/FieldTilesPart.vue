@@ -2,7 +2,7 @@
     <div>
         <div class="d-flex mb-2 justify-content-center">
             <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
-            <p class="lead fragment-number mb-0 ml-2">{{ currentFragment() }} of 8</p>
+            <p class="lead fragment-number mb-0 ml-2" v-on:click="updateFlag">{{ currentFragment() }} of 8</p>
         </div>
 
         <div v-for="fragment in this.items" :key="fragment">
@@ -21,12 +21,14 @@
 <script>
 /* @flow */
 import Tile from "../components/Tile";
-import {SELF_PUT_OFFSET} from "@/appConst";
+import {SELF_PUT_OFFSET} from "@/AppConst";
 
 const FieldTilesPart = {
     name: "FieldTilesPart",
     data: function (): {} {
-        return {}
+        return {
+            lastModified: 0
+        }
     },
     props: {
         items: Array //Array<number>
@@ -34,6 +36,9 @@ const FieldTilesPart = {
     methods: {
         genIndex: function (fragment: number, row: number, col: number): number {
             return fragment * 1000 + row * 100 + col;
+        },
+        updateFlag: function () {
+            this.items = [0, 2];
         },
         _getFieldFragment: function (fragment: number): Array<Array<number>> {
             return this.$store.state.Game.field[fragment.toString()];
@@ -56,6 +61,8 @@ const FieldTilesPart = {
     },
     mounted() {
         this.$store.commit('Game/updateIsMainScreen', false);
+    },
+    computed: {
     }
 }
 export default FieldTilesPart;

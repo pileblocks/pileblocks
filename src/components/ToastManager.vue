@@ -7,6 +7,7 @@
           </template>
           Please choose color <div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div> from the bottom menu.
         </b-toast>
+
         <b-toast id="zero-tiles-left" auto-hide-delay="5000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
             <div>Use Another Color!
@@ -22,6 +23,15 @@
             <br/>
             or <b>CLAIM</b> more tiles.
         </b-toast>
+
+        <b-toast id="50-tiles-put" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>Tiles Limit Reached!
+            </div>
+          </template>
+            You have already reached the limit of <b>50 tiles</b>, please submit them before putting more tiles.
+        </b-toast>
+
     </div>
 </template>
 
