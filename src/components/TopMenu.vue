@@ -1,13 +1,6 @@
 <template xmlns="http://www.w3.org/1999/html">
     <div>
         <div id="top-menu-logo">
-
-            <div id="color-1" class="color-1"></div>
-            <div id="color-2" class="color-2"></div>
-            <div id="color-3" class="color-3"></div>
-            <div id="color-4" class="color-4"></div>
-            <div id="color-5" class="color-5"></div>
-
             <b-modal id="standings-table" hide-footer title="Standings">
                 <b-container fluid class="p-0">
                     <b-row>
@@ -26,7 +19,8 @@
                     </b-row>
                     <b-row>
                         <b-col class="mt-2">
-                            <p class="small"><b>Note: </b>The rewards for the last (10%) and pre-last (5%) tiles are excluded from the calculation considering the dynamic nature of this appraisal.</p>
+                            <p class="small"><b>Note: </b>The rewards for the last (10%) and pre-last (5%) tiles are
+                                excluded from the calculation considering the dynamic nature of this appraisal.</p>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -36,11 +30,13 @@
         </div>
         <div id="top-menu-player-info">
             <p class="mb-0"><span class="text-faded">Balance: </span>
-                1120<small>.75</small>
+                <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
                 <i class="bi bi-cart-check-fill color-primary pl-1"></i>
             </p>
             <div class="mb-0 d-inline-block"><span class="text-faded pr-1">Your Reward: </span>
-                <div class="d-inline-block position-absolute">{{ rewardInt }}<small>.{{ rewardFloat }}</small> (<span
+                <div class="d-inline-block position-absolute">
+                    <fancy-number :value='this.$store.getters["Game/getReward"]'/>
+                    (<span
                     :class="rewardProcentClass()">{{ rewardProcent }}%</span>)
                     <div :class="setAnimationClass">{{ animatedReward }}</div>
                 </div>
@@ -53,20 +49,26 @@
             </b-button>
         </div>
         <div id="top-menu-game-reload">
-            <b-button size="sm" variant="primary"><i class="bi bi-arrow-clockwise"></i></b-button>
+            <b-button size="sm" variant="primary">
+                <i class="bi bi-arrow-clockwise" v-show="!isLoading" v-on:click="reloadGame"></i>
+                <b-spinner v-show="isLoading" small></b-spinner>
+            </b-button>
         </div>
     </div>
 </template>
 
 <script>
 import BigNumber from "bignumber.js";
+import FancyNumber from "./FancyNumber";
 
 export default {
     name: "TopMenu",
+    components: {FancyNumber},
     data: function () {
         return {
             animatedReward: "",
-            setAnimationClass: "reward-base "
+            setAnimationClass: "reward-base ",
+            isLoading: false
         }
     },
     methods: {
@@ -96,7 +98,13 @@ export default {
                     return "medium-procent"
             }
             return "high-procent"
+        },
+        reloadGame: async function () {
+            this.isLoading = true;
+            await this.$store.dispatch('Ever/reloadGame');
+            this.isLoading = false;
         }
+
     },
     watch: {
         rewardChange: function (newReward, oldReward) {
@@ -107,12 +115,6 @@ export default {
         }
     },
     computed: {
-        rewardInt: function () {
-            return new BigNumber(new BigNumber(this.$store.getters["Game/getReward"]).toFixed(2).split('.')[0]).toFormat(0)
-        },
-        rewardFloat: function () {
-            return new BigNumber(this.$store.getters["Game/getReward"]).toFixed(2).split('.')[1]
-        },
         rewardChange: function () {
             return this.$store.getters["Game/getReward"];
         },
@@ -131,9 +133,7 @@ export default {
     color: #aab0bc;
 }
 
-.color-primary {
-    color: var(--primary);
-}
+
 
 @keyframes text-enlarge {
     0% {
@@ -173,12 +173,15 @@ export default {
 .active {
     background-color: var(--primary);
 }
+
 .high-procent {
     color: var(--green);
 }
+
 .low-procent {
     color: var(--danger);
 }
+
 .medium-procent {
     color: var(--orange);
 }

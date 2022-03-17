@@ -1,15 +1,32 @@
 <template>
 
-        <b-overlay :show="false" variant="secondary" spinner-variant="primary" opacity="0.97" id="app">
-            <div class="game-container">
-                <top-menu id="top-menu" class="stat-block"/>
-                <div id="field">
-                    <router-view/>
-                </div>
-                <bottom-menu id="bottom-menu"/>
-                <toast-manager></toast-manager>
+    <div id="app">
+        <div class="overlay" v-if="this.$store.state.Ever.isLoading">
+                <img src="/assets/logo.svg" class="img-fluid" alt=""/>
+              <b-spinner  variant="primary"></b-spinner>
+        </div>
+        <div>
+            <div id="color-1" class="color-1"></div>
+            <div id="color-2" class="color-2"></div>
+            <div id="color-3" class="color-3"></div>
+            <div id="color-4" class="color-4"></div>
+            <div id="color-5" class="color-5"></div>
+            <ever-loader></ever-loader>
+        </div>
+        <div class="game-container" v-if="this.$store.state.Ever.extensionWorks && !this.$store.state.Ever.isLoading">
+            <top-menu id="top-menu" class="stat-block"/>
+            <div id="field">
+                <router-view/>
             </div>
-        </b-overlay>
+            <bottom-menu id="bottom-menu"/>
+            <toast-manager></toast-manager>
+        </div>
+        <div class="game-container" v-if="!this.$store.state.Ever.extensionWorks && !this.$store.state.Ever.isLoading">
+            <div class="game-error-notification">
+                <div class="fancy-font stat-block text-center">Install the EVER wallet or update the permissions</div>
+            </div>
+        </div>
+    </div>
 
 </template>
 
@@ -17,57 +34,43 @@
 // @flow
 
 import BottomMenu from "./components/BottomMenu";
-import ToastManager from "@/components/ToastManager";
-import TopMenu from "@/components/TopMenu";
-import {Address, ProviderRpcClient, TvmException} from "everscale-inpage-provider";
-import {PBGameContract} from "@/contract_wrappers/PBGame"
+import ToastManager from "./components/ToastManager";
+import TopMenu from "./components/TopMenu";
+import EverLoader from "./components/EverLoader";
+
 const App: {} = {
     name: 'App',
-    components: {TopMenu, ToastManager, BottomMenu},
-    computed: {
+    components: {EverLoader, TopMenu, ToastManager, BottomMenu},
+    computed: {},
+    data: function() {
+        return {
+        }
     },
-    async mounted() {
-        /*
-        const ever = new ProviderRpcClient();
-          if (!(await ever.hasProvider())) {
-            throw new Error('Extension is not installed');
-          }
-          await ever.ensureInitialized();
 
-          const { accountInteraction } = await ever.requestPermissions({
-            permissions: ['basic', 'accountInteraction'],
-          });
-          if (accountInteraction == null) {
-            throw new Error('Insufficient permissions');
-          }
-          console.log(accountInteraction.address);
-          const gameAddress = new Address('0:260c2557486ba0c1ec1bfe98f429a78557d4f97a551061fcba489eda035d0c72');
-
-          const pbGame = new ever.Contract(PBGameContract.abi, gameAddress);
-
-          try {
-            const output = await pbGame
-              .methods
-              .template({})
-              .call();
-            console.log(output);
-          } catch (e) {
-            if (e instanceof TvmException) {
-              console.error(e.code);
-            }
-          }
-*/
-    }
 }
 export default App;
 </script>
 
 <style>
+#app {
+    height: 100%;
+}
+.overlay {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
 #field {
     text-align: center;
     grid-row: 2;
     overflow-y: scroll;
-    margin-top: 0.5em;
+    background-image: url("/assets/game-wp.png");
+    background-position: -100px;
+    background-repeat-y: no-repeat;
+    background-size: cover;
 
 }
 
@@ -75,6 +78,7 @@ export default App;
     body {
         height: 100vh;
     }
+
     #claim-tiles {
         margin-top: 1em;
     }
@@ -93,6 +97,14 @@ export default App;
     grid-template-columns: 1fr;
     height: calc(100vh - 60px);
     overflow-y: hidden;
+}
+
+.game-error-notification {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
 
 body {
@@ -196,7 +208,7 @@ body {
 .light-border {
     border: rgba(255, 255, 255, 0.5) 1px solid;
 }
-
+/*
 .color-1 {
     background-color: #fefefe !important;
     color: #1e2228;
@@ -216,10 +228,9 @@ body {
     background-color: #2f353a !important;
     color: #fefefe;
 }
-
-.color-5 {
-    background-color: #1e2228 !important;
-    color: #fefefe;
+*/
+.color-primary {
+    color: var(--primary);
 }
 
 </style>

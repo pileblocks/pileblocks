@@ -141,8 +141,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         uint16[] pColors = playerColors[ownerAddress];
         if (pColors.empty()) {
             pColors = new uint16[](maxColors);
-            //TODO: remove
-            pColors[0] = 1000;
         }
         uint16[] coloredTiles = getColoredTiles(tilesNum);
 
@@ -182,7 +180,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
         //TODO: Implement money sharing with players
         uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
-        tvm.log(format("_totalTiles: {}", _totalTiles));
         calculateRewards(totalReward, _totalTiles);
     }
 
@@ -225,7 +222,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(msg.sender, 0, false, false, 0);
+            player = PlayerInfo(msg.sender, 0, false, false, 0, 0);
         }
     }
 
@@ -311,6 +308,9 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     }
 
     function sendReward(address playerAddress, uint128 rewardValue) override internal {
+        PlayerInfo player = getPlayer(playerAddress);
+        player.reward = rewardValue;
+        players[playerAddress] = player;
         tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
     }
 
@@ -335,7 +335,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
                 remainingTiles -= captured;
             }
             address playerAddress= address.makeAddrStd(0, addr);
-            players[playerAddress] = PlayerInfo(playerAddress, captured, false, false, lastPut);
+            players[playerAddress] = PlayerInfo(playerAddress, captured, false, false, lastPut, 0);
             rnd.shuffle();
             if (remainingTiles == 0) {
                 return;

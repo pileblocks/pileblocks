@@ -1,5 +1,5 @@
 <template>
-    <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass" >{{
+    <div class="d-inline-block pb-tile" v-on:click="toggleColor()" v-bind:class="getColorClass">{{
             computedColor
         }}
     </div>
@@ -28,6 +28,14 @@ const Tile: {} = {
     methods: {
         toggleColor: function () {
             if (!this.isPut) {
+                // Zero balance
+                if (this.$store.state.PlayerInfo.balance === 0) {
+                    this.$store.commit('Toast/sendToast', {
+                        toastName: "zero-balance"
+                    });
+                    return;
+                }
+
                 // Incorrect color picked
                 if (this.computedColor !== this.$store.state.PlayerInfo.currentColor) {
                     this.$store.commit('Toast/sendToast', {
@@ -36,23 +44,23 @@ const Tile: {} = {
                     });
                     return;
                 }
-                // more than 50 tiles put
-                if (this.$store.state.Game.tilesToPut.length > 50) {
-                    this.$store.commit('Toast/sendToast', {
-                        toastName: "50-tiles-put"
-                    });
-                    return;
-                }
                 // Player already filled this tile
                 if (this.filled) {
                     this.$store.commit('PlayerInfo/updateColorQty', {colorNumber: this.computedColor, qty: 1});
                     this.$store.dispatch('Game/removeTileAction', {color: this.computedColor, ...this.coordinates});
-                    this.$store.commit('Game/updateField', {color: 0, ...this.coordinates});
+                    this.$store.commit('Game/putTile', {color: 0, ...this.coordinates});
                 } else {
+                    // more than 50 tiles put, only for not filled
+                    if (this.$store.state.Game.tilesToPut.length > 49) {
+                        this.$store.commit('Toast/sendToast', {
+                            toastName: "50-tiles-put"
+                        });
+                        return;
+                    }
                     if (this.$store.state.PlayerInfo.colors[this.computedColor - 1] > 0) {
                         this.$store.commit('PlayerInfo/updateColorQty', {colorNumber: this.computedColor, qty: -1});
                         this.$store.dispatch('Game/addTileAction', {color: this.computedColor, ...this.coordinates});
-                        this.$store.commit('Game/updateField', {color: this.computedColor + SELF_PUT_OFFSET, ...this.coordinates});
+                        this.$store.commit('Game/putTile', {color: this.computedColor + SELF_PUT_OFFSET, ...this.coordinates});
                     }
                     // Not enough tiles
                     else {
@@ -78,7 +86,7 @@ const Tile: {} = {
                 return ""
             }
         },
-        currentFieldCell: function() {
+        currentFieldCell: function () {
             return this.$store.state.Game.field[this.coordinates.f.toString()][this.coordinates.y][this.coordinates.x];
         }
     },
@@ -110,8 +118,8 @@ export default Tile;
     width: 19px;
     height: 19px;
     background-color: rgb(254, 208, 73);
-    margin: 1px;
-    padding-top: 3px;
+    border: 1px solid var(--secondary);
+    padding-top: 2px;
     text-align: center;
     cursor: pointer;
     user-select: none;

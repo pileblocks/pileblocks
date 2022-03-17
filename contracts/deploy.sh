@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NWK=se
+NWK=dev
 
 #se
 #dev
@@ -31,6 +31,13 @@ tondev sol compile GameHost.sol
 tondev sol compile GameIndex.sol
 tondev sol compile Genesis.sol
 tondev sol compile PlayerTest.sol
+tondev sol compile SaleToken.sol
+
+tondev js wrap TokenRoot.sol --output ../src/contract_wrappers/TokenRoot.js
+tondev js wrap TokenWallet.sol --output ../src/contract_wrappers/TokenWallet.js
+tondev js wrap PBGame.sol --output ../src/contract_wrappers/PBGame.js
+tondev js wrap GameHost.sol --output ../src/contract_wrappers/GameHost.js
+tondev js wrap GameIndex.sol --output ../src/contract_wrappers/GameIndex.js
 
 TW_CODE=$(tonos-cli decode stateinit --tvc TokenWallet.tvc | tail -n +5 | ../node_modules/node-jq/bin/jq -r .code)
 
@@ -49,6 +56,10 @@ echo "Deploying the root token contract..."
 ROOT_TOKEN_ADDRESS=$(tondev contract deploy TokenRoot.abi.json -n $NWK -s $SIGNER -v 2000000000 -d randomNonce_:$NONCE,deployer_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",name_:"576562206d756c7469736967204669646f736166652e636f6d",symbol_:"4649444f",decimals_:9,rootOwner_:\"$GENESIS_ADDRESS\",walletCode_:\"$TW_CODE\" -i initialSupplyTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\",initialSupply:0,deployWalletValue:0,mintDisabled:false,burnByRootDisabled:false,burnPaused:false,remainingGasTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
 echo "Root token address: ${ROOT_TOKEN_ADDRESS}"
 
+echo "Deploying Token Sale"
+SALE_TOKEN_ADDRESS=$(tondev contract deploy SaleToken.abi.json -n $NWK -s $SIGNER -v 2000000000 -d _randomNonce:$NONCE -i tokenRootAddress:\"$ROOT_TOKEN_ADDRESS\" | grep "Address:" | cut -d " " -f 4)
+echo "Sale token address: ${SALE_TOKEN_ADDRESS}"
+
 echo "Deploying game host..."
 GAME_HOST=$(tondev contract deploy GameHost.abi.json -n $NWK -s $SIGNER -v 3000000000 -d _randomNonce:$NONCE -i _indexCode:\"$INDEX_CODE\",_gameCode:\"$GAME_CODE\",_walletCode:\"$TW_CODE\",_tokenRootAddress:\"$ROOT_TOKEN_ADDRESS\" | grep "Address:" | cut -d " " -f 4)
 echo "Host address: ${GAME_HOST}"
@@ -57,17 +68,17 @@ echo "Host address: ${GAME_HOST}"
 #
 #echo "Game address: ${GAME_ADDRESS}"
 
-PLAYER1_ADDRESS=$(tondev contract deploy PlayerTest.abi.json -n $NWK -s $SIGNER -v 30000000000 -d _randomNonce:$NONCE -i "{\"_rootAddress\": \"$ROOT_TOKEN_ADDRESS\", \"_genesis\": \"$GENESIS_ADDRESS\", \"_gameHost\": \"$GAME_HOST\"}" | grep "Address:" | cut -d " " -f 4)
+PLAYER1_ADDRESS=$(tondev contract deploy PlayerTest.abi.json -n $NWK -s $SIGNER -v 10000000000 -d _randomNonce:$NONCE -i "{\"_rootAddress\": \"$ROOT_TOKEN_ADDRESS\", \"_genesis\": \"$GENESIS_ADDRESS\", \"_gameHost\": \"$GAME_HOST\"}" | grep "Address:" | cut -d " " -f 4)
 
 echo "Player1 address: ${PLAYER1_ADDRESS}"
 
 NONCE=$(date +%s)
 
-PLAYER2_ADDRESS=$(tondev contract deploy PlayerTest.abi.json -n $NWK -s $SIGNER -v 30000000000 -d _randomNonce:$NONCE -i "{\"_rootAddress\": \"$ROOT_TOKEN_ADDRESS\", \"_genesis\": \"$GENESIS_ADDRESS\", \"_gameHost\": \"$GAME_HOST\"}" | grep "Address:" | cut -d " " -f 4)
+PLAYER2_ADDRESS=$(tondev contract deploy PlayerTest.abi.json -n $NWK -s $SIGNER -v 1000000000 -d _randomNonce:$NONCE -i "{\"_rootAddress\": \"$ROOT_TOKEN_ADDRESS\", \"_genesis\": \"$GENESIS_ADDRESS\", \"_gameHost\": \"$GAME_HOST\"}" | grep "Address:" | cut -d " " -f 4)
 
 echo "Player2 address: ${PLAYER2_ADDRESS}"
 
-TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i '{"_renderSettings": [1, 1, 25, 5, 16711422, 11186364, 6318459, 3093818, 1974824]}')
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i '{"_renderSettings": [1, 2, 25, 5, 16711422, 11186364, 12456217, 3093818, 1974824]}')
 
 GAME_ADDRESS=$(tondev contract run-local PlayerTest.abi.json -n $NWK -s $SIGNER -a $PLAYER1_ADDRESS gameAddress | grep "gameAddress" | cut -d " " -f 10 | tr -d '"')
 echo "GAME address: $GAME_ADDRESS"
@@ -76,7 +87,8 @@ TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $S
 TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER2_ADDRESS -n $NWK -s $SIGNER setGameAddress -i "{\"_gameAddress\": \"$GAME_ADDRESS\"}")
 echo "Game address set!"
 
-TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER saveImageFragment -i '{"fragmentNum":0, "tiles": [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]}')
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER saveImageFragment -i '{"fragmentNum":0, "tiles": [[4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 4, 4], [4, 4, 4, 4, 4, 4, 2, 4, 5, 5, 4, 1, 1, 2, 1, 1], [4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 1, 1, 1, 2, 2, 2], [4, 4, 5, 5, 5, 4, 3, 5, 5, 1, 1, 1, 2, 2, 1, 1], [4, 5, 5, 5, 3, 4, 5, 5, 3, 1, 1, 1, 2, 2, 1, 5], [5, 5, 5, 5, 5, 3, 3, 3, 5, 1, 1, 2, 2, 1, 2, 5], [5, 5, 5, 5, 5, 3, 3, 3, 1, 1, 1, 2, 1, 1, 2, 4], [5, 5, 4, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 2, 5, 4]]}')
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER saveImageFragment -i '{"fragmentNum":1, "tiles": [[4, 4, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 4, 5], [5, 5, 5, 1, 1, 1, 3, 3, 2, 1, 1, 1, 1, 4, 5, 4], [4, 4, 2, 1, 1, 1, 5, 3, 2, 2, 1, 1, 1, 3, 3, 3], [5, 4, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 3, 3, 3, 1], [4, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1], [5, 5, 5, 2, 2, 2, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1], [5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1], [4, 5, 5, 5, 5, 5, 4, 5, 2, 2, 3, 1, 1, 1, 1, 1]]}')
 
 echo "Template provided!"
 

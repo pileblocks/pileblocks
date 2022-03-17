@@ -13,6 +13,7 @@ struct PlayerInfo {
     bool isLast;
     bool isPrelast;
     uint64 lastPutTime;
+    uint128 reward;
 }
 
 struct GameInfo {

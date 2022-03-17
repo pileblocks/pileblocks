@@ -1,26 +1,32 @@
 // @flow
 import Vue from 'vue';
-import {colors} from "@/store/modules/consts";
 export const PlayerInfo: {
     state: {
         walletAddress: string,
         colors: Array<number>,
-        currentColor: number
+        currentColor: number,
+        balance: number,
+        claimableTiles: number
     }
 } = {
     namespaced: true,
     state: {
-        playerAddress: "0:aaaa9dae49ed47b44d71bc89d282f2765230395f5f127849c33a20da52611578",
-        walletAddress: "0:aaaa9dae49ed47b44d71bc89d282f2765230395f5f127849c33a20da52611577",
-        colors: JSON.parse(JSON.stringify(colors)),
-        currentColor: 1
+        playerAddress: "",
+        walletAddress: "",
+        colors: [0, 0, 0, 0, 0],
+        currentColor: 1,
+        balance: 0,
+        claimableTiles: 0
     },
     mutations: {
-        updateColors(state) {
-            state.colors = JSON.parse(JSON.stringify(colors));
+        updateColors(state, newColors) {
+            state.colors = newColors;
         },
         updateWalletAddress(state, newWalletAddress) {
             state.walletAddress = newWalletAddress;
+        },
+        updatePlayerAddress(state, newPlayerAddress) {
+            state.playerAddress = newPlayerAddress;
         },
         setCurrentColor(state, newColor:number) {
             state.currentColor = newColor;
@@ -29,10 +35,20 @@ export const PlayerInfo: {
             if (state.colors[colorNumber - 1] >= -qty) {
                 Vue.set(state.colors, colorNumber - 1, state.colors[colorNumber - 1] + qty);
             }
+        },
+        updateBalance(state, newBalance) {
+            state.balance = newBalance;
+        },
+        updateClaimableTiles(state, newTiles) {
+            state.claimableTiles = newTiles;
         }
     },
 
     actions: {},
 
-    getters: {}
+    getters: {
+        getBalance(state) {
+            return state.balance;
+        }
+    }
 };

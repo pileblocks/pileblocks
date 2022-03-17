@@ -32,6 +32,14 @@
             You have already reached the limit of <b>50 tiles</b>, please submit them before putting more tiles.
         </b-toast>
 
+        <b-toast id="zero-balance" auto-hide-delay="2000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>Your Balance is 0 PILE!
+            </div>
+          </template>
+            Your balance is <b>0 PILE</b>. Please top-up your balance by clicking the <span class="dark-box p-1"><i class="bi bi-cart-check-fill color-primary"></i></span> icon.
+        </b-toast>
+
     </div>
 </template>
 
@@ -73,5 +81,7 @@ export default ToastManager;
 </script>
 
 <style scoped>
-
+.dark-box {
+    background-color: var(--gray-dark);
+}
 </style>

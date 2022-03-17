@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home'
-import FieldTilesPart from '../views/FieldTilesPart'
+//import Home from '../views/Home'
+//import FieldTilesPart from '../views/FieldTilesPart'
+const Home = () => import('../views/Home');
+const FieldTilesPart = () => import('../views/FieldTilesPart');
 
 Vue.use(VueRouter);
 

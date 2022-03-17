@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div class="d-flex mb-2 justify-content-center">
+        <div class="d-flex mb-2 justify-content-center mt-3 mb-3">
             <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
-            <p class="lead fragment-number mb-0 ml-2" v-on:click="updateFlag">{{ currentFragment() }} of 8</p>
+            <p class="lead fragment-number mb-0 ml-2" v-on:click="updateFlag">{{ currentFragment() }} of {{totalFragments}}</p>
         </div>
 
         <div v-for="fragment in this.items" :key="fragment">
@@ -63,6 +63,9 @@ const FieldTilesPart = {
         this.$store.commit('Game/updateIsMainScreen', false);
     },
     computed: {
+        totalFragments: function(): number {
+            return this.$store.state.Game.totalFieldFragments / 2;
+        }
     }
 }
 export default FieldTilesPart;

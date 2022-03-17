@@ -9,7 +9,7 @@ def rgb2light(r, g, b, a=0):
     return (min(r, g, b) + max(r, g, b))/(2*255)
 
 #im = Image.open("hero-image2.png")
-im = Image.open("sample.png")
+im = Image.open("s1.png")
 pix = im.load()
 
 d = []

@@ -19,7 +19,7 @@ contract Genesis is PBConstants {
     function mint(address tokenRoot, uint128 amount, address recipient) external onlyOwner {
         tvm.accept();
         TvmCell payload;
-        ITokenRoot(tokenRoot).mint{value: 0.5 ton}(amount, recipient, 0.3 ton, address(this), false, payload);
+        ITokenRoot(tokenRoot).mint{value: 0.5 ton}(amount, recipient, 0.3 ton, address(this), true, payload);
     }
 
     function drain(address receiver) onlyOwner public pure {

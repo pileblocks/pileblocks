@@ -12,6 +12,7 @@
                             :fragmentsCount="1" :key="_genKey(item)"></field-part>
             </div>
         </div>
+        <p class="season-slogan fancy-font">Withstand the Web 2.0 Tyranny</p>
     </div>
 </template>
 
@@ -64,8 +65,8 @@ export default Home;
 #field-parts-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100%;
     justify-content: space-evenly;
+    height: 100%;
 }
 
 @media (min-width: 576px) {
@@ -76,5 +77,8 @@ export default Home;
 
 .d-grid {
     display: grid;
+}
+.season-slogan {
+ color: white;
 }
 </style>

@@ -41,13 +41,20 @@ const FieldPart: {} = {
         }
     },
     mounted: function () {
+
+        let colorArray = [];
+
+        for (let i=0; i<5; i++) {
+            colorArray[i] = this.getColorByNumber((i+1));
+        }
+
         this.template = this.$store.state.Game.template;
         let ctx = this.$refs.fieldImage.getContext("2d");
         let y = 0;
         for (const part of this.fragmentNumbers) {
             for (const i of this.template[part]) {
                 for (const x in i) {
-                    ctx.fillStyle = this.getColorByNumber(i[x]);
+                    ctx.fillStyle = colorArray[i[x] - 1];
                     ctx.fillRect(5 * parseInt(x), 5 * y, 5, 5);
                 }
                 y += 1;
