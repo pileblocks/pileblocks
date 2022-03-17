@@ -67,7 +67,7 @@ export default App;
     text-align: center;
     grid-row: 2;
     overflow-y: scroll;
-    background-image: url("/assets/game-wp.png");
+    background-image: url('~@/assets/game-wp.png');
     background-position: -100px;
     background-repeat-y: no-repeat;
     background-size: cover;

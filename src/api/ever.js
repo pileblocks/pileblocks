@@ -111,7 +111,7 @@ export const EverAPI = {
         },
         claimTiles: async function(walletContract: Contract, playerAddress: string, gameAddress: string) {
             const pAddress = new Address(playerAddress);
-            return await walletContract
+            await walletContract
                 .methods
                 .claimTiles({gameAddress: gameAddress})
                 .send({
