@@ -84,10 +84,12 @@ export const Ever: {
             const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
             commit("PlayerInfo/updateBalance", await EverAPI.wallet.getBalance(wallet), {root: true});
         },
+
         async setRemainingTiles({commit, rootState}) {
             const gameInfo = await EverAPI.game.getGameInfo(rootState.Ever.game);
             commit("Game/updateRemainingTiles", gameInfo.remainingTiles, {root: true})
         },
+
         async setClaimTiles({commit, dispatch, rootState}) {
             let ever = rootState.Ever.api;
             let isDeployed: boolean = await dispatch('isWalletDeployed');
@@ -107,8 +109,6 @@ export const Ever: {
             await dispatch('setClaimTiles');
             await dispatch('updateColors');
             commit('Game/calculateRewards', null, {root: true});
-
-
         },
 
         async claimTiles({state, rootState}) {

@@ -75,6 +75,9 @@ export default {
             }
             document.body.appendChild(sheet);
         },
+        setGameName: function(gameInfo:GameInfo) {
+            this.$store.commit("Game/updateName", gameInfo.gameName);
+        },
         setTotalFieldFragments: function (renderConfig) {
             let totalFragments = parseInt(renderConfig[0]) * parseInt(renderConfig[1]);
             this.$store.commit('Game/updateTotalFieldFragments', totalFragments)
@@ -117,6 +120,7 @@ export default {
         this.setGameColors(gameInfo.renderConfig);
         this.setTotalFieldFragments(gameInfo.renderConfig);
         this.setRemainingTiles(gameInfo);
+        this.setGameName(gameInfo);
         await this.setPlayerAddress();
         await this.setPlayerWallet();
         await this.$store.dispatch('Ever/reloadGame');

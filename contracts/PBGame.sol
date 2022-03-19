@@ -33,6 +33,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     uint8 maxColors;
     uint24[] renderSettings;
     uint128 tokensPerPut;
+    string gameName;
 
     mapping(address => PlayerInfo) public players;
     mapping(address => uint16[]) public playerColors;
@@ -54,7 +55,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         _;
     }
 
-    constructor (uint24[] _renderSettings) public {
+    constructor (uint24[] _renderSettings, string _gameName) public {
 
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
@@ -64,13 +65,14 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
             .decode(uint32, address);
 
         require(msg.sender == gameHost, INVALID_GAME_HOST);
-
+        gameName = _gameName;
         //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
         renderSettings = _renderSettings;
         vertFragments = uint8(renderSettings[0]);
         horizFragments = uint8(renderSettings[1]);
         tokensPerPut = uint128(renderSettings[2]) * uint128(1e9);
         maxColors = uint8(renderSettings[3]);
+
 
         status = STATUS_GAME_DRAFT;
         uint8 numFragments = vertFragments * horizFragments;
@@ -95,7 +97,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
 
     function onDeploy(address gWallet) external {
     }
-
 
     function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external internalMsg onlyImageOwner {
         require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
@@ -166,7 +167,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
         // Reserve a fee per put
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
-        PlayerInfo player = getPlayer(ownerAddress);
         bool isError = false;
 
         isError = addTilesToField(tiles, ownerAddress);
@@ -178,14 +178,100 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
 
     function completeGame(uint128 totalReward) external internalMsg {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
-        //TODO: Implement money sharing with players
         uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
+        rewardLastPlayer(totalReward);
+        rewardPrelastPlayer(totalReward);
+        totalReward = (totalReward / 100) * 85;
         calculateRewards(totalReward, _totalTiles);
     }
 
+    function rewardLastPlayer(uint128 totalReward) internal {
+        address pAddress = getPlayerWithLastTile();
+        PlayerInfo pl = players[pAddress];
+        pl.reward += totalReward / 10;
+        players[pAddress] = pl;
+    }
+
+    function rewardPrelastPlayer(uint128 totalReward) internal {
+        address pAddress = getPlayerWithPrelastTile();
+        PlayerInfo pl = players[pAddress];
+        pl.reward += totalReward / 20;
+        players[pAddress] = pl;
+    }
+
+    function sendReward(address playerAddress, uint128 rewardValue) override internal {
+        PlayerInfo player = getPlayer(playerAddress);
+        player.reward += rewardValue;
+        players[playerAddress] = player;
+        tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
+    }
+
+    function claimReward(address playerAddress) external {
+        require(status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
+        if (players.exists(playerAddress)) {
+            PlayerInfo player = players[playerAddress];
+            TvmCell payload;
+            ITokenWallet(gameWallet).transfer{value: 0.3 ton}(
+                player.reward,
+                playerAddress,
+                0 ton,
+                address(this),
+                false,
+                payload
+                );
+        }
+    }
+
+//
+//  DRAIN functions
+//
+
+    /*
+        @notice A game drains itself on completion
+    */
+    function drain() override internal view {
+        tvm.rawReserve(0.1 ton, 0);
+        gameHost.transfer({ value: 0, flag: 128 });
+    }
+
+    /*
+        @notice Force a game to drain itself
+    */
+    function drainByHost() onlyHost external view {
+        tvm.rawReserve(0.1 ton, 0);
+        gameHost.transfer({ value: 0, flag: 128 });
+    }
+
+    function drainTokens(uint128 value) onlyHost external view {
+        TvmCell payload;
+        ITokenWallet(gameWallet).transfer{value: 0.3 ton}(
+            value,
+            msg.sender,
+            0,
+            address(this),
+            false,
+            payload
+            );
+    }
 //
 //        Service functions
 //
+
+    function getPlayerWithLastTile() internal view returns(address) {
+        for ((address pAddress, PlayerInfo player): players) {
+            if (player.isLast) {
+                return pAddress;
+            }
+        }
+    }
+
+    function getPlayerWithPrelastTile() internal view returns(address) {
+        for ((address pAddress, PlayerInfo player): players) {
+            if (player.isPrelast) {
+                return pAddress;
+            }
+        }
+    }
 
     function isImageComplete() public view returns (bool) {
         uint8 frNum = uint8(vertFragments * horizFragments);
@@ -303,51 +389,13 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
                     remainingTiles,
                     gameHost,
                     renderSettings,
-                    status
+                    status,
+                    gameName
         );
-    }
-
-    function sendReward(address playerAddress, uint128 rewardValue) override internal {
-        PlayerInfo player = getPlayer(playerAddress);
-        player.reward = rewardValue;
-        players[playerAddress] = player;
-        tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
     }
 
     function getPlayers() override internal returns (mapping(address => PlayerInfo)) {
         return players;
-    }
-
-    function generateFakePlayers(uint16 playerNum) public {
-        tvm.accept();
-        rnd.shuffle();
-        //TODO: Remove this in prod!
-
-        for (uint8 i=0; i < playerNum; i++) {
-            uint256 addr = rnd.next();
-            uint64 lastPut = rnd.next(uint64(100));
-            uint16 captured = rnd.next(uint16(100));
-            if (remainingTiles < captured) {
-                captured = remainingTiles;
-                remainingTiles = 0;
-            }
-            else {
-                remainingTiles -= captured;
-            }
-            address playerAddress= address.makeAddrStd(0, addr);
-            players[playerAddress] = PlayerInfo(playerAddress, captured, false, false, lastPut, 0);
-            rnd.shuffle();
-            if (remainingTiles == 0) {
-                return;
-            }
-        }
-    }
-
-    function cGame(uint128 totalReward) external {
-        tvm.accept();
-        uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
-        tvm.log(format("_totalTiles: {}", _totalTiles));
-        calculateRewards(totalReward, _totalTiles);
     }
 
 }

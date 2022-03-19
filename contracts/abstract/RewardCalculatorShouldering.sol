@@ -84,8 +84,8 @@ abstract contract RewardCalculatorShouldering  {
             }
         }
          if (!success) {
-             //TODO: Drain the remaining balance to host
-            return;
+             drain();
+             return;
         }
         RewardCalculatorShouldering(this).distributeRewards{value: 0, flag: 128}(startSortable);
     }
@@ -97,6 +97,8 @@ abstract contract RewardCalculatorShouldering  {
     }
 
     function sendReward(address playerAddress, uint128 rewardValue) virtual internal;
+
+    function drain() virtual internal view;
 
     function getPlayers() virtual internal returns(mapping(address => PlayerInfo));
 }

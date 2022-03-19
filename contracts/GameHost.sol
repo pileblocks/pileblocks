@@ -121,14 +121,14 @@ contract GameHost is PBConstants {
         @dev Use this in the situation, when no game was activated before the completion of the previous round
         @dev Firstly run activateGame, and then runGame
     */
-    function runGame() external externalMsg onlyOwner {
+    function runGame() external view externalMsg onlyOwner {
         tvm.accept();
         if (nextGameAddress.value != 0) {
             deployIndex(currentGameId - 1, nextGameAddress);
         }
     }
 
-    function deployGame(uint24[] _renderSettings) external responsible returns (address) {
+    function deployGame(uint24[] _renderSettings, string _gameName) external view responsible returns (address) {
         address imageOwner = msg.sender;
         TvmCell stateInit = tvm.buildStateInit({
             contr: PBGame,
@@ -145,7 +145,7 @@ contract GameHost is PBConstants {
             stateInit: stateInit,
             value: 0,
             flag: 64
-        }(_renderSettings);
+        }(_renderSettings, _gameName);
         tvm.log(format("New game: {}", game));
         return game;
     }
@@ -192,10 +192,11 @@ contract GameHost is PBConstants {
     }
 
     function setRewardPerGame(uint128 newRewardPerGame) external externalMsg onlyOwner {
+        tvm.accept();
         rewardPerGame = newRewardPerGame;
     }
 
-    function getRewardPerGame() external externalMsg returns (uint128) {
+    function getRewardPerGame() external view externalMsg returns (uint128) {
         return rewardPerGame;
     }
 
@@ -228,10 +229,51 @@ contract GameHost is PBConstants {
         return address(tvm.hash(stateInit));
     }
 
-    function drain(address receiver) onlyOwner external pure {
-        //TODO: Add drain tokens to the host and to the game
+//
+//  DRAIN functions
+//
+
+    /*
+        @notice Returns the host's EVERs to receiver
+    */
+    function drain(address receiver) onlyOwner external view {
         tvm.accept();
+        tvm.rawReserve(0.1 ton, 0);
         receiver.transfer({ value: 0, flag: 128 });
     }
+
+    /*
+        @notice Returns a game's EVERs to the host
+    */
+    function drainGame(address gameAddress) onlyOwner external pure {
+        tvm.accept();
+        IPBGame(gameAddress).drainByHost{value: 0.1 ton}();
+    }
+
+    /*
+        @notice Drains host's tokens
+    */
+    function drainTokens(uint128 value, address receiver) onlyOwner external view {
+        tvm.accept();
+        TvmCell payload;
+        ITokenWallet(walletAddress).transfer{value: 0.5 ton}(
+            value,
+            receiver,
+            0.3 ton,
+            address(this),
+            false,
+            payload
+            );
+    }
+
+    /*
+        @notice Returns a game's tokens to the host
+    */
+    function drainGameTokens(address gameAddress, uint128 value) onlyOwner external pure {
+        tvm.accept();
+        IPBGame(gameAddress).drainTokens{value: 0.5 ton}(value);
+    }
+
+
 
 }

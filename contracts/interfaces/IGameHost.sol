@@ -4,6 +4,6 @@ import "./PBStructs.sol";
 
 interface IGameHost {
     function onGameCompleted(GameInfo gameInfo) external;
-    function deployGame(uint24[] _renderSettings) external responsible returns (address);
+    function deployGame(uint24[] _renderSettings, string _gameName) external responsible returns (address);
     function activateGame(address gameAddress) external;
 }

@@ -12,7 +12,7 @@
                             :fragmentsCount="1" :key="_genKey(item)"></field-part>
             </div>
         </div>
-        <p class="season-slogan fancy-font">Withstand the Web 2.0 Tyranny</p>
+        <p class="season-slogan fancy-font">{{ this.$store.state.Game.name }}</p>
     </div>
 </template>
 

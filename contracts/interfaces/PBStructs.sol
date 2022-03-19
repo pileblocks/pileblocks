@@ -26,4 +26,5 @@ struct GameInfo {
     address gameHost;
     uint24[] renderConfig;
     uint8 status;
+    string gameName;
 }

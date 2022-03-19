@@ -49,7 +49,8 @@ export type GameInfo = {
     remainingTiles: string,
     gameHost: string,
     renderConfig: string[],
-    status: string
+    status: string,
+    gameName: string
 }
 
 export type RawPlayerStats = {
