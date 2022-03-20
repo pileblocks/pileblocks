@@ -11,4 +11,5 @@
 [options]
 module.file_ext=.vue
 module.file_ext=.js
+module.name_mapper='^@/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'
 [strict]

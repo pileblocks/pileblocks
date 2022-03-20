@@ -1,4 +1,4 @@
-<template xmlns="http://www.w3.org/1999/html">
+<template>
     <div>
         <div id="top-menu-logo">
             <b-modal id="standings-table" hide-footer title="Standings">
@@ -19,11 +19,27 @@
                     </b-row>
                     <b-row>
                         <b-col class="mt-2">
-                            <p class="small"><b>Note: </b>The rewards for the last (10%) and pre-last (5%) tiles are
-                                excluded from the calculation considering the dynamic nature of this appraisal.</p>
+                            <p class="small"><b>Note: </b>Until the game is completed, rewards for the last (10%) and pre-last (5%) tiles are
+                                excluded from the calculation.</p>
                         </b-col>
                     </b-row>
                 </b-container>
+            </b-modal>
+
+            <b-modal id="sale-token" hide-footer title="Get PILE Tokens!">
+                <p>To get PILE tokens, simply send EVERs to the following address (minimum: 1 EVER).<br/></p>
+                <b-input-group>
+                    <b-form-input :value="saleTokenAddress"
+                               v-on:focus="$event.target.select()"
+                               ref="tsAddress"
+                               readonly>
+                    </b-form-input>
+                    <template #append>
+                        <b-button variant="primary" v-on:click="copyAddress">Copy</b-button>
+                    </template>
+                </b-input-group>
+                <p class="mt-3">You will receive <b>X10</b> PILE tokens. For example, if you send 10 EVER, you will receive 100 PILE. The exchange is automatic, so it won't take longer than 1 minute.</p>
+                <p><b>NOTE:</b> The more PILE you have, the <b>quicker</b> you'll farm colored tiles.</p>
             </b-modal>
 
             <img src="/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
@@ -31,7 +47,7 @@
         <div id="top-menu-player-info">
             <p class="mb-0"><span class="text-faded">Balance: </span>
                 <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
-                <i class="bi bi-cart-check-fill color-primary pl-1"></i>
+                <i class="bi bi-cart-check-fill color-primary pl-1" v-on:click="$bvModal.show('sale-token')"></i>
             </p>
             <div class="mb-0 d-inline-block"><span class="text-faded pr-1">Your Reward: </span>
                 <div class="d-inline-block position-absolute">
@@ -60,6 +76,8 @@
 <script>
 import BigNumber from "bignumber.js";
 import FancyNumber from "./FancyNumber";
+import {SALE_TOKEN} from "../AppConst";
+import {GAME_STATUS_COMPLETED} from "@/AppConst";
 
 export default {
     name: "TopMenu",
@@ -68,7 +86,8 @@ export default {
         return {
             animatedReward: "",
             setAnimationClass: "reward-base ",
-            isLoading: false
+            isLoading: false,
+            saleTokenAddress: SALE_TOKEN
         }
     },
     methods: {
@@ -103,6 +122,11 @@ export default {
             this.isLoading = true;
             await this.$store.dispatch('Ever/reloadGame');
             this.isLoading = false;
+        },
+
+        copyAddress: function() {
+            this.$refs.tsAddress.focus();
+            document.execCommand('copy');
         }
 
     },
@@ -119,7 +143,12 @@ export default {
             return this.$store.getters["Game/getReward"];
         },
         rewardProcent: function () {
-            return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalRewardDynamic).toFixed(1);
+            if (this.$store.state.Game.status !== GAME_STATUS_COMPLETED) {
+                return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalRewardDynamic).toFixed(1);
+            } else {
+                return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalReward).toFixed(1);
+            }
+
         }
     },
     mounted() {

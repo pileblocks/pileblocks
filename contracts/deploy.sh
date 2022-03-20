@@ -80,8 +80,8 @@ GAME_ADDRESS=$(tondev contract run-local PlayerTest.abi.json -n $NWK -s $SIGNER 
 echo "GAME address: $GAME_ADDRESS"
 
 #TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameAddress -i "{\"_gameAddress\": \"$GAME_ADDRESS\"}")
-#TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER2_ADDRESS -n $NWK -s $SIGNER setGameAddress -i "{\"_gameAddress\": \"$GAME_ADDRESS\"}")
-#echo "Game address set!"
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER2_ADDRESS -n $NWK -s $SIGNER setGameAddress -i "{\"_gameAddress\": \"$GAME_ADDRESS\"}")
+echo "Game address set for Player 2!"
 
 TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER saveImageFragment -i '{"fragmentNum":0, "tiles": [[4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 4, 4], [4, 4, 4, 4, 4, 4, 2, 4, 5, 5, 4, 1, 1, 2, 1, 1], [4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 1, 1, 1, 2, 2, 2], [4, 4, 5, 5, 5, 4, 3, 5, 5, 1, 1, 1, 2, 2, 1, 1], [4, 5, 5, 5, 3, 4, 5, 5, 3, 1, 1, 1, 2, 2, 1, 5], [5, 5, 5, 5, 5, 3, 3, 3, 5, 1, 1, 2, 2, 1, 2, 5], [5, 5, 5, 5, 5, 3, 3, 3, 1, 1, 1, 2, 1, 1, 2, 4], [5, 5, 4, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 2, 5, 4]]}')
 TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER saveImageFragment -i '{"fragmentNum":1, "tiles": [[4, 4, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 4, 5], [5, 5, 5, 1, 1, 1, 3, 3, 2, 1, 1, 1, 1, 4, 5, 4], [4, 4, 2, 1, 1, 1, 5, 3, 2, 2, 1, 1, 1, 3, 3, 3], [5, 4, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 3, 3, 3, 1], [4, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1], [5, 5, 5, 2, 2, 2, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1], [5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1], [4, 5, 5, 5, 5, 5, 4, 5, 2, 2, 3, 1, 1, 1, 1, 1]]}')

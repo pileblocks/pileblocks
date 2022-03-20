@@ -1,9 +1,13 @@
 // @flow
-import {EverAPI} from "../../api/ever";
-import {_dataToNumbers} from "../../utils"
-import type {PlayerStats, RawPlayerStats, Contract} from "../../AppTypes";
-import {TokenWalletContract} from "../../contract_wrappers/TokenWallet";
+import {EverAPI} from "@/api/ever";
+import {_dataToNumbers} from "@/utils"
+import type {PlayerStats, RawPlayerStats, Contract} from "@/AppTypes";
+import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
+import {GAME_STATUS_COMPLETED, GENESIS_ADDRESS, HOST_ADDRESS} from "@/AppConst";
+import type {GameInfo} from "@/AppTypes";
+import BigNumber from "bignumber.js";
+import type {PlayerAddress} from "@/AppTypes";
 
 export const Ever: {
     state: {
@@ -59,9 +63,16 @@ export const Ever: {
                 tmpPlayer.playerAddress = player[0].toString();
                 tmpPlayer.captured = parseInt(player[1].captured);
                 tmpPlayer.isLast = player[1].isLast;
+
+                if (tmpPlayer.playerAddress === rootState.PlayerInfo.playerAddress && rootState.Game.status !== GAME_STATUS_COMPLETED) {
+                    tmpPlayer.reward = rootState.Game.cachedReward;
+                } else {
+                    tmpPlayer.reward = new BigNumber(player[1].reward).dividedBy(1e9).toNumber();
+                }
                 tmpPlayer.isPrelast = player[1].isPrelast;
                 tmpPlayer.lastPutTime = parseInt(player[1].lastPutTime);
                 tmpPlayer.walletAddress = player[1].walletAddress.toString();
+                tmpPlayer.isReceived = player[1].isReceived;
                 standings.push(tmpPlayer);
             }
             commit("Game/updateStandings", standings, {root: true});
@@ -87,7 +98,7 @@ export const Ever: {
 
         async setRemainingTiles({commit, rootState}) {
             const gameInfo = await EverAPI.game.getGameInfo(rootState.Ever.game);
-            commit("Game/updateRemainingTiles", gameInfo.remainingTiles, {root: true})
+            commit("Game/updateRemainingTiles", parseInt(gameInfo.remainingTiles), {root: true})
         },
 
         async setClaimTiles({commit, dispatch, rootState}) {
@@ -102,13 +113,15 @@ export const Ever: {
 
         async reloadGame({dispatch, commit}) {
             commit('Game/cancelPut', null, {root: true});
-            await dispatch('setField');
+            await dispatch('updateGameStatus');
             await dispatch('setStandings');
             await dispatch('setRemainingTiles');
             await dispatch('setWalletBalance');
             await dispatch('setClaimTiles');
             await dispatch('updateColors');
             commit('Game/calculateRewards', null, {root: true});
+            await dispatch('Game/updateRewardCache', null, {root: true});
+            await dispatch('setField');
         },
 
         async claimTiles({state, rootState}) {
@@ -118,14 +131,36 @@ export const Ever: {
             await EverAPI.wallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, state.game.address.toString());
         },
 
+        async putTiles({state, rootState}) {
+            const ever = rootState.Ever.api;
+            const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
+            const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
+            await EverAPI.wallet.putTiles(wallet,
+                GENESIS_ADDRESS,
+                HOST_ADDRESS,
+                state.game.address.toString(),
+                rootState.Game.payPerMove * 1e9,
+                rootState.PlayerInfo.playerAddress,
+                rootState.Game.tilesToPut);
+        },
+
         async updateColors({commit, rootState}) {
             const game = rootState.Ever.game;
-            const playerColors: Array<Array<Address | number[]>> = await EverAPI.game.getColors(game);
-            const colors = playerColors.find((item: Array<Address | number[]>) => item[0].toString() === rootState.PlayerInfo.playerAddress);
+            const playerColors: Array<[PlayerAddress, number[]]> = await EverAPI.game.getColors(game);
+            const colors = playerColors.find((item: [PlayerAddress, number[]]) => item[0].toString() === rootState.PlayerInfo.playerAddress);
             if (colors !== undefined) {
-
-                commit('PlayerInfo/updateColors', colors[1].map((item)=>parseInt(item)), {root: true});
+                commit('PlayerInfo/updateColors', colors[1].map((item) => parseInt(item)), {root: true});
             }
+        },
+
+        async updateGameStatus({commit, state}) {
+            const gameInfo: GameInfo = await EverAPI.game.getGameInfo(state.game);
+            commit("Game/updateStatus", parseInt(gameInfo.status), {root: true})
+        },
+
+        async claimReward({state, rootState}) {
+            await EverAPI.game.claimReward(state.game, rootState.PlayerInfo.playerAddress);
+
         }
     },
 

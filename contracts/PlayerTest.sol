@@ -24,6 +24,11 @@ contract PlayerTest {
         _;
     }
 
+    modifier ownerOrHost() {
+        require(tvm.pubkey() == msg.pubkey() || msg.sender == gameHost, 101);
+        _;
+    }
+
     constructor(address _rootAddress, address _genesis, address _gameHost) public {
         tvm.accept();
         rootAddress = _rootAddress;
@@ -63,7 +68,7 @@ contract PlayerTest {
         IGameHost(gameHost).deployGame{value: 2 ton, callback: PlayerTest.setGameAddress}(_renderSettings, _gameName);
     }
 
-    function setGameAddress(address _gameAddress) external {
+    function setGameAddress(address _gameAddress) external ownerOrHost {
         tvm.accept();
         tvm.log(format("Player receives: {}", _gameAddress));
         gameAddress = _gameAddress;

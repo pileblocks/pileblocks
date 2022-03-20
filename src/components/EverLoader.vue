@@ -1,8 +1,9 @@
 <template>
-
+    <div></div>
 </template>
 
-<script>
+<script lang="js">
+// @flow
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
 import {PBGameContract} from "@/contract_wrappers/PBGame"
 import {HOST_ADDRESS, TOKEN_ROOT_ADDRESS} from "@/AppConst";
@@ -10,8 +11,8 @@ import {TokenRootContract} from "@/contract_wrappers/TokenRoot";
 import {EverAPI} from "@/api/ever";
 import {GameHostContract} from "@/contract_wrappers/GameHost";
 import {GameIndexContract} from "@/contract_wrappers/GameIndex";
-import type {GameInfo} from "../AppTypes";
-import {_dataToNumbers} from "../utils";
+import type {GameInfo} from "@/AppTypes";
+import {_dataToNumbers} from "@/utils";
 //import {EverscaleStandaloneClient} from "everscale-standalone-client";
 
 export default {
@@ -21,6 +22,12 @@ export default {
     },
     methods: {
         initProvider: async function (ever): Promise<boolean> {
+
+            function asdf(a:number):number {
+                return a
+            }
+            asdf("asd");
+
             let extensionWorks: boolean = false;
             extensionWorks = await EverAPI.isWorking(ever);
 
@@ -47,9 +54,15 @@ export default {
             this.$store.commit("Ever/updateHost", host);
         },
         initGame: async function (ever) {
+
             let host = this.$store.state.Ever.host;
             if (host !== null) {
-                const currentGameId = await EverAPI.host.getCurrentGameId(host);
+                let currentGameId = 0;
+                if (this.$route.name === "Game") {
+                    currentGameId =parseInt(this.$route.params.id) + 1;
+                } else {
+                    currentGameId = await EverAPI.host.getCurrentGameId(host);
+                }
                 const gameIndexAddress = await EverAPI.host._getIndexAddress(host, currentGameId - 1);
                 const gameIndex = new ever.Contract(GameIndexContract.abi, gameIndexAddress);
                 const currentGameAddress = await EverAPI.index.getGameAddress(gameIndex);
@@ -78,6 +91,15 @@ export default {
         setGameName: function(gameInfo:GameInfo) {
             this.$store.commit("Game/updateName", gameInfo.gameName);
         },
+        setGameInitConfig: function(gameInfo:GameInfo) {
+            this.$store.commit("Game/updateInitConfig", {payPerMove: parseInt(gameInfo.renderConfig[2])});
+        },
+        setRewardPerGame: async function () {
+            let totalReward: number = await EverAPI.host.getRewardPerGame(this.$store.state.Ever.host);
+            let totalRewardDynamic: number = totalReward * 85 / 100;
+            this.$store.commit("Game/updateTotalReward", {totalReward: totalReward, totalRewardDynamic: totalRewardDynamic})
+        },
+
         setTotalFieldFragments: function (renderConfig) {
             let totalFragments = parseInt(renderConfig[0]) * parseInt(renderConfig[1]);
             this.$store.commit('Game/updateTotalFieldFragments', totalFragments)
@@ -121,6 +143,8 @@ export default {
         this.setTotalFieldFragments(gameInfo.renderConfig);
         this.setRemainingTiles(gameInfo);
         this.setGameName(gameInfo);
+        this.setGameInitConfig(gameInfo);
+        await this.setRewardPerGame();
         await this.setPlayerAddress();
         await this.setPlayerWallet();
         await this.$store.dispatch('Ever/reloadGame');

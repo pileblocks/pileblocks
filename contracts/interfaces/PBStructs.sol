@@ -14,6 +14,7 @@ struct PlayerInfo {
     bool isPrelast;
     uint64 lastPutTime;
     uint128 reward;
+    bool isReceived;
 }
 
 struct GameInfo {

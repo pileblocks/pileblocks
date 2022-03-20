@@ -70,6 +70,7 @@ export default App;
     background-image: url('~@/assets/game-wp.png');
     background-repeat-y: no-repeat;
     background-size: cover;
+    background-position: center;
 
 }
 

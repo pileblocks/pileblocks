@@ -7,7 +7,6 @@
 
 <script>
 // @flow
-/* eslint flowtype-errors/show-errors: 1 */
 
 import {SELF_PUT_OFFSET} from "@/AppConst";
 
@@ -115,8 +114,8 @@ export default Tile;
 
 <style scoped>
 .pb-tile {
-    width: 19px;
-    height: 19px;
+    width: 21px;
+    height: 21px;
     background-color: rgb(254, 208, 73);
     border: 1px solid var(--secondary);
     padding-top: 2px;

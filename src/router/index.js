@@ -24,7 +24,12 @@ const routes = [
                 return {items: route.params.items.split("/").map((item) => parseInt(item))};
             }
         }
-    }
+    },
+    {
+        path: '/game/:id',
+        name: 'Game',
+        component: Home
+    },
 ]
 
 const router = new VueRouter({

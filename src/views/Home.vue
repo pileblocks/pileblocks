@@ -71,7 +71,7 @@ export default Home;
 
 @media (min-width: 576px) {
     #field-parts-wrapper {
-        justify-content: flex-start;
+        /*justify-content: flex-start;*/
     }
 }
 

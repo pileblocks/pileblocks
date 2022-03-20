@@ -206,19 +206,23 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
     }
 
-    function claimReward(address playerAddress) external {
+    function claimReward() external {
         require(status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
-        if (players.exists(playerAddress)) {
-            PlayerInfo player = players[playerAddress];
-            TvmCell payload;
-            ITokenWallet(gameWallet).transfer{value: 0.3 ton}(
-                player.reward,
-                playerAddress,
-                0 ton,
-                address(this),
-                false,
-                payload
-                );
+        if (players.exists(msg.sender)) {
+            PlayerInfo player = players[msg.sender];
+            if (!player.isReceived) {
+                TvmCell payload;
+                ITokenWallet(gameWallet).transfer{value: 0.3 ton}(
+                    player.reward,
+                    msg.sender,
+                    0 ton,
+                    address(this),
+                    false,
+                    payload
+                    );
+                player.isReceived = true;
+                players[msg.sender] = player;
+            }
         }
     }
 
@@ -308,7 +312,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(msg.sender, 0, false, false, 0, 0);
+            player = PlayerInfo(msg.sender, 0, false, false, 0, 0, false);
         }
     }
 

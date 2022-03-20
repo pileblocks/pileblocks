@@ -22,11 +22,11 @@ export type ToastZeroTilesLeft = {
 }
 
 export type Contract = {
-    methods: function
+    methods: Object
 }
 
 export type PlayerAddress = {
-    toString: function,
+    toString: () => string,
     _address: string
 }
 
@@ -52,12 +52,15 @@ export type GameInfo = {
     status: string,
     gameName: string
 }
+//renderConfig [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
 
 export type RawPlayerStats = {
     captured: string,
     isLast: boolean,
     isPrelast: boolean,
     lastPutTime: string,
-    walletAddress: Address
+    walletAddress: any,
+    reward: string,
+    isReceived: boolean
 }
 

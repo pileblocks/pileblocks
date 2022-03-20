@@ -40,6 +40,24 @@
             Your balance is <b>0 PILE</b>. Please top-up your balance by clicking the <span class="dark-box p-1"><i class="bi bi-cart-check-fill color-primary"></i></span> icon.
         </b-toast>
 
+        <b-toast id="zero-claim" auto-hide-delay="10000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+              <div>You have <b>0 tiles</b> to claim!
+            </div>
+          </template>
+            <p>Please wait for 15 minutes or so to get the first color tiles.</p>
+            <p><b>NOTE:</b>The more you wait, the <b>more</b> you receive!</p>
+        </b-toast>
+
+        <b-toast id="not-enough-pile-to-put" auto-hide-delay="10000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+              <div>Your PILE balance is not enough to put!
+            </div>
+          </template>
+            <p>Currently you have <i>{{balance}} PILE</i>, and the put operation costs <b>{{payPerMove}} PILE</b>.</p>
+            <p>Please top-up your balance!</p>
+        </b-toast>
+
     </div>
 </template>
 
@@ -49,7 +67,9 @@ const ToastManager: {} = {
     name: "ToastManager",
     data: function() {
         return {
-            correctColorNum: 0
+            correctColorNum: 0,
+            balance: 0,
+            payPerMove: 0
         }
     },
     methods: {
@@ -71,6 +91,10 @@ const ToastManager: {} = {
                     break;
                 case "zero-tiles-left":
                     this.correctColorNum = payload.data.colorNumber;
+                    break;
+                case "not-enough-pile-to-put":
+                    this.balance = payload.data.balance;
+                    this.payPerMove = payload.data.payPerMove;
                     break;
             }
             this.$bvToast.show(payload.toastName);
