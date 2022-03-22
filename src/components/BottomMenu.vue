@@ -17,7 +17,7 @@
                     <span v-show="!isLoading">Put <small>{{ this.$store.state.Game.tilesToPut.length }}</small></span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
-                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut">Cancel <i class="bi bi-x-circle"></i></b-button>
+                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut" v-show="!isLoading">Cancel <i class="bi bi-x-circle"></i></b-button>
             </div>
         </div>
         <div v-if="isGameCompleted" class="claim-reward">
@@ -56,7 +56,7 @@ export default {
                 this.$store.commit('Toast/sendToast', {
                     toastName: "zero-claim"
                 });
-                //return;
+                return;
             }
 
             this.isLoading = true;

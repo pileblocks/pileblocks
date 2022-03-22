@@ -118,7 +118,7 @@ export default Tile;
     height: 21px;
     background-color: rgb(254, 208, 73);
     border: 1px solid var(--secondary);
-    padding-top: 2px;
+    line-height: 19px;
     text-align: center;
     cursor: pointer;
     user-select: none;

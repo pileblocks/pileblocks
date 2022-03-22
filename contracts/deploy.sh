@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NWK=dev
+NWK=se
 
 #se
 #dev
@@ -53,7 +53,7 @@ GENESIS_ADDRESS=$(tondev contract deploy Genesis.abi.json -n $NWK -s $SIGNER -v 
 echo "Genesis address: ${GENESIS_ADDRESS}"
 
 echo "Deploying the root token contract..."
-ROOT_TOKEN_ADDRESS=$(tondev contract deploy TokenRoot.abi.json -n $NWK -s $SIGNER -v 2000000000 -d randomNonce_:$NONCE,deployer_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",name_:"50696c65426c6f636b732e636f6d2047616d65466920506c61792d746f2d4561726e",symbol_:"50494c45",decimals_:9,rootOwner_:\"$GENESIS_ADDRESS\",walletCode_:\"$TW_CODE\" -i initialSupplyTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\",initialSupply:0,deployWalletValue:0,mintDisabled:false,burnByRootDisabled:false,burnPaused:false,remainingGasTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
+ROOT_TOKEN_ADDRESS=$(tondev contract deploy TokenRoot.abi.json -n $NWK -s $SIGNER -v 2000000000 -d randomNonce_:$NONCE,deployer_:\"0:0000000000000000000000000000000000000000000000000000000000000000\",name_:"PileBlocks.com GameFi Play-to-Earn",symbol_:"PILE",decimals_:9,rootOwner_:\"$GENESIS_ADDRESS\",walletCode_:\"$TW_CODE\" -i initialSupplyTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\",initialSupply:0,deployWalletValue:0,mintDisabled:false,burnByRootDisabled:false,burnPaused:false,remainingGasTo:\"0:0000000000000000000000000000000000000000000000000000000000000000\" | grep "Address:" | cut -d " " -f 4)
 echo "Root token address: ${ROOT_TOKEN_ADDRESS}"
 
 echo "Deploying Token Sale"

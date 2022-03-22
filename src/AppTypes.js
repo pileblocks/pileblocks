@@ -37,7 +37,8 @@ export type PlayerStats = {
     isLast: boolean,
     isPrelast: boolean,
     lastPutTime: number,
-    reward: number
+    reward: number,
+    isReceived: boolean
 }
 
 export type GameInfo = {

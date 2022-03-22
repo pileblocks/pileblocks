@@ -2,7 +2,7 @@
 
     <div id="app">
         <div class="overlay" v-if="this.$store.state.Ever.isLoading">
-                <img src="/assets/logo.svg" class="img-fluid" alt=""/>
+                <img src="~@/assets/logo.svg" class="img-fluid" alt=""/>
               <b-spinner  variant="primary"></b-spinner>
         </div>
         <div>

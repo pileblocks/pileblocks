@@ -12,15 +12,23 @@
 
                     <b-row v-for="(player, index) in $store.state.Game.standings" :key="player.playerAddress"
                            :class="{active: isCurrentPlayer(player.playerAddress)}">
-                        <b-col class="text-center">{{ index + 1 }}</b-col>
+                        <b-col class="text-center">{{ index + 1 }}
+                        </b-col>
                         <b-col class="text-left">{{ player.playerAddress | short }}</b-col>
-                        <b-col>{{ player.captured }}</b-col>
+                        <b-col>{{ player.captured }}
+                            <i class="bi bi-star-fill gold-star small" v-show="player.isLast"></i>
+                            <i class="bi bi-star gold-star small" v-show="player.isPrelast"></i>
+                        </b-col>
                         <b-col>{{ player.reward | fixed }}</b-col>
                     </b-row>
                     <b-row>
                         <b-col class="mt-2">
-                            <p class="small"><b>Note: </b>Until the game is completed, rewards for the last (10%) and pre-last (5%) tiles are
+                            <p class="small" v-if="gameActive"><b>Note: </b>Until the game is completed, rewards for the last (10%) and pre-last (5%) tiles are
                                 excluded from the calculation.</p>
+                            <p class="small" v-if="!gameActive">
+                               <i class="bi bi-star-fill gold-star"></i> = Player claimed the last tile<br/>
+                               <i class="bi bi-star gold-star"></i> = Player claimed the pre-last tile
+                            </p>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -42,7 +50,7 @@
                 <p><b>NOTE:</b> The more PILE you have, the <b>quicker</b> you'll farm colored tiles.</p>
             </b-modal>
 
-            <img src="/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
+            <img src="~@/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
         </div>
         <div id="top-menu-player-info">
             <p class="mb-0"><span class="text-faded">Balance: </span>
@@ -73,10 +81,11 @@
     </div>
 </template>
 
-<script>
+<script lang="js">
+// @flow
 import BigNumber from "bignumber.js";
 import FancyNumber from "./FancyNumber";
-import {SALE_TOKEN} from "../AppConst";
+import {SALE_TOKEN} from "@/AppConst";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
 
 export default {
@@ -92,6 +101,7 @@ export default {
     },
     methods: {
         animateReward: function (isRaising: boolean) {
+
             this.animatedReward = new BigNumber(this.$store.getters["Game/getReward"]).toFixed(2);
             this.setAnimationClass += "reward-animation ";
             if (isRaising) {
@@ -148,7 +158,9 @@ export default {
             } else {
                 return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalReward).toFixed(1);
             }
-
+        },
+        gameActive: function () {
+            return this.$store.state.Game.status !== GAME_STATUS_COMPLETED;
         }
     },
     mounted() {
@@ -213,5 +225,11 @@ export default {
 
 .medium-procent {
     color: var(--orange);
+}
+.gold-star {
+    color: var(--gray-dark)
+}
+.gold-silver {
+    color: var(--gray)
 }
 </style>

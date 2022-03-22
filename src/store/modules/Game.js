@@ -151,7 +151,8 @@ export const Game: {
                     reward: 0,
                     isLast: state.remainingTiles === 0,
                     isPrelast: state.remainingTiles === 1,
-                    lastPutTime: Date.now()
+                    lastPutTime: Date.now(),
+                    isReceived: false
                 }
                 state.standings.push(newPlayer);
             }

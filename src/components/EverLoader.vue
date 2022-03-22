@@ -22,12 +22,6 @@ export default {
     },
     methods: {
         initProvider: async function (ever): Promise<boolean> {
-
-            function asdf(a:number):number {
-                return a
-            }
-            asdf("asd");
-
             let extensionWorks: boolean = false;
             extensionWorks = await EverAPI.isWorking(ever);
 
