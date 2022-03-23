@@ -65,8 +65,7 @@ export default Home;
 #field-parts-wrapper {
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    height: 100%;
+    min-height: 100%;
 }
 
 @media (min-width: 576px) {

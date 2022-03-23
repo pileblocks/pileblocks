@@ -57,12 +57,15 @@
                 <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
                 <i class="bi bi-cart-check-fill color-primary pl-1" v-on:click="$bvModal.show('sale-token')"></i>
             </p>
-            <div class="mb-0 d-inline-block"><span class="text-faded pr-1">Your Reward: </span>
-                <div class="d-inline-block position-absolute">
-                    <fancy-number :value='this.$store.getters["Game/getReward"]'/>
-                    (<span
-                    :class="rewardProcentClass()">{{ rewardProcent }}%</span>)
-                    <div :class="setAnimationClass">{{ animatedReward }}</div>
+            <div class="reward-grid">
+                <div class="reward-label"><span class="text-faded pr-1">Your Reward: </span></div>
+                <div class="reward-value">
+                    <div class="d-inline-block position-absolute">
+                        <fancy-number :value='this.$store.getters["Game/getReward"]'/>
+                        (<span
+                        :class="rewardProcentClass()">{{ rewardProcent }}%</span>)
+                        <div :class="setAnimationClass">{{ animatedReward }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -229,7 +232,20 @@ export default {
 .gold-star {
     color: var(--gray-dark)
 }
-.gold-silver {
-    color: var(--gray)
+.reward-grid {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 5em 1fr;
 }
+
+.reward-label {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.reward-value {
+    grid-column: 2;
+    grid-row: 1;
+}
+
 </style>

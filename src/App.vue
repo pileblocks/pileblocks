@@ -93,7 +93,7 @@ export default App;
 
 .game-container {
     display: grid;
-    grid-template-rows: 80px 9fr 2fr;
+    grid-template-rows: 80px 9fr 90px;
     grid-template-columns: 1fr;
     height: calc(100vh - 60px);
     overflow-y: hidden;
