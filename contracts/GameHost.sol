@@ -128,7 +128,7 @@ contract GameHost is PBConstants {
         }
     }
 
-    function deployGame(uint24[] _renderSettings, string _gameName) external view responsible returns (address) {
+    function deployGame(uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) external view responsible returns (address) {
         address imageOwner = msg.sender;
         TvmCell stateInit = tvm.buildStateInit({
             contr: PBGame,
@@ -145,7 +145,7 @@ contract GameHost is PBConstants {
             stateInit: stateInit,
             value: 0,
             flag: 64
-        }(_renderSettings, _gameName);
+        }(_renderSettings, _gameName, _gameStartTime);
         tvm.log(format("New game: {}", game));
         return game;
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NWK=se
+NWK=dev
 
 #se
 #dev
@@ -70,11 +70,13 @@ echo "Player1 address: ${PLAYER1_ADDRESS}"
 
 NONCE=$(date +%s)
 
+GAMESTARTDATE=$(expr $(date +%s) + 1000)
+
 PLAYER2_ADDRESS=$(tondev contract deploy PlayerTest.abi.json -n $NWK -s $SIGNER -v 1000000000 -d _randomNonce:$NONCE -i "{\"_rootAddress\": \"$ROOT_TOKEN_ADDRESS\", \"_genesis\": \"$GENESIS_ADDRESS\", \"_gameHost\": \"$GAME_HOST\"}" | grep "Address:" | cut -d " " -f 4)
 
 echo "Player2 address: ${PLAYER2_ADDRESS}"
 
-TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i '{"_renderSettings": [1, 2, 25, 5, 16711422, 11186364, 12456217, 3093818, 1974824], "_gameName": "Follow the White Rabbit 🐇"}')
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i  "{\"_renderSettings\": [1, 2, 100, 5, 16711422, 11186364, 12456217, 3093818, 1974824], \"_gameName\": \"Follow the White Rabbit 🐇\", \"_gameStartTime\": $GAMESTARTDATE}")
 
 GAME_ADDRESS=$(tondev contract run-local PlayerTest.abi.json -n $NWK -s $SIGNER -a $PLAYER1_ADDRESS gameAddress | grep "gameAddress" | cut -d " " -f 10 | tr -d '"')
 echo "GAME address: $GAME_ADDRESS"

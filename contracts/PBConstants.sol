@@ -21,6 +21,7 @@ contract PBConstants {
     uint16 constant MAX_TILES_EXCEEDED = 1017;
     uint16 constant WRONG_ROOT_TOKEN_ADDRESS = 1018;
     uint16 constant WRONG_GAME_ADDRESS = 1019;
+    uint16 constant GAME_NOT_STARTED = 1020;
 
     // Game status
     uint8 constant STATUS_GAME_DRAFT = 1;

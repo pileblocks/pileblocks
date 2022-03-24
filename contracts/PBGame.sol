@@ -34,6 +34,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     uint24[] renderSettings;
     uint128 tokensPerPut;
     string gameName;
+    uint64 gameStartTime;
 
     mapping(address => PlayerInfo) public players;
     mapping(address => uint16[]) public playerColors;
@@ -55,7 +56,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         _;
     }
 
-    constructor (uint24[] _renderSettings, string _gameName) public {
+    constructor (uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) public {
 
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
@@ -66,6 +67,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
 
         require(msg.sender == gameHost, INVALID_GAME_HOST);
         gameName = _gameName;
+        gameStartTime = _gameStartTime;
         //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
         renderSettings = _renderSettings;
         vertFragments = uint8(renderSettings[0]);
@@ -138,6 +140,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
     function onClaimTiles(address ownerAddress, uint16 tilesNum) external internalMsg {
         require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
+        require(now >= gameStartTime, GAME_NOT_STARTED);
 
         uint16[] pColors = playerColors[ownerAddress];
         if (pColors.empty()) {
@@ -394,7 +397,8 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
                     gameHost,
                     renderSettings,
                     status,
-                    gameName
+                    gameName,
+                    gameStartTime
         );
     }
 

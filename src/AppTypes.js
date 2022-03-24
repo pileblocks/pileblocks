@@ -51,7 +51,8 @@ export type GameInfo = {
     gameHost: string,
     renderConfig: string[],
     status: string,
-    gameName: string
+    gameName: string,
+    gameStartTime: string
 }
 //renderConfig [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
 

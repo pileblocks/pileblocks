@@ -1,11 +1,15 @@
 import {Address, Contract, ProviderRpcClient} from "everscale-inpage-provider";
 import type {RawPlayerStats} from "../AppTypes";
 import type {TileCoordinatePlusColor} from "../AppTypes";
+import {LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED} from "@/AppConst";
 
 export const EverAPI = {
 
-    isWorking: function (ever): Promise<boolean> {
-        return ever.hasProvider()
+    isWorking: async function (ever): Promise<boolean> {
+        if (await ever.hasProvider()) {
+            return LOADING_STATUS_PROVIDER_LOADED;
+        }
+        return LOADING_STATUS_PROVIDER_NOT_LOADED;
     },
     initWallet: async function (ever: ProviderRpcClient): Promise<string> {
 

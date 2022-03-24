@@ -63,9 +63,9 @@ contract PlayerTest {
 //    GAME OPERATIONS
 //
 
-    function deployGame(uint24[] _renderSettings, string _gameName) onlyOwner external returns(address) {
+    function deployGame(uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) onlyOwner external returns(address) {
         tvm.accept();
-        IGameHost(gameHost).deployGame{value: 2 ton, callback: PlayerTest.setGameAddress}(_renderSettings, _gameName);
+        IGameHost(gameHost).deployGame{value: 2 ton, callback: PlayerTest.setGameAddress}(_renderSettings, _gameName, _gameStartTime);
     }
 
     function setGameAddress(address _gameAddress) external ownerOrHost {

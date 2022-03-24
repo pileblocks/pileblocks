@@ -16,14 +16,15 @@ export const Ever: {
         isLoading: boolean,
         tokenRoot: Contract | null,
         host: Contract | null,
-        game: Contract | null
+        game: Contract | null,
+        loadingStatus: number
     }
 } = {
     namespaced: true,
     state: {
         api: null,
         isLoading: true,
-        extensionWorks: false,
+        loadingStatus: 0,
         tokenRoot: null,
         host: null,
         game: null
@@ -35,8 +36,8 @@ export const Ever: {
         toggleLoading(state, isLoading: boolean) {
             state.isLoading = isLoading;
         },
-        updateExtensionWorks(state, isWorking: boolean) {
-            state.extensionWorks = isWorking;
+        updateLoadingStatus(state, newStatus: number) {
+            state.loadingStatus = newStatus;
         },
         updateTokenRoot(state, tokenRoot) {
             state.tokenRoot = tokenRoot;

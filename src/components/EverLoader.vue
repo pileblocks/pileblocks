@@ -6,7 +6,12 @@
 // @flow
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
 import {PBGameContract} from "@/contract_wrappers/PBGame"
-import {HOST_ADDRESS, TOKEN_ROOT_ADDRESS} from "@/AppConst";
+import {
+    HOST_ADDRESS, LOADING_STATUS_GAME_PENDING,
+    LOADING_STATUS_NO_PERMISSIONS,
+    LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED,
+    TOKEN_ROOT_ADDRESS
+} from "@/AppConst";
 import {TokenRootContract} from "@/contract_wrappers/TokenRoot";
 import {EverAPI} from "@/api/ever";
 import {GameHostContract} from "@/contract_wrappers/GameHost";
@@ -21,21 +26,21 @@ export default {
         return {}
     },
     methods: {
-        initProvider: async function (ever): Promise<boolean> {
-            let extensionWorks: boolean = false;
-            extensionWorks = await EverAPI.isWorking(ever);
+        initProvider: async function (ever): Promise<number> {
 
-            if (extensionWorks) {
+            let loadingStatus: number = await EverAPI.isWorking(ever);
+
+            if (loadingStatus === LOADING_STATUS_PROVIDER_LOADED) {
                 await ever.ensureInitialized();
                 this.$store.commit("Ever/updateApi", ever);
                 try {
                     await EverAPI.initWallet(ever);
                 } catch (e) {
-                    extensionWorks = false;
+                    loadingStatus = LOADING_STATUS_NO_PERMISSIONS;
                 }
             }
-            this.$store.commit("Ever/updateExtensionWorks", extensionWorks);
-            return extensionWorks
+            this.$store.commit("Ever/updateLoadingStatus", loadingStatus);
+            return loadingStatus
         },
         initTokenRoot: function (ever) {
             const tokenRootAddress = new Address(TOKEN_ROOT_ADDRESS);
@@ -110,6 +115,10 @@ export default {
                 const wallet = await EverAPI.tokenRoot.getWallet(this.$store.state.Ever.tokenRoot, this.$store.state.PlayerInfo.playerAddress);
                 this.$store.commit("PlayerInfo/updateWalletAddress", wallet);
             }
+        },
+        setGameStartTime: function(gameInfo:GameInfo) {
+            this.$store.commit("Game/updateGameStartTime", parseInt(gameInfo.gameStartTime));
+            return parseInt(gameInfo.gameStartTime);
         }
 
     },
@@ -122,7 +131,7 @@ export default {
             //     }),
         });
 
-        if (!await this.initProvider(ever)) {
+        if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
             this.$store.commit('Ever/toggleLoading', false);
             return
         }
@@ -131,6 +140,13 @@ export default {
         await this.initGame(ever);
 
         const gameInfo = await EverAPI.game.getGameInfo(this.$store.state.Ever.game);
+
+        if (this.setGameStartTime(gameInfo) > new Date().getTime() / 1000) {
+            this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_GAME_PENDING);
+            this.$store.commit('Ever/toggleLoading', false);
+            return;
+        }
+
         //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
         await this.setTemplate();
         this.setGameColors(gameInfo.renderConfig);

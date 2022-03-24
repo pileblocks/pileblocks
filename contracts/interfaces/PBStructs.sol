@@ -28,4 +28,5 @@ struct GameInfo {
     uint24[] renderConfig;
     uint8 status;
     string gameName;
+    uint64 gameStartTime;
 }

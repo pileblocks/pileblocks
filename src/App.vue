@@ -13,7 +13,7 @@
             <div id="color-5" class="color-5"></div>
             <ever-loader></ever-loader>
         </div>
-        <div class="game-container" v-if="this.$store.state.Ever.extensionWorks && !this.$store.state.Ever.isLoading">
+        <div class="game-container" v-if="!gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
             <top-menu id="top-menu" class="stat-block"/>
             <div id="field">
                 <router-view/>
@@ -21,10 +21,13 @@
             <bottom-menu id="bottom-menu"/>
             <toast-manager></toast-manager>
         </div>
-        <div class="game-container" v-if="!this.$store.state.Ever.extensionWorks && !this.$store.state.Ever.isLoading">
+        <div class="game-container" v-if="!gamePending && !providerLoaded && !this.$store.state.Ever.isLoading">
             <div class="game-error-notification">
                 <div class="fancy-font stat-block text-center">Install the EVER wallet or update the permissions</div>
             </div>
+        </div>
+        <div class="game-container" v-if="gamePending && !this.$store.state.Ever.isLoading">
+            <game-countdown></game-countdown>
         </div>
     </div>
 
@@ -37,16 +40,28 @@ import BottomMenu from "./components/BottomMenu";
 import ToastManager from "./components/ToastManager";
 import TopMenu from "./components/TopMenu";
 import EverLoader from "./components/EverLoader";
+import {
+    LOADING_STATUS_GAME_PENDING,
+    LOADING_STATUS_NO_PERMISSIONS,
+    LOADING_STATUS_PROVIDER_NOT_LOADED
+} from "@/AppConst";
+import GameCountdown from "@/components/GameCountdown";
 
 const App: {} = {
     name: 'App',
-    components: {EverLoader, TopMenu, ToastManager, BottomMenu},
-    computed: {},
+    components: {GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
+    computed: {
+        providerLoaded: function() {
+            return !(this.$store.state.Ever.loadingStatus in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]);
+        },
+        gamePending: function() {
+            return this.$store.state.Ever.loadingStatus === LOADING_STATUS_GAME_PENDING;
+        }
+    },
     data: function() {
         return {
         }
-    },
-
+    }
 }
 export default App;
 </script>
