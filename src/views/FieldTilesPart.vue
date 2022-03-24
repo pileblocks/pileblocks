@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="d-flex mb-2 justify-content-center mt-3 mb-3">
+        <div class="d-flex mb-2 justify-content-center mt-2 mb-2">
             <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
             <p class="lead fragment-number mb-0 ml-2" v-on:click="updateFlag">{{ currentFragment() }} of {{totalFragments}}</p>
         </div>

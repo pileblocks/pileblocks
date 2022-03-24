@@ -1,6 +1,6 @@
 <template>
     <div id="field-parts-wrapper">
-        <div class="stat-block text-left field-stats">
+        <div class="stat-block text-left field-stats mt-1 mb-1">
             <p class="mb-0" v-on:click="updateStandings"><small>YOU CAPTURED:</small> {{ $store.getters["Game/getCapturedTiles"] }}
             </p>
             <p class="mb-0"><small>REMAINING:</small> {{ $store.state.Game.remainingTiles }}</p>
@@ -66,6 +66,7 @@ export default Home;
     display: flex;
     flex-direction: column;
     min-height: 100%;
+    justify-content: space-evenly;
 }
 
 @media (min-width: 576px) {

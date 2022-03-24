@@ -87,15 +87,15 @@ export default App;
 #loader {
     display: flex;
     justify-content: center;
-    height: calc(100vh - 60px);
+    height: 100%;
     overflow-y: hidden;
 }
 
 .game-container {
     display: grid;
-    grid-template-rows: 80px 9fr 90px;
+    grid-template-rows: 75px 1fr 90px;
     grid-template-columns: 1fr;
-    height: calc(100vh - 60px);
+    height: 100%;
     overflow-y: hidden;
 }
 
@@ -105,10 +105,6 @@ export default App;
     display: flex;
     justify-content: center;
     flex-direction: column;
-}
-
-body {
-    height: calc(100vh - 60px);
 }
 
 #top-menu {
@@ -164,11 +160,15 @@ body {
     grid-row: 3;
     grid-column: 1;
     grid-template-rows: 1fr;
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 4fr 2fr;
     border-top-color: #fff;
     border-top-width: 1px;
     border-top-style: solid;
 
+}
+
+body, html {
+    height: 100%;
 }
 
 .logo-img {
@@ -198,7 +198,7 @@ body {
 .field-stats {
     display: flex;
     column-gap: 1em;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 .d-contents {
