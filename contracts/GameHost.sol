@@ -229,6 +229,10 @@ contract GameHost is PBConstants {
         return address(tvm.hash(stateInit));
     }
 
+    function isNextGameEmpty() external view returns (bool) {
+        return nextGameAddress == address(0);
+    }
+
 //
 //  DRAIN functions
 //

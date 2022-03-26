@@ -20,6 +20,7 @@ import "./interfaces/IGenesis.sol";
     @title Fungible token wallet contract
 */
 contract TokenWallet is
+    TokenWalletBaseFarming,
     TokenWalletBurnableBase,
     TokenWalletBurnableByRootBase,
     TokenWalletDestroyableBase

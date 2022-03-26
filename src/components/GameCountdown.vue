@@ -1,6 +1,6 @@
 <template>
     <div class="game-error-notification fancy-font stat-block">
-        <div class="text-center lead mb-4"> The new game will <span class="emphasis">start</span> in:</div>
+        <div class="text-center lead mb-4"> The new game <span class="emphasis">starts</span> in:</div>
         <div class="d-flex width-100 justify-content-evenly mb-4">
             <div class="time-cell d-flex flex-column">
                 <div class="text-center countdown-value">{{ rDate.rDays }}</div>

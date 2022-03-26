@@ -38,6 +38,13 @@ export const EverAPI = {
                 .call();
             return parseInt(result.currentGameId);
         },
+        isNextGameEmpty: async function (gHost): Promise<boolean> {
+            const result = await gHost
+                .methods
+                .isNextGameEmpty({})
+                .call();
+            return result.value0;
+        },
         _getIndexAddress: async function (gHost, gameId: number): Promise<Address> {
             const result = await gHost
                 .methods

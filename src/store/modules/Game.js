@@ -2,7 +2,7 @@
 
 import type {TileCoordinatePlusColor, PlayerStats} from "@/AppTypes";
 import Vue from "vue";
-import {GAME_STATUS_COMPLETED} from "@/AppConst";
+//import {GAME_STATUS_COMPLETED} from "@/AppConst";
 
 
 export const Game: {
@@ -112,9 +112,9 @@ export const Game: {
                     return first.lastPutTime - second.lastPutTime;
                 }
             });
-            if (state.status === GAME_STATUS_COMPLETED) {
-                return;
-            }
+            // if (state.status === GAME_STATUS_COMPLETED) {
+            //     return;
+            // }
             let numberOfTiles = 0;
             let rewardCoeff = 0;
             if (state.standings.length > 0) {

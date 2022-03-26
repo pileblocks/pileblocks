@@ -5,9 +5,10 @@ import {_dataToNumbers} from "@/utils"
 import type {PlayerStats, RawPlayerStats, Contract} from "@/AppTypes";
 import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
-import {GAME_STATUS_COMPLETED, GENESIS_ADDRESS, HOST_ADDRESS} from "@/AppConst";
+import {GENESIS_ADDRESS, HOST_ADDRESS} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
-import BigNumber from "bignumber.js";
+//import {GAME_STATUS_COMPLETED} from "@/AppConst";
+//import BigNumber from "bignumber.js";
 import type {PlayerAddress} from "@/AppTypes";
 
 export const Ever: {
@@ -65,12 +66,15 @@ export const Ever: {
                 tmpPlayer.playerAddress = player[0].toString();
                 tmpPlayer.captured = parseInt(player[1].captured);
                 tmpPlayer.isLast = player[1].isLast;
+                tmpPlayer.reward = rootState.Game.cachedReward;
 
-                if (tmpPlayer.playerAddress === rootState.PlayerInfo.playerAddress && rootState.Game.status !== GAME_STATUS_COMPLETED) {
-                    tmpPlayer.reward = rootState.Game.cachedReward;
-                } else {
-                    tmpPlayer.reward = new BigNumber(player[1].reward).dividedBy(1e9).toNumber();
-                }
+                // We cannot use it right away since the reward calculation is asynchronous, so we would need another status to just collect
+                // the result of the blockchain calculation. Thankfully, the client-side calc works good as well.
+                // if (tmpPlayer.playerAddress === rootState.PlayerInfo.playerAddress && rootState.Game.status !== GAME_STATUS_COMPLETED) {
+                //     tmpPlayer.reward = rootState.Game.cachedReward;
+                // } else {
+                //     tmpPlayer.reward = new BigNumber(player[1].reward).dividedBy(1e9).toNumber();
+                // }
                 tmpPlayer.isPrelast = player[1].isPrelast;
                 tmpPlayer.lastPutTime = parseInt(player[1].lastPutTime);
                 tmpPlayer.walletAddress = player[1].walletAddress.toString();

@@ -61,6 +61,9 @@ export default {
                     currentGameId =parseInt(this.$route.params.id) + 1;
                 } else {
                     currentGameId = await EverAPI.host.getCurrentGameId(host);
+                    if (!await EverAPI.host.isNextGameEmpty(host)) {
+                        currentGameId -= 1;
+                    }
                 }
                 const gameIndexAddress = await EverAPI.host._getIndexAddress(host, currentGameId - 1);
                 const gameIndex = new ever.Contract(GameIndexContract.abi, gameIndexAddress);
@@ -133,7 +136,7 @@ export default {
 
         if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
             this.$store.commit('Ever/toggleLoading', false);
-            return
+            return;
         }
         this.initTokenRoot(ever);
         this.initHost(ever);

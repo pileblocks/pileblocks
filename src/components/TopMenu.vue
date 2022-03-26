@@ -15,7 +15,7 @@
                         <b-col class="text-center">{{ index + 1 }}
                         </b-col>
                         <b-col class="text-left">{{ player.playerAddress | short }}</b-col>
-                        <b-col>{{ player.captured }}
+                        <b-col class="text-center p-0">{{ player.captured }}
                             <i class="bi bi-star-fill gold-star small" v-show="player.isLast"></i>
                             <i class="bi bi-star gold-star small" v-show="player.isPrelast"></i>
                         </b-col>

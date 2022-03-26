@@ -23,8 +23,6 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
     // Farming
     uint128 tilesNum;
     uint128 tilesChangeTime;
-    uint128 prevBalance;
-    uint128 totalTime;
 
     modifier onlyRoot() {
         require(root_ == msg.sender, TokenErrors.NOT_ROOT);
@@ -79,9 +77,9 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
         } else {
             recipientWallet = address(tvm.hash(stateInit));
         }
-            
+
+        notifyBalanceChange();
         balance_ -= amount;
-        notifyBalanceChange(balance_);
 
         ITokenWallet(recipientWallet).acceptTransfer{ value: 0, flag: TokenMsgFlag.ALL_NOT_RESERVED, bounce: true }(
             amount,
@@ -118,8 +116,8 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
 
         tvm.rawReserve(_reserve(), 0);
 
+        notifyBalanceChange();
         balance_ -= amount;
-        notifyBalanceChange(balance_);
 
         ITokenWallet(recipientTokenWallet).acceptTransfer{ value: 0, flag: TokenMsgFlag.ALL_NOT_RESERVED, bounce: true }(
             amount,
@@ -154,8 +152,11 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
 
         tvm.rawReserve(_reserve(), 2);
 
+        if (balance_ == 0) {
+            tilesChangeTime = now;
+        }
+
         balance_ += amount;
-        notifyBalanceChange(balance_);
 
         if (notify) {
             IAcceptTokensTransferCallback(owner_).onAcceptTokensTransfer{
@@ -189,8 +190,8 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
     {
         tvm.rawReserve(_reserve(), 2);
 
+        notifyBalanceChange();
         balance_ += amount;
-        notifyBalanceChange(balance_);
 
         if (notify) {
             IAcceptTokensMintCallback(owner_).onAcceptTokensMint{
@@ -221,8 +222,9 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
 
         if (functionId == tvm.functionId(ITokenWallet.acceptTransfer)) {
             uint128 amount = body.decode(uint128);
+            notifyBalanceChange();
             balance_ += amount;
-            notifyBalanceChange(balance_);
+
             IBounceTokensTransferCallback(owner_).onBounceTokensTransfer{
                 value: 0,
                 flag: TokenMsgFlag.ALL_NOT_RESERVED + TokenMsgFlag.IGNORE_ERRORS,
@@ -234,8 +236,9 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
             );
         } else if (functionId == tvm.functionId(ITokenRoot.acceptBurn)) {
             uint128 amount = body.decode(uint128);
+            notifyBalanceChange();
             balance_ += amount;
-            notifyBalanceChange(balance_);
+
             IBounceTokensBurnCallback(owner_).onBounceTokensBurn{
                 value: 0,
                 flag: TokenMsgFlag.ALL_NOT_RESERVED + TokenMsgFlag.IGNORE_ERRORS,
@@ -258,8 +261,8 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
 
         tvm.rawReserve(_reserve(), 0);
 
+        notifyBalanceChange();
         balance_ -= amount;
-        notifyBalanceChange(balance_);
 
         ITokenRoot(root_).acceptBurn{ value: 0, flag: TokenMsgFlag.ALL_NOT_RESERVED, bounce: true }(
             amount,
@@ -292,17 +295,9 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
     function _buildWalletInitData(address walletOwner) virtual internal view returns (TvmCell);
     function _deployWallet(TvmCell initData, uint128 deployWalletValue, address remainingGasTo) virtual internal view returns (address);
 
-    function notifyBalanceChange(uint128 tokenBalance) private {
-        uint128 timeDelta = now - tilesChangeTime;
-        tilesNum += calcFarming(now - tilesChangeTime, prevBalance);
-        tilesNum = cropTiles(tilesNum);
+    function notifyBalanceChange() private {
+        tilesNum = showTiles();
         tilesChangeTime = now;
-        prevBalance = tokenBalance;
-        totalTime += timeDelta;
-        tvm.log(format("New balance: {}", tokenBalance));
-        tvm.log(format("New totalTime: {}", totalTime));
-        tvm.log(format("New timeDelta: {}", timeDelta));
-        tvm.log(format("New tiles: {}", tilesNum));
     }
 
     function log_2(uint128 x) private pure returns (uint128) {
@@ -332,7 +327,7 @@ abstract contract TokenWalletBaseFarming is ITokenWallet {
     }
 
     function showTiles() public view returns (uint16) {
-        return cropTiles(tilesNum + calcFarming(now - tilesChangeTime, prevBalance));
+        return cropTiles(tilesNum + calcFarming(now - tilesChangeTime, balance_));
     }
 
 }

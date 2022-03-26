@@ -14,12 +14,8 @@
             </div>
           </template>
             Unfortunately, <b>0 tiles</b> of color <div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div> left.<br/>
-            Please <b>choose</b> another color from the bottom menu<br/>
-            <video autoplay="true" width="118" height="53">
-                <source src="/assets/video/zero_tiles_left.mp4" type="video/mp4">
-                <source src="/assets/video/zero_tiles_left.webm" type="video/webm">
-                <source src="/assets/video/zero_tiles_left.ogv" type="video/ogg">
-            </video>
+            Please <b>choose</b> another color from the bottom menu<br/><br/>
+            <img src="~@/assets/colors.png"  width="131" height="53" alt=""/>
             <br/>
             or <b>CLAIM</b> more tiles.
         </b-toast>
