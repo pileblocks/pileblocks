@@ -6,12 +6,14 @@ pragma AbiHeader pubkey;
 import "./interfaces/ITokenRoot.sol";
 import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IGameHost.sol";
+import "./interfaces/IAcceptTokensTransferCallback.sol";
 
 import "./TokenWallet.sol";
 import "./PBConstants.sol";
 import "./abstract/RewardCalculatorShouldering.sol";
 
-contract PBGame is PBConstants, RewardCalculatorShouldering {
+
+contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransferCallback {
 
     // PILE token info
     TvmCell static walletCode;
@@ -162,21 +164,39 @@ contract PBGame is PBConstants, RewardCalculatorShouldering {
         @param tokensNum - the allocated amount of tokens a game can receive
         @param balance - the balance of the sending token wallet
     */
-    function onPutTiles(address ownerAddress, ColorTile[] tiles, uint128 tokensNum) external {
+
+    function onAcceptTokensTransfer(
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) override external {
+        require(msg.sender == gameWallet, WRONG_NOTIFICATION_SENDER);
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
-        require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(msg.value >= MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
-        require(tokensNum == tokensPerPut, INVALID_TOKENS_PER_PUT);
+        require(amount == tokensPerPut, INVALID_TOKENS_PER_PUT);
+
+        ColorTile[] tiles;
+
+        if (!payload.toSlice().empty()) {
+            tiles = abi.decode(payload, (ColorTile[]));
+        }
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
+
         // Reserve a fee per put
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
-        bool isError = false;
 
-        isError = addTilesToField(tiles, ownerAddress);
+        addTilesToField(tiles, sender);
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
+    }
+
+    function packTiles(ColorTile[] tiles) external pure returns (TvmCell){
+        return abi.encode(tiles);
     }
 
     function completeGame(uint128 totalReward) external internalMsg {

@@ -5,7 +5,7 @@ import {_dataToNumbers} from "@/utils"
 import type {PlayerStats, RawPlayerStats, Contract} from "@/AppTypes";
 import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
-import {GENESIS_ADDRESS, HOST_ADDRESS} from "@/AppConst";
+import {GENESIS_ADDRESS} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
 //import {GAME_STATUS_COMPLETED} from "@/AppConst";
 //import BigNumber from "bignumber.js";
@@ -134,20 +134,21 @@ export const Ever: {
             const ever = rootState.Ever.api;
             const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
             const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
-            await EverAPI.wallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, state.game.address.toString());
+            await EverAPI.wallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, state.game.address.toString(), GENESIS_ADDRESS);
         },
 
         async putTiles({state, rootState}) {
             const ever = rootState.Ever.api;
             const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
             const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
+
+            const tilesPayload = await EverAPI.game.packTiles(state.game, rootState.Game.tilesToPut);
             await EverAPI.wallet.putTiles(wallet,
-                GENESIS_ADDRESS,
-                HOST_ADDRESS,
-                state.game.address.toString(),
                 rootState.Game.payPerMove * 1e9,
+                state.game.address.toString(),
                 rootState.PlayerInfo.playerAddress,
-                rootState.Game.tilesToPut);
+                tilesPayload
+            );
         },
 
         async updateColors({commit, rootState}) {

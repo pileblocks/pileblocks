@@ -5,6 +5,7 @@ pragma AbiHeader pubkey;
 
 import "./interfaces/IGameHost.sol";
 import "./interfaces/ITokenRoot.sol";
+import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IPBWallet.sol";
 import "./interfaces/IPBGame.sol";
 import "./interfaces/PBStructs.sol";
@@ -51,12 +52,12 @@ contract PlayerTest {
 
     function claimTiles() onlyOwner external {
         tvm.accept();
-        IPBWallet(walletAddress).claimTiles{value: 1 ton}(gameAddress);
+        IPBWallet(walletAddress).claimTiles{value: 1 ton}(gameAddress, address(0));
     }
 
-    function putTiles(ColorTile[] tiles) onlyOwner external {
+    function putTiles(ColorTile[] tiles, uint128 amount) onlyOwner external {
         tvm.accept();
-        IPBWallet(walletAddress).putTiles{value: 2 ton}(genesis, gameHost, gameAddress, 25 * 1e9, tiles);
+        ITokenWallet(walletAddress).transfer{value: 2 ton}(amount, gameAddress, 0, address(this), true, abi.encode(tiles));
     }
 
 //

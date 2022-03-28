@@ -80,34 +80,12 @@ contract TokenWallet is
     /*
         @dev The owner wallet sends the request to claim tiles, and the wallet sends them to a game
     */
-    function claimTiles(address gameAddress) external onlyOwner {
+    function claimTiles(address gameAddress, address genesis) external onlyOwner {
         tvm.rawReserve(address(this).balance - msg.value, 0);
         uint16 existingTiles = showTiles();
         tilesNum = 0;
         tilesChangeTime = now;
+        IGenesis(genesis).giveHomage();
         IPBGame(gameAddress).onClaimTiles{value: 0, flag: 128, bounce: false}(owner_, existingTiles);
     }
-    /*
-        @dev The owner wallet sends the request to put tiles, and the wallet sends the data to a game
-    */
-    function putTiles(address genesis, address gameHost, address gameAddress, uint128 tokensNum, ColorTile[] tiles) external onlyOwner {
-        require(balance_ >= tokensNum, TokenErrors.NOT_ENOUGH_BALANCE);
-        tvm.rawReserve(address(this).balance - msg.value, 0);
-        balance_ -= tokensNum;
-        TvmCell stateInit = _buildWalletInitData(gameHost);
-        address recipientWallet = address(tvm.hash(stateInit));
-        TvmCell payload;
-
-        ITokenWallet(recipientWallet).acceptTransfer{ value: 0.1 ton}(
-            tokensNum,
-            owner_,
-            owner_,
-            false,
-            payload
-        );
-
-        IGenesis(genesis).giveHomage();
-        IPBGame(gameAddress).onPutTiles{value: 0, flag: 128, bounce: false}(owner_, tiles, tokensNum);
-    }
-
 }

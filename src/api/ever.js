@@ -118,6 +118,13 @@ export const EverAPI = {
                     bounce: true,
                 });
 
+        },
+        packTiles: async function(gameContract: Contract, tiles: Array<TileCoordinatePlusColor>) {
+            const result = await gameContract
+                .methods
+                .packTiles({tiles: tiles})
+                .call();
+            return result.value0;
         }
     },
     wallet: {
@@ -140,22 +147,24 @@ export const EverAPI = {
                 .call();
             return parseInt(result.value0);
         },
-        putTiles: async function (walletContract: Contract, genesis: string, gameHost: string, gameAddress: string, payPerMove: number, playerAddress: string, tiles: Array<TileCoordinatePlusColor>) {
+
+
+        putTiles: async function (walletContract: Contract, payPerMove: number, gameAddress: string, playerAddress: string, tilesPayload: string) {
             const pAddress = new Address(playerAddress);
             await walletContract
                 .methods
-                .putTiles({genesis: genesis, gameHost: gameHost, gameAddress: gameAddress, tokensNum: payPerMove, tiles: tiles})
+                .transfer({amount: payPerMove, recipient: gameAddress, deployWalletValue: 0, remainingGasTo: playerAddress, notify: true, payload: tilesPayload})
                 .send({
                     from: pAddress,
                     amount: '2000000000',
                     bounce: true,
                 });
         },
-        claimTiles: async function (walletContract: Contract, playerAddress: string, gameAddress: string) {
+        claimTiles: async function (walletContract: Contract, playerAddress: string, gameAddress: string, genesisAddress: string) {
             const pAddress = new Address(playerAddress);
             await walletContract
                 .methods
-                .claimTiles({gameAddress: gameAddress})
+                .claimTiles({gameAddress: gameAddress, genesis: genesisAddress})
                 .send({
                     from: pAddress,
                     amount: '1000000000',

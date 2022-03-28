@@ -68,6 +68,7 @@ export default {
                 const gameIndexAddress = await EverAPI.host._getIndexAddress(host, currentGameId - 1);
                 const gameIndex = new ever.Contract(GameIndexContract.abi, gameIndexAddress);
                 const currentGameAddress = await EverAPI.index.getGameAddress(gameIndex);
+                console.log(`Game address: ${currentGameAddress}`);
                 const game = new ever.Contract(PBGameContract.abi, currentGameAddress);
                 this.$store.commit("Ever/updateGame", game);
             }
