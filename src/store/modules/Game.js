@@ -148,7 +148,7 @@ export const Game: {
         addTileAction({ commit, state, rootState }, tilePlusColor: TileCoordinatePlusColor) {
             state.remainingTiles -= 1;
             commit('addTile', tilePlusColor);
-            let player = state.standings.find((player: PlayerStats) => player.walletAddress === rootState.PlayerInfo.walletAddress);
+            let player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             if (!player) {
                 const newPlayer:PlayerStats = {
                     playerAddress: rootState.PlayerInfo.playerAddress,
@@ -172,7 +172,7 @@ export const Game: {
         removeTileAction({ commit, state, rootState }, tilePlusColor: TileCoordinatePlusColor) {
             state.remainingTiles += 1;
             commit('removeTile', tilePlusColor);
-            let player = state.standings.find((player: PlayerStats) => player.walletAddress === rootState.PlayerInfo.walletAddress);
+            let player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             player.captured -= 1;
             commit('calculateRewards');
         },
@@ -189,15 +189,15 @@ export const Game: {
 
     getters: {
         getCapturedTiles(state, getters, rootState) {
-            const player = state.standings.find((player: PlayerStats) => player.walletAddress === rootState.PlayerInfo.walletAddress);
+            const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.captured : 0
         },
         getReward(state, getters, rootState) {
-            const player = state.standings.find((player: PlayerStats) => player.walletAddress === rootState.PlayerInfo.walletAddress);
+            const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.reward : 0
         },
         isReceivedReward(state, getters, rootState):boolean {
-            const player = state.standings.find((player: PlayerStats) => player.walletAddress === rootState.PlayerInfo.walletAddress);
+            const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.isReceived : false
         },
     }
