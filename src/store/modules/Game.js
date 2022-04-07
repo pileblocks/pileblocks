@@ -2,7 +2,6 @@
 
 import type {TileCoordinatePlusColor, PlayerStats} from "@/AppTypes";
 import Vue from "vue";
-//import {GAME_STATUS_COMPLETED} from "@/AppConst";
 
 
 export const Game: {
@@ -155,8 +154,8 @@ export const Game: {
                     walletAddress: rootState.PlayerInfo.walletAddress,
                     captured: 1,
                     reward: 0,
-                    isLast: state.remainingTiles === 0,
-                    isPrelast: state.remainingTiles === 1,
+                    isLast: false,
+                    isPrelast: false,
                     lastPutTime: Date.now(),
                     isReceived: false
                 }
@@ -164,8 +163,6 @@ export const Game: {
             }
             else {
                 player.captured += 1;
-                player.isLast = state.remainingTiles === 0;
-                player.isPrelast = state.remainingTiles === 1;
             }
             commit('calculateRewards');
         },

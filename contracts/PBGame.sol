@@ -58,6 +58,14 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         _;
     }
 
+    event OperationCompleted(
+        string name,
+        address player,
+        uint8 gameStatus,
+        uint64 timestamp,
+        uint128 value
+    );
+
     constructor (uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) public {
 
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
@@ -148,12 +156,18 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         if (pColors.empty()) {
             pColors = new uint16[](maxColors);
         }
+
+        if (tilesNum == 1024) {
+            tilesNum = 128;
+        }
+
         uint16[] coloredTiles = getColoredTiles(tilesNum);
 
         for (uint16 i=0; i < maxColors; i++) {
              pColors[i] = math.min(coloredTiles[i] + pColors[i], 1024);
         }
         playerColors[ownerAddress] = pColors;
+        emit OperationCompleted("onClaimTiles", ownerAddress, status, now, tilesNum);
     }
 
     /*
@@ -189,10 +203,12 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
 
         addTilesToField(tiles, sender);
+
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
+        emit OperationCompleted("onAcceptTokensTransfer", sender, status, now, uint128(tiles.length));
     }
 
     function packTiles(ColorTile[] tiles) external pure returns (TvmCell){
@@ -245,6 +261,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
                     );
                 player.isReceived = true;
                 players[msg.sender] = player;
+                emit OperationCompleted("claimReward", msg.sender, status, now, player.reward);
             }
         }
     }
@@ -335,7 +352,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(msg.sender, 0, false, false, 0, 0, false);
+            player = PlayerInfo(getWalletAddress(ownerAddress), 0, false, false, 0, 0, false);
         }
     }
 

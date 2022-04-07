@@ -76,8 +76,8 @@
             </b-button>
         </div>
         <div id="top-menu-game-reload">
-            <b-button size="sm" variant="primary">
-                <i class="bi bi-arrow-clockwise" v-show="!isLoading" v-on:click="reloadGame"></i>
+            <b-button size="sm" variant="primary" :disabled="isOpInProgress" v-on:click="reloadGame">
+                <i class="bi bi-arrow-clockwise" v-show="!isLoading"></i>
                 <b-spinner v-show="isLoading" small></b-spinner>
             </b-button>
         </div>
@@ -164,6 +164,9 @@ export default {
         },
         gameActive: function () {
             return this.$store.state.Game.status !== GAME_STATUS_COMPLETED;
+        },
+        isOpInProgress: function(): boolean {
+            return this.$store.state.Ever.operationInProgress;
         }
     },
     mounted() {

@@ -15,6 +15,8 @@ abstract contract RewardCalculatorShouldering  {
         int64 created;
     }
 
+    event RewardsCalculated(uint64 timestamp);
+
     function calculateRewards(uint128 totalReward, uint16 _numberOfTiles) internal returns(address[]){
         numberOfTiles = _numberOfTiles;
         rewardCoeff = totalReward * 2 / (numberOfTiles - 1);
@@ -84,6 +86,7 @@ abstract contract RewardCalculatorShouldering  {
             }
         }
          if (!success) {
+             emit RewardsCalculated(now);
              drain();
              return;
         }

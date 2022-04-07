@@ -54,6 +54,35 @@
             <p>Please top-up your balance!</p>
         </b-toast>
 
+        <b-toast id="op-in-progress" auto-hide-delay="2000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>Operation in Progress!
+            </div>
+          </template>
+            Please wait until the app completes the claim or put operation.
+        </b-toast>
+        <b-toast id="message-expired" auto-hide-delay="20000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>Operation Didn't Succeed!
+            </div>
+          </template>
+            The operation could not be completed, please try again.
+        </b-toast>
+        <b-toast id="on-claim-tiles" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>👾 Activity Detected!
+            </div>
+          </template>
+            Somebody has just claimed <b>{{claimValue}} tiles</b>.
+        </b-toast>
+        <b-toast id="on-put-tiles" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>👾 Activity Detected!
+            </div>
+          </template>
+            Somebody has just put <b>{{putValue}} tiles</b>.
+        </b-toast>
+
     </div>
 </template>
 
@@ -65,7 +94,9 @@ const ToastManager: {} = {
         return {
             correctColorNum: 0,
             balance: 0,
-            payPerMove: 0
+            payPerMove: 0,
+            claimValue: 0,
+            putValue: 0
         }
     },
     methods: {
@@ -91,6 +122,12 @@ const ToastManager: {} = {
                 case "not-enough-pile-to-put":
                     this.balance = payload.data.balance;
                     this.payPerMove = payload.data.payPerMove;
+                    break;
+                case "on-put-tiles":
+                    this.putValue = payload.data.putValue;
+                    break;
+                case "on-claim-tiles":
+                    this.claimValue = payload.data.claimValue;
                     break;
             }
             this.$bvToast.show(payload.toastName);

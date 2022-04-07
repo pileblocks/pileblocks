@@ -27,6 +27,14 @@ const Tile: {} = {
     methods: {
         toggleColor: function () {
             if (!this.isPut) {
+                //claim / put operation in progress
+                if (this.$store.state.Ever.operationInProgress) {
+                    this.$store.commit('Toast/sendToast', {
+                        toastName: "op-in-progress"
+                    });
+                    return;
+                }
+
                 // Zero balance
                 if (this.$store.state.PlayerInfo.balance === 0) {
                     this.$store.commit('Toast/sendToast', {

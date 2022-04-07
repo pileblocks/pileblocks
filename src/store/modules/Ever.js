@@ -7,8 +7,6 @@ import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
 import {GENESIS_ADDRESS} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
-//import {GAME_STATUS_COMPLETED} from "@/AppConst";
-//import BigNumber from "bignumber.js";
 import type {PlayerAddress} from "@/AppTypes";
 
 export const Ever: {
@@ -18,7 +16,8 @@ export const Ever: {
         tokenRoot: Contract | null,
         host: Contract | null,
         game: Contract | null,
-        loadingStatus: number
+        loadingStatus: number,
+        operationInProgress: boolean
     }
 } = {
     namespaced: true,
@@ -26,6 +25,7 @@ export const Ever: {
         api: null,
         isLoading: true,
         loadingStatus: 0,
+        operationInProgress: false,
         tokenRoot: null,
         host: null,
         game: null
@@ -39,6 +39,9 @@ export const Ever: {
         },
         updateLoadingStatus(state, newStatus: number) {
             state.loadingStatus = newStatus;
+        },
+        isOpInProgress(state, newOpStatus: boolean) {
+            state.operationInProgress = newOpStatus
         },
         updateTokenRoot(state, tokenRoot) {
             state.tokenRoot = tokenRoot;

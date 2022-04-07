@@ -16,7 +16,7 @@ import {TokenRootContract} from "@/contract_wrappers/TokenRoot";
 import {EverAPI} from "@/api/ever";
 import {GameHostContract} from "@/contract_wrappers/GameHost";
 import {GameIndexContract} from "@/contract_wrappers/GameIndex";
-import type {GameInfo} from "@/AppTypes";
+import type {GameEvent, OperationCompleted, GameInfo} from "@/AppTypes";
 import {_dataToNumbers} from "@/utils";
 //import {EverscaleStandaloneClient} from "everscale-standalone-client";
 
@@ -71,9 +71,61 @@ export default {
                 console.log(`Game address: ${currentGameAddress}`);
                 const game = new ever.Contract(PBGameContract.abi, currentGameAddress);
                 this.$store.commit("Ever/updateGame", game);
+
             }
 
         },
+        initSubscription: async function(ever) {
+            const subscription = new ever.Subscriber();
+
+            subscription
+              .transactions(this.$store.state.Ever.game.address)
+              .on(async (data) => {
+                  for (const tr of data.transactions) {
+                      const transactionEvents = await this.$store.state.Ever.game.decodeTransactionEvents({
+                          transaction: tr
+                      })
+                      for (const trEvent:GameEvent of transactionEvents) {
+                          switch (trEvent.event) {
+                              case "OperationCompleted":
+                                  await this.operationCompletedHandler(trEvent.data);
+                                  break;
+                              case "RewardsCalculated":
+                                  await this.rewardsCalculatedHandler();
+                                  break;
+                          }
+                      }
+                  }
+              });
+        },
+
+        operationCompletedHandler: async function (op: OperationCompleted) {
+            if (op.player.toString() === this.$store.state.PlayerInfo.playerAddress) {
+                await this.$store.dispatch('Ever/reloadGame');
+                this.$store.commit('Ever/isOpInProgress', false);
+            } else {
+                switch (op.name) {
+                    case "onClaimTiles":
+                        this.$store.commit('Toast/sendToast', {
+                            toastName: "on-claim-tiles",
+                            data: {claimValue: op.value}
+                        });
+                        break;
+                    case "onAcceptTokensTransfer":
+                        this.$store.commit('Toast/sendToast', {
+                            toastName: "on-put-tiles",
+                            data: {putValue: op.value}
+                        });
+                        break;
+                }
+            }
+        },
+
+        rewardsCalculatedHandler: async function () {
+            await this.$store.dispatch('Ever/reloadGame');
+            this.$store.commit('Ever/isOpInProgress', false);
+        },
+
         setTemplate: async function () {
             let rawTemplate: Array<[number, Array<Array<number>>]> = await EverAPI.game.getTemplate(this.$store.state.Ever.game);
             let newTemplate = {};
@@ -142,6 +194,7 @@ export default {
         this.initTokenRoot(ever);
         this.initHost(ever);
         await this.initGame(ever);
+        await this.initSubscription(ever);
 
         const gameInfo = await EverAPI.game.getGameInfo(this.$store.state.Ever.game);
 

@@ -121,10 +121,11 @@ contract GameHost is PBConstants {
         @dev Use this in the situation, when no game was activated before the completion of the previous round
         @dev Firstly run activateGame, and then runGame
     */
-    function runGame() external view externalMsg onlyOwner {
+    function runGame() external externalMsg onlyOwner {
         tvm.accept();
         if (nextGameAddress.value != 0) {
             deployIndex(currentGameId - 1, nextGameAddress);
+            nextGameAddress = address(0);
         }
     }
 

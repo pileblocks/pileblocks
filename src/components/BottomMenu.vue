@@ -38,7 +38,6 @@ export default {
     components: {BottomMenuColor},
     data: function() {
         return {
-            isLoading: false
         }
     },
     methods: {
@@ -59,14 +58,14 @@ export default {
                 return;
             }
 
-            this.isLoading = true;
             try {
+                this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/claimTiles');
-                await this.$store.dispatch('Ever/reloadGame');
             } catch(e) {
+                this.$store.commit('Ever/isOpInProgress', false);
+                this.errorHandler(e);
                 console.log(e);
             }
-            this.isLoading = false;
         },
         putTiles: async function() {
 
@@ -78,24 +77,33 @@ export default {
                 return;
             }
 
-            this.isLoading = true;
             try {
+                this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/putTiles');
-                await this.$store.dispatch('Ever/reloadGame');
             } catch(e) {
+                this.$store.commit('Ever/isOpInProgress', false);
+                this.errorHandler(e);
                 console.log(e);
             }
-            this.isLoading = false;
+
         },
         claimReward: async function() {
-            this.isLoading = true;
+
             try {
+                this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/claimReward');
-                await this.$store.dispatch('Ever/reloadGame');
             } catch(e) {
+                this.$store.commit('Ever/isOpInProgress', false);
+                this.errorHandler(e);
                 console.log(e);
             }
-            this.isLoading = false;
+        },
+        errorHandler: function (e) {
+            if ('code' in e && e.code === 0) {
+                this.$store.commit('Toast/sendToast', {
+                    toastName: "message-expired"
+                });
+            }
         }
     },
     computed: {
@@ -105,14 +113,17 @@ export default {
         isMainScreen: function(): boolean {
             return this.$store.state.Game.isMainScreen;
         },
-        isBalancePositive: function():boolean {
+        isBalancePositive: function(): boolean {
             return this.$store.state.PlayerInfo.balance > 0;
         },
-        isGameCompleted: function():boolean {
+        isGameCompleted: function(): boolean {
             return this.$store.state.Game.status === GAME_STATUS_COMPLETED;
         },
-        isReceived: function():boolean {
+        isReceived: function(): boolean {
             return this.$store.getters["Game/isReceivedReward"]
+        },
+        isLoading: function(): boolean {
+            return this.$store.state.Ever.operationInProgress;
         }
     }
 }

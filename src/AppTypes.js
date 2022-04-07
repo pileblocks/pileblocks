@@ -66,3 +66,19 @@ export type RawPlayerStats = {
     isReceived: boolean
 }
 
+export type RewardsCalculated = {
+    timestamp: string
+}
+
+export type OperationCompleted = {
+    timestamp: string,
+    gameStatus: string,
+    name: string,
+    player: {_address: string, toString(): string},
+    value: string
+}
+
+export type GameEvent = {
+    event: string,
+    data: RewardsCalculated | OperationCompleted
+}
