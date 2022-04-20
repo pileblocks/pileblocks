@@ -46,7 +46,8 @@
                         <b-button variant="primary" v-on:click="copyAddress">Copy</b-button>
                     </template>
                 </b-input-group>
-                <p class="mt-3">You will receive <b>X5</b> PILE tokens. For example, if you send 10 EVER, you will receive 50 PILE. The exchange is automatic, so it won't take longer than 1 minute.</p>
+                <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Send money only from this wallet!</p>
+                <p class="mt-1">You will receive <b>X5</b> PILE tokens. For example, if you send 10 EVER, you will receive 50 PILE. The exchange is automatic, so it won't take longer than 1 minute.</p>
                 <p><b>NOTE:</b> The more PILE you have, the <b>quicker</b> you'll farm colored tiles.</p>
             </b-modal>
 
