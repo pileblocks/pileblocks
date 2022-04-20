@@ -1,7 +1,7 @@
 export const SELF_PUT_OFFSET = 1000;
 export const GENESIS_ADDRESS =    "0:f2ff16460f846733744e017c598cd62454e7071f3bd788f91256645d45061da1";
 export const TOKEN_ROOT_ADDRESS = "0:dbba0028173f5b8d09eb597e0cca88cb41a4875efdf8a1815bb31292f150f800";
-export const SALE_TOKEN =         "0:dfbf5ac007b15f8b5eeb2f29873c432719d907119abbd7d659e468df71ce04e5";
+export const SALE_TOKEN =         "0:4ff60d4428f7c4fb04ab3b02e1be16ca20fe459003ce78b416ce6fb18b9b1374";
 export const HOST_ADDRESS = "0:bcd0c13c727229d06a9f2e51ba73df318a184b27c252d6f740bef9c1d01e68ca";
 
 export const LOADING_STATUS_PROVIDER_NOT_LOADED:number = 1;
