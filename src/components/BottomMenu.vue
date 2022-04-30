@@ -21,7 +21,7 @@
             </div>
         </div>
         <div v-if="isGameCompleted" class="claim-reward">
-                <b-button size="lg" variant="primary" v-on:click="claimReward" v-show="!isReceived">
+                <b-button size="lg" variant="primary" v-on:click="claimReward" v-show="!isReceived & isInRoaster">
                     <span v-show="!isLoading">Get Reward <small>{{ this.$store.getters["Game/getReward"] | fixed }}</small></span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
@@ -120,10 +120,13 @@ export default {
             return this.$store.state.Game.status === GAME_STATUS_COMPLETED;
         },
         isReceived: function(): boolean {
-            return this.$store.getters["Game/isReceivedReward"]
+            return this.$store.getters["Game/isReceivedReward"];
         },
         isLoading: function(): boolean {
             return this.$store.state.Ever.operationInProgress;
+        },
+        isInRoaster: function(): boolean {
+            return this.$store.getters["Game/isInRoaster"];
         }
     }
 }

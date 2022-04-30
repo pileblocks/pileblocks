@@ -135,7 +135,7 @@ export default {
         setGameColors: function (renderConfig) {
             let sheet = document.createElement('style');
             for (let i = 0; i < 5; i++) {
-                let color = parseInt(renderConfig[i + 4]).toString(16);
+                let color = parseInt(renderConfig[i + 4]).toString(16).padStart(6, '0');
                 if (i === 0)
                     sheet.innerHTML += `.color-${i + 1} {background-color: #${color} !important; color: #1e2228} `;
                 else
