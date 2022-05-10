@@ -47,8 +47,20 @@
                     </template>
                 </b-input-group>
                 <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Send money only from this wallet!</p>
-                <p class="mt-1">You will receive <b>X5</b> PILE tokens. For example, if you send 10 EVER, you will receive 50 PILE. The exchange is automatic, so it won't take longer than 1 minute.</p>
-                <p><b>NOTE:</b> The more PILE you have, the <b>quicker</b> you'll farm colored tiles.</p>
+                <p class="mt-1">You will receive <b>X5</b> PILE tokens. For example, if you send 10 EVER, you will receive 50 PILE. The exchange is automatic.</p>
+                <p><b>Farming Calculator</b></p>
+                <p>Use this calculator to approximate how many PILE to buy to have the expected amount of tiles farmed.</p>
+                <b-input-group prepend="After this time (in min):" size="sm">
+                    <b-form-input v-model="farmingTime" placeholder="Time in minutes" ></b-form-input>
+                </b-input-group>
+                <b-input-group size="sm" prepend="If your balance is (PILE):">
+                    <b-form-input v-model="farmingBalance" placeholder="Your balance" size="sm"></b-form-input>
+                    <b-input-group-append>
+                        <b-button v-on:click="calcFarming">Calculate</b-button>
+                    </b-input-group-append>
+                </b-input-group>
+
+                <p>You'll farm: <b>{{ farmingResult }}</b> tiles</p>
             </b-modal>
 
             <img src="~@/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
@@ -100,7 +112,10 @@ export default {
             animatedReward: "",
             setAnimationClass: "reward-base ",
             isLoading: false,
-            saleTokenAddress: SALE_TOKEN
+            saleTokenAddress: SALE_TOKEN,
+            farmingTime: 0,
+            farmingBalance: 0,
+            farmingResult: 0
         }
     },
     methods: {
@@ -141,6 +156,9 @@ export default {
         copyAddress: function() {
             this.$refs.tsAddress.focus();
             document.execCommand('copy');
+        },
+        calcFarming: async function() {
+            this.farmingResult = await this.$store.getters["Ever/calcFarming"](this.farmingTime * 60, this.farmingBalance * 1e9);
         }
 
     },

@@ -28,7 +28,8 @@ export const Ever: {
         operationInProgress: false,
         tokenRoot: null,
         host: null,
-        game: null
+        game: null,
+        calc: null
     },
     mutations: {
         updateApi(state, newApi) {
@@ -51,6 +52,9 @@ export const Ever: {
         },
         updateGame(state, game) {
             state.game = game;
+        },
+        updateCalc(state, calc) {
+            state.calc = calc;
         }
     },
 
@@ -171,8 +175,14 @@ export const Ever: {
         async claimReward({state, rootState}) {
             await EverAPI.game.claimReward(state.game, rootState.PlayerInfo.playerAddress);
 
-        }
+        },
     },
 
-    getters: {}
+    getters: {
+        calcFarming: function (state, getters, rootState) {
+            return async function (time, balance) {
+                    return await EverAPI.calc.calcFarming(rootState.Ever.calc, time, balance);
+            }
+        }
+    }
 };

@@ -7,6 +7,7 @@
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
 import {PBGameContract} from "@/contract_wrappers/PBGame"
 import {
+    CALC_ADDRESS,
     HOST_ADDRESS, LOADING_STATUS_GAME_PENDING,
     LOADING_STATUS_NO_PERMISSIONS,
     LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED,
@@ -18,6 +19,7 @@ import {GameHostContract} from "@/contract_wrappers/GameHost";
 import {GameIndexContract} from "@/contract_wrappers/GameIndex";
 import type {GameEvent, OperationCompleted, GameInfo} from "@/AppTypes";
 import {_dataToNumbers} from "@/utils";
+import {FarmingCalculatorContract} from "@/contract_wrappers/FarmingCalculator";
 //import {EverscaleStandaloneClient} from "everscale-standalone-client";
 
 export default {
@@ -51,6 +53,11 @@ export default {
             const hostAddress = new Address(HOST_ADDRESS);
             const host = new ever.Contract(GameHostContract.abi, hostAddress);
             this.$store.commit("Ever/updateHost", host);
+        },
+        initCalc: function (ever) {
+            const calcAddress = new Address(CALC_ADDRESS);
+            const calc = new ever.Contract(FarmingCalculatorContract.abi, calcAddress);
+            this.$store.commit("Ever/updateCalc", calc);
         },
         initGame: async function (ever) {
 
@@ -193,6 +200,7 @@ export default {
         }
         this.initTokenRoot(ever);
         this.initHost(ever);
+        this.initCalc(ever);
         await this.initGame(ever);
         await this.initSubscription(ever);
 

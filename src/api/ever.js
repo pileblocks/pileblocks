@@ -30,6 +30,15 @@ export const EverAPI = {
             return result.value0.toString();
         }
     },
+    calc: {
+        calcFarming: async function (calcContract, time, tokenBalance): Promise<number> {
+            const result = await calcContract
+                .methods
+                .calcFarming({time: time, tokenBalance: tokenBalance})
+                .call();
+            return parseInt(result.farmValue);
+        }
+    },
     host: {
         getCurrentGameId: async function (gHost): Promise<number> {
             const result = await gHost
