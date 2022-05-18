@@ -35,7 +35,7 @@
             </b-modal>
 
             <b-modal id="sale-token" hide-footer title="Get PILE Tokens!">
-                <p>To get PILE tokens, simply send EVERs to the following address (minimum: 1 EVER).<br/></p>
+                <p>To get PILE tokens, add the PILE token root address to FlatQube and swap for WEVER.<br/></p>
                 <b-input-group>
                     <b-form-input :value="saleTokenAddress"
                                v-on:focus="$event.target.select()"
@@ -46,8 +46,8 @@
                         <b-button variant="primary" v-on:click="copyAddress">Copy</b-button>
                     </template>
                 </b-input-group>
-                <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Send money only from this wallet!</p>
-                <p class="mt-1">You will receive <b>X5</b> PILE tokens. For example, if you send 10 EVER, you will receive 50 PILE. The exchange is automatic.</p>
+                <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Keep PILE <b>only</b> in this wallet to use them within the game!</p>
+                <p class="mt-1">For the guide on how to import the PILE token, see <a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
                 <p><b>Farming Calculator</b></p>
                 <p>Use this calculator to approximate how many PILE to buy to have the expected amount of tiles farmed.</p>
                 <b-input-group prepend="After this time (in min):" size="sm">
@@ -101,7 +101,7 @@
 // @flow
 import BigNumber from "bignumber.js";
 import FancyNumber from "./FancyNumber";
-import {SALE_TOKEN} from "@/AppConst";
+import {TOKEN_ROOT_ADDRESS} from "@/AppConst";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
 
 export default {
@@ -112,7 +112,7 @@ export default {
             animatedReward: "",
             setAnimationClass: "reward-base ",
             isLoading: false,
-            saleTokenAddress: SALE_TOKEN,
+            saleTokenAddress: TOKEN_ROOT_ADDRESS,
             farmingTime: 0,
             farmingBalance: 0,
             farmingResult: 0
