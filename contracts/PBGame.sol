@@ -155,10 +155,12 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         uint16[] pColors = playerColors[ownerAddress];
         if (pColors.empty()) {
             pColors = new uint16[](maxColors);
-        }
-
-        if (tilesNum == 1024) {
-            tilesNum = 128;
+            if (tilesNum > 0) {
+                tilesNum = 16;
+            }
+            else {
+                tilesNum = 0;
+            }
         }
 
         uint16[] coloredTiles = getColoredTiles(tilesNum);

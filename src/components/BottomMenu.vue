@@ -8,7 +8,9 @@
         <div id="claim-tiles" v-if="isBalancePositive && !isGameCompleted">
             <div v-if="!tilesArePut">
                 <b-button size="lg" variant="primary" v-on:click="claimTiles">
-                    <span v-show="!isLoading">Claim <small>{{ this.$store.state.PlayerInfo.claimableTiles }}</small></span>
+
+                    <span v-show="!isLoading" v-if="this.$store.state.PlayerInfo.isJoined">Claim <small>{{ this.$store.state.PlayerInfo.claimableTiles }}</small></span>
+                    <span v-show="!isLoading" v-if="!this.$store.state.PlayerInfo.isJoined">Join</span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
             </div>

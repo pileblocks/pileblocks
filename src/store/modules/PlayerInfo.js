@@ -6,7 +6,8 @@ export const PlayerInfo: {
         colors: Array<number>,
         currentColor: number,
         balance: number,
-        claimableTiles: number
+        claimableTiles: number,
+        isJoined: boolean
     }
 } = {
     namespaced: true,
@@ -16,9 +17,13 @@ export const PlayerInfo: {
         colors: [0, 0, 0, 0, 0],
         currentColor: 1,
         balance: 0,
-        claimableTiles: 0
+        claimableTiles: 0,
+        isJoined: false
     },
     mutations: {
+        updateJoined(state, joined:boolean) {
+            state.isJoined = joined;
+        },
         updateColors(state, newColors) {
             state.colors = newColors;
         },

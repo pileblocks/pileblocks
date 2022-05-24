@@ -163,6 +163,7 @@ export const Ever: {
             const playerColors: Array<[PlayerAddress, number[]]> = await EverAPI.game.getColors(game);
             const colors = playerColors.find((item: [PlayerAddress, number[]]) => item[0].toString() === rootState.PlayerInfo.playerAddress);
             if (colors !== undefined) {
+                commit('PlayerInfo/updateJoined', true, {root: true});
                 commit('PlayerInfo/updateColors', colors[1].map((item) => parseInt(item)), {root: true});
             }
         },

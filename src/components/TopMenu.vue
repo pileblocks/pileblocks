@@ -49,7 +49,7 @@
                 <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Keep PILE <b>only</b> in this wallet to use them within the game!</p>
                 <p class="mt-1">For the guide on how to import the PILE token, see <a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
                 <p><b>Farming Calculator</b></p>
-                <p>Use this calculator to approximate how many PILE to buy to have the expected amount of tiles farmed.</p>
+                <p>Use this calculator to approximate how many PILE to buy to have the expected amount of tiles farmed. For example, after 100 minutes with 100 PILE you receive 76 tiles.</p>
                 <b-input-group prepend="After this time (in min):" size="sm">
                     <b-form-input v-model="farmingTime" placeholder="Time in minutes" ></b-form-input>
                 </b-input-group>

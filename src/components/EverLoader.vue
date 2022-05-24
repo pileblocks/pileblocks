@@ -140,10 +140,20 @@ export default {
             this.$store.commit("Game/updateTemplate", newTemplate);
         },
         setGameColors: function (renderConfig) {
+
+            function calcLight(r, g, b) {
+                return (Math.min(r, g, b) + Math.max(r, g, b)) / (2*255)
+            }
+
             let sheet = document.createElement('style');
+            //renderConfig = [0, 0, 0, 0, '16777215', '16050112', '9693951', '12624775', '31942'];
             for (let i = 0; i < 5; i++) {
-                let color = parseInt(renderConfig[i + 4]).toString(16).padStart(6, '0');
-                if (i === 0)
+                let intColor = parseInt(renderConfig[i + 4]);
+                let color = intColor.toString(16).padStart(6, '0');
+                let r = intColor >> 16 & 255;
+                let g = intColor >> 8 & 255;
+                let b = intColor >> 0 & 255;
+                if (calcLight(r, g, b) > 0.5)
                     sheet.innerHTML += `.color-${i + 1} {background-color: #${color} !important; color: #1e2228} `;
                 else
                     sheet.innerHTML += `.color-${i + 1} {background-color: #${color} !important; color: #fefefe} `;
