@@ -139,6 +139,13 @@ export const Game: {
                 playerStat.reward += playerStat.captured * (numberOfTiles * 2 - (playerStat.captured + 1 + 2 * lastTile)) * (rewardCoeff / (numberOfTiles * 2));
                 lastTile += playerStat.captured;
             }
+
+            state.standings.sort(function (first:PlayerStats, second: PlayerStats) {
+                if (first.reward > second.reward || first.reward < second.reward) {
+                    return second.reward - first.reward;
+                }
+            });
+
         }
     },
 
