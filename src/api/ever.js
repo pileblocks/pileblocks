@@ -2,10 +2,11 @@ import {Address, Contract, ProviderRpcClient} from "everscale-inpage-provider";
 import type {RawPlayerStats} from "../AppTypes";
 import type {TileCoordinatePlusColor} from "../AppTypes";
 import {LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED} from "@/AppConst";
+import {GameExtraSettings} from "../AppTypes";
 
 export const EverAPI = {
 
-    isWorking: async function (ever): Promise<boolean> {
+    isWorking: async function (ever: ProviderRpcClient): Promise<boolean> {
         if (await ever.hasProvider()) {
             return LOADING_STATUS_PROVIDER_LOADED;
         }
@@ -21,6 +22,10 @@ export const EverAPI = {
         }
         return accountInteraction.address.toString();
     },
+    isActiveContract: async function (ever: ProviderRpcClient, contractAddress: string): Promise<boolean> {
+        return JSON.stringify(await ever.getFullContractState({address: contractAddress})) !== "{}";
+    },
+
     tokenRoot: {
         getWallet: async function (tRoot, playerAddress: string) {
             const result = await tRoot
@@ -87,6 +92,42 @@ export const EverAPI = {
                 .call();
             return result.value0;
         },
+
+        getGameExtraSettings: async function (game): Promise<GameExtraSettings> {
+            const result = await game
+                .methods
+                .getGameExtraSettings({})
+                .call();
+
+            return {
+                maxStars: parseInt(result.value0.maxStars),
+                scorePerStar: parseInt(result.value0.scorePerStar),
+                currentStars: parseInt(result.value0.currentStars),
+                percentOfReward: parseInt(result.value0.percentOfReward)
+            };
+        },
+
+        getFarmingAddress: async function (game, playerAddress): Promise<Object> {
+            const result = await game
+                .methods
+                .getFarmingAddress({walletOwner: playerAddress})
+                .call();
+            return result.value0;
+        },
+
+        deployFarmingWallet: async function (game, playerAddress) {
+            const pAddress = new Address(playerAddress);
+            await game
+                .methods
+                .deployFarmingWallet({})
+                .send({
+                    from: pAddress,
+                    amount: '500000000',
+                    bounce: true,
+                });
+
+        },
+
         getField: async function (game): Promise<Object> {
             const result = await game
                 .methods
@@ -149,14 +190,6 @@ export const EverAPI = {
                 .call();
             return parseInt(result.value0) / 1e9;
         },
-        getTiles: async function (walletContract: Contract) {
-            const result = await walletContract
-                .methods
-                .showTiles({})
-                .call();
-            return parseInt(result.value0);
-        },
-
 
         putTiles: async function (walletContract: Contract, payPerMove: number, gameAddress: string, playerAddress: string, tilesPayload: string) {
             const pAddress = new Address(playerAddress);
@@ -180,5 +213,55 @@ export const EverAPI = {
                     bounce: true,
                 });
         }
+    },
+    farmingWallet: {
+
+        getTiles: async function (walletContract: Contract) {
+            const result = await walletContract
+                .methods
+                .showTiles({})
+                .call();
+            return parseInt(result.value0);
+        },
+
+        getLockedInFarming: async function (walletContract: Contract) {
+            const result = await walletContract
+                .methods
+                ._balance({})
+                .call();
+            return parseInt(result._balance) / 1e9;
+        },
+
+        calcFarming: async function (walletContract: Contract, time: number, tokenBalance: number) {
+            const result = await walletContract
+                .methods
+                .calcFarming({time: time, tokenBalance: tokenBalance})
+                .call();
+            return parseInt(result.value0);
+        },
+
+        releaseTokens: async function (walletContract: Contract, playerAddress: string, amount: number) {
+            const pAddress = new Address(playerAddress);
+            await walletContract
+                .methods
+                .releaseTokens({amount: amount})
+                .send({
+                    from: pAddress,
+                    amount: '500000000',
+                    bounce: true,
+                });
+        },
+        claimTiles: async function (walletContract: Contract, playerAddress: string, genesisAddress: string) {
+            const pAddress = new Address(playerAddress);
+            await walletContract
+                .methods
+                .claimTiles({genesis: genesisAddress})
+                .send({
+                    from: pAddress,
+                    amount: '1000000000',
+                    bounce: true,
+                });
+        }
+
     }
 }

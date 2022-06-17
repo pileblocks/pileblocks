@@ -41,8 +41,8 @@
               <div>You have <b>0 tiles</b> to claim!
             </div>
           </template>
-            <p>Please click the <span class="dark-box p-1"><i class="bi bi-cart-check-fill color-primary"></i></span> and use <b>Farming Calculator</b> to learn when you receive your first tiles with your current PILE balance.</p>
-            <p><b>NOTE:</b>The more PILE balance you have and the more you wait, the <b>more</b> you receive!</p>
+            <p>Please click the <span class="dark-box p-1"><i class="bi bi-gear-fill color-primary"></i></span> and add a few PILE tokens to farming.</p>
+            <p><b>NOTE:</b>The more PILE you put to farming, the <b>more</b> you receive!</p>
         </b-toast>
 
         <b-toast id="not-enough-pile-to-put" auto-hide-delay="10000" variant="secondary" solid toaster="b-toaster-top-center">
@@ -82,6 +82,13 @@
           </template>
             Somebody has just put <b>{{putValue}} tiles</b>.
         </b-toast>
+        <b-toast id="star-claimed" auto-hide-delay="5000" variant="secondary" solid toaster="b-toaster-top-center">
+          <template #toast-title>
+            <div>⭐ You've Received a STAR! ⭐
+            </div>
+          </template>
+            This ⭐star⭐ gives you  <b>+{{pointsGained}}</b> points!.
+        </b-toast>
 
     </div>
 </template>
@@ -96,7 +103,8 @@ const ToastManager: {} = {
             balance: 0,
             payPerMove: 0,
             claimValue: 0,
-            putValue: 0
+            putValue: 0,
+            pointsGained: 0
         }
     },
     methods: {
@@ -128,6 +136,9 @@ const ToastManager: {} = {
                     break;
                 case "on-claim-tiles":
                     this.claimValue = payload.data.claimValue;
+                    break;
+                case "star-claimed":
+                    this.pointsGained = payload.data.pointsGained;
                     break;
             }
             this.$bvToast.show(payload.toastName);

@@ -34,11 +34,11 @@ export type PlayerStats = {
     playerAddress: string,
     walletAddress: string,
     captured: number,
-    isLast: boolean,
-    isPrelast: boolean,
     lastPutTime: number,
     reward: number,
-    isReceived: boolean
+    isReceived: boolean,
+    stars: number,
+    nft: boolean
 }
 
 export type GameInfo = {
@@ -58,12 +58,19 @@ export type GameInfo = {
 
 export type RawPlayerStats = {
     captured: string,
-    isLast: boolean,
-    isPrelast: boolean,
+    stars: string,
     lastPutTime: string,
     walletAddress: any,
     reward: string,
-    isReceived: boolean
+    isReceived: boolean,
+    nft: boolean
+}
+
+export type GameExtraSettings = {
+    maxStars: number,
+    scorePerStar: number,
+    currentStars: number,
+    percentOfReward: any
 }
 
 export type RewardsCalculated = {
@@ -73,6 +80,13 @@ export type RewardsCalculated = {
 export type OperationCompleted = {
     timestamp: string,
     gameStatus: string,
+    name: string,
+    player: {_address: string, toString(): string},
+    value: string
+}
+
+export type GameBattle = {
+    timestamp: string,
     name: string,
     player: {_address: string, toString(): string},
     value: string

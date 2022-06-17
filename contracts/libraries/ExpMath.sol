@@ -1,9 +1,8 @@
-pragma ton-solidity >= 0.47.0;
+pragma ton-solidity >= 0.57.0;
 
-contract FarmingCalculator {
-    uint64 static _randomNonce;
+library ExpMath {
 
-    function log_2(uint128 x) public pure returns (uint128) {
+    function log_2(uint128 x) external pure returns (uint128) {
 
         require(x >= 1);
         uint128 n = 0;
@@ -18,7 +17,13 @@ contract FarmingCalculator {
         return uint128(n);
     }
 
-    function calcFarming(uint128 time, uint128 tokenBalance) external pure returns (uint128 farmValue) {
-        return (time * log_2(1 + math.divr(tokenBalance, 1e9)) / (time + 7200)) * 19 * log_2(1 + time / 900);
+    function getNumPower(uint128 contractedBalance) external pure returns(uint128) {
+        uint128 power = 0;
+        while (contractedBalance > 1) {
+            contractedBalance = math.divr(contractedBalance, 10);
+            power += 1;
+        }
+        return power;
     }
+
 }

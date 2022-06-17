@@ -1,6 +1,6 @@
 // @flow
 
-import type {TileCoordinatePlusColor, PlayerStats} from "@/AppTypes";
+import type {TileCoordinatePlusColor, PlayerStats, GameExtraSettings} from "@/AppTypes";
 import Vue from "vue";
 
 
@@ -8,7 +8,6 @@ export const Game: {
     state: {
         totalFieldFragments: number,
         totalReward: number,
-        totalRewardDynamic: number,
         remainingTiles: number,
         isMainScreen: boolean,
         payPerMove: number,
@@ -17,9 +16,10 @@ export const Game: {
         tilesToPut: Array<TileCoordinatePlusColor>,
         standings: Array<PlayerStats>,
         name: string,
-        cachedReward: number,
         status: number,
-        gameStartTime: number
+        gameStartTime: number,
+        extraSettings: ?GameExtraSettings,
+        gameId: number
     }
 } = {
     namespaced: true,
@@ -27,7 +27,6 @@ export const Game: {
         totalFieldFragments: 0,
         totalReward: 0,
         payPerMove: 0,
-        totalRewardDynamic: 0,
         remainingTiles: 0,
         isMainScreen: true,
         field: {},
@@ -35,9 +34,10 @@ export const Game: {
         standings: [],
         tilesToPut: [],
         name: "",
-        cachedReward: 0,
         status: 1,
-        gameStartTime: 0
+        gameStartTime: 0,
+        extraSettings: null,
+        gameId: 0
     },
     mutations: {
         addTile(state, tilePlusColor: TileCoordinatePlusColor) {
@@ -75,13 +75,16 @@ export const Game: {
             state.name = newName;
         },
 
+        updateId(state, newId) {
+            state.gameId = newId;
+        },
+
         updateInitConfig(state, {payPerMove}) {
             state.payPerMove = payPerMove;
         },
 
-        updateTotalReward(state, {totalReward, totalRewardDynamic}) {
+        updateTotalReward(state, {totalReward}) {
             state.totalReward = totalReward;
-            state.totalRewardDynamic = totalRewardDynamic;
         },
 
         updateStatus(state, newStatus) {
@@ -101,6 +104,11 @@ export const Game: {
         updateIsMainScreen(state, isMainScreen: boolean) {
             state.isMainScreen = isMainScreen;
         },
+
+        updateExtraSettings(state, settings: GameExtraSettings) {
+            state.extraSettings = settings;
+        },
+
         calculateRewards(state) {
             state.standings.sort(function (first:PlayerStats, second: PlayerStats) {
                 if (first.captured > second.captured || first.captured < second.captured) {
@@ -110,41 +118,24 @@ export const Game: {
                     return first.lastPutTime - second.lastPutTime;
                 }
             });
+
+            let position = 1;
+            for (let player of state.standings) {
+                player.position = position;
+                position += 1;
+            }
+
             // if (state.status === GAME_STATUS_COMPLETED) {
             //     return;
             // }
-            let numberOfTiles = 0;
-            let rewardCoeff = 0;
-            if (state.standings.length > 0) {
-                numberOfTiles = state.standings.map((player:PlayerStats) => player.captured).reduce((total:number, item:number) => total + item);
-                if (numberOfTiles > 1) {
-                    rewardCoeff = state.totalRewardDynamic * 2 / (numberOfTiles - 1);
-                }
+
+            let rewardPercentArray = [45, 25, 15, 10, 5];
+
+            let rewardArray = rewardPercentArray.map((item) => item * state.totalReward/100);
+
+            for (let i = 0; i < Math.min(state.standings.length, 5); i++) {
+                state.standings[i].reward = rewardArray[i];
             }
-
-            let lastTile = 0;
-            const lastTileReward = state.totalReward / 10;
-            const prelastTileReward = state.totalReward / 20;
-            for (let playerStat of state.standings) {
-
-                playerStat.reward = 0;
-
-                if (playerStat.isLast) {
-                    playerStat.reward += lastTileReward;
-                }
-                if (playerStat.isPrelast) {
-                    playerStat.reward += prelastTileReward;
-                }
-
-                playerStat.reward += playerStat.captured * (numberOfTiles * 2 - (playerStat.captured + 1 + 2 * lastTile)) * (rewardCoeff / (numberOfTiles * 2));
-                lastTile += playerStat.captured;
-            }
-
-            state.standings.sort(function (first:PlayerStats, second: PlayerStats) {
-                if (first.reward > second.reward || first.reward < second.reward) {
-                    return second.reward - first.reward;
-                }
-            });
 
         }
     },
@@ -160,10 +151,10 @@ export const Game: {
                     walletAddress: rootState.PlayerInfo.walletAddress,
                     captured: 1,
                     reward: 0,
-                    isLast: false,
-                    isPrelast: false,
+                    stars: 0,
                     lastPutTime: Date.now(),
-                    isReceived: false
+                    isReceived: false,
+                    nft: false
                 }
                 state.standings.push(newPlayer);
             }
@@ -180,14 +171,6 @@ export const Game: {
             commit('calculateRewards');
         },
 
-        updateRewardCache({state, rootState}) {
-            for (let playerStat of state.standings) {
-                if (playerStat.playerAddress === rootState.PlayerInfo.playerAddress) {
-                    state.cachedReward = playerStat.reward;
-                }
-            }
-        }
-
     },
 
     getters: {
@@ -195,14 +178,22 @@ export const Game: {
             const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.captured : 0
         },
+
+        getPosition(state, getters, rootState) {
+            const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
+            return player ? player.position : 0
+        },
+
         getReward(state, getters, rootState) {
             const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.reward : 0
         },
+
         isReceivedReward(state, getters, rootState):boolean {
             const player = state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress);
             return player ? player.isReceived : false
         },
+
         isInRoaster(state, getters, rootState):boolean {
             return state.standings.find((player: PlayerStats) => player.playerAddress === rootState.PlayerInfo.playerAddress) !== undefined;
         }

@@ -1,7 +1,7 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats mt-1 mb-1">
-            <p class="mb-0" v-on:click="updateStandings"><small>YOU CAPTURED:</small> {{ $store.getters["Game/getCapturedTiles"] }}
+            <p class="mb-0" v-on:click="updateStandings"><small>YOUR POINTS:</small> {{ $store.getters["Game/getCapturedTiles"] }}
             </p>
             <p class="mb-0"><small>REMAINING:</small> {{ $store.state.Game.remainingTiles }}</p>
             <p class="mb-0"><small>TOTAL REWARD:</small> {{ $store.state.Game.totalReward }}</p>
@@ -12,7 +12,10 @@
                             :fragmentsCount="1" :key="_genKey(item)"></field-part>
             </div>
         </div>
-        <p class="season-slogan fancy-font">{{ this.$store.state.Game.name }}</p>
+        <div>
+            <p class="season-slogan fancy-font">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
+            <b-button size="sm" variant="secondary" v-if="this.$store.state.Game.gameId > 1" v-on:click="loadPrevGame"><i class="bi bi-chevron-double-left"></i> Previous Game</b-button>
+        </div>
     </div>
 </template>
 
@@ -48,6 +51,13 @@ const Home: {} = {
             }
             return fragmentPairs;
 
+        },
+        loadPrevGame: function () {
+            window.location.href = `#/game/${this.prevGame()}/`;
+            window.location.reload();
+        },
+        prevGame: function() {
+            return this.$store.state.Game.gameId - 1;
         }
     },
     components: {

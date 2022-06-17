@@ -1,45 +1,58 @@
 from PIL import Image
 
 
-def rgb2hex(r, g, b, a):
+def rgb2hex(r, g, b, a=0):
     return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
 
 def rgb2light(r, g, b, a=0):
     return (min(r, g, b) + max(r, g, b))/(2*255)
 
-#im = Image.open("hero-image2.png")
-im = Image.open("s2.png")
+#im = Image.open("ren4.png")
+im = Image.open("punks_64.png")
 pix = im.load()
 
 d = []
 
 
 def get_number_by_color(hexcolor):
-    if hexcolor == '#fefefe':
+    if hexcolor == '#5effa4':
         return 1
-    elif hexcolor == '#a8b0bd':
+    elif hexcolor == '#ffe501':
         return 2
-    elif hexcolor == '#5d697d':
+    elif hexcolor == '#01b901':
         return 3
-    elif hexcolor == '#2d353a':
+    elif hexcolor == '#944a01':
         return 4
-    elif hexcolor == '#1d2227':
+    elif hexcolor == '#030101':
+        return 5
+    else:
         return 5
 
 
 def get_number_by_light(light_level):
-    if light_level > 0.8:
+    if light_level > 0.99:
         return 1
-    elif light_level > 0.69:
+    elif light_level > 0.84:
         return 2
-    elif light_level > 0.42:
+    elif light_level > 0.78:
         return 3
-    elif light_level > 0.19:
+    elif light_level > 0.63:
         return 4
     else:
         return 5
 
+def get_number_by_light_kwong(light_level):
+    if light_level > 0.78:
+        return 1
+    elif light_level > 0.70:
+        return 2
+    elif light_level > 0.55:
+        return 3
+    elif light_level > 0.23:
+        return 4
+    else:
+        return 5
 
 def get_colors_from_img_32x64():
     for y in range(64):
@@ -81,6 +94,6 @@ def get_dictx16():
     return dictx16
 
 
-list32x64 = get_colors_from_light_32x64()
+list32x64 = get_colors_from_img_32x64()
 
 print(get_dictx16())

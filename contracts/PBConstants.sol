@@ -9,6 +9,7 @@ contract PBConstants {
     uint16 constant WRONG_NUM_COLS = 1005;
     uint16 constant WRONG_TILE_COLOR = 1006;
     uint16 constant NOT_ENOUGH_TOKENS_TO_PUT_TILE = 1007;
+    uint16 constant NOT_ENOUGH_TOKENS_TO_CLAIM_TILE = 1107;
     uint16 constant INVALID_TOKENS_PER_PUT = 1008;
     uint16 constant TOKEN_BALANCE_LOW = 1009;
     uint16 constant FAILED_FETCH_GAME_ID = 1010;
@@ -41,6 +42,7 @@ contract PBConstants {
     uint8 constant HORIZ_FRAGMENTS = 1;
 
     uint128 constant MIN_PUT_AMOUNT = 1_799_000_000;
+    uint128 constant MIN_CLAIM_AMOUNT = 700_000_000;
     uint128 constant SERVICE_FEE = 500_000_000;
 
     uint8 constant MAX_PUT_PER_TURN = 50;

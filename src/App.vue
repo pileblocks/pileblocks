@@ -13,7 +13,7 @@
             <div id="color-5" class="color-5"></div>
             <ever-loader></ever-loader>
         </div>
-        <div class="game-container" v-if="!gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
+        <div class="game-container" v-if="!noGames && !gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
             <top-menu id="top-menu" class="stat-block"/>
             <div id="field">
                 <router-view/>
@@ -21,13 +21,16 @@
             <bottom-menu id="bottom-menu"/>
             <toast-manager></toast-manager>
         </div>
-        <div class="game-container" v-if="!gamePending && !providerLoaded && !this.$store.state.Ever.isLoading">
+        <div class="game-container" v-if="!noGames && !gamePending && !providerLoaded && !this.$store.state.Ever.isLoading">
             <div class="game-error-notification">
-                <div class="fancy-font stat-block text-center">Install the EVER wallet or update the permissions</div>
+                <div class="fancy-font stat-block text-center">Install the <span class="color-primary"><u><a href="https://l1.broxus.com/" target="_blank">EVER wallet</a></u></span> or update the permissions</div>
             </div>
         </div>
-        <div class="game-container" v-if="gamePending && !this.$store.state.Ever.isLoading">
+        <div class="game-container" v-if="!noGames && gamePending && !this.$store.state.Ever.isLoading">
             <game-countdown></game-countdown>
+        </div>
+        <div class="game-container" v-if="noGames && !this.$store.state.Ever.isLoading">
+            <game-list-empty></game-list-empty>
         </div>
     </div>
 
@@ -41,22 +44,28 @@ import ToastManager from "./components/ToastManager";
 import TopMenu from "./components/TopMenu";
 import EverLoader from "./components/EverLoader";
 import {
+    LOADING_STATUS_EMPTY_GAME_LIST,
     LOADING_STATUS_GAME_PENDING,
     LOADING_STATUS_NO_PERMISSIONS,
     LOADING_STATUS_PROVIDER_NOT_LOADED
 } from "@/AppConst";
 import GameCountdown from "@/components/GameCountdown";
+import GameListEmpty from "@/components/GameListEmpty";
 
 const App: {} = {
     name: 'App',
-    components: {GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
+    components: {GameListEmpty, GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
     computed: {
         providerLoaded: function() {
             return !(this.$store.state.Ever.loadingStatus in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]);
         },
         gamePending: function() {
             return this.$store.state.Ever.loadingStatus === LOADING_STATUS_GAME_PENDING;
+        },
+        noGames: function() {
+            return this.$store.state.Ever.loadingStatus === LOADING_STATUS_EMPTY_GAME_LIST;
         }
+
     },
     data: function() {
         return {
@@ -223,29 +232,8 @@ body, html {
 .light-border {
     border: rgba(255, 255, 255, 0.5) 1px solid;
 }
-/*
-.color-1 {
-    background-color: #fefefe !important;
-    color: #1e2228;
-}
-
-.color-2 {
-    background-color: #aab0bc !important;
-    color: #fefefe;
-}
-
-.color-3 {
-    background-color: #60697b !important;
-    color: #fefefe;
-}
-
-.color-4 {
-    background-color: #2f353a !important;
-    color: #fefefe;
-}
-*/
 .color-primary {
-    color: var(--primary);
+    color: var(--primary) !important;
 }
 
 </style>

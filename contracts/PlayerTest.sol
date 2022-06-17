@@ -8,6 +8,7 @@ import "./interfaces/ITokenRoot.sol";
 import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IPBWallet.sol";
 import "./interfaces/IPBGame.sol";
+import "./interfaces/IFarmingWallet.sol";
 import "./interfaces/PBStructs.sol";
 
 contract PlayerTest {
@@ -19,6 +20,7 @@ contract PlayerTest {
     address public genesis;
     address public gameHost;
     address public gameAddress;
+    address public farmingWallet;
 
     modifier onlyOwner() {
         require(tvm.pubkey() == msg.pubkey(), 101);
@@ -52,7 +54,12 @@ contract PlayerTest {
 
     function claimTiles() onlyOwner external {
         tvm.accept();
-        IPBWallet(walletAddress).claimTiles{value: 1 ton}(gameAddress, address(0));
+        IFarmingWallet(farmingWallet).claimTiles{value: 1 ton}(genesis);
+    }
+
+    function releaseTokens(uint128 amount) onlyOwner external {
+        tvm.accept();
+        IFarmingWallet(farmingWallet).releaseTokens{value: 1 ton}(amount);
     }
 
     function putTiles(ColorTile[] tiles, uint128 amount) onlyOwner external {
@@ -83,5 +90,20 @@ contract PlayerTest {
     function setImageForReview() onlyOwner external {
         tvm.accept();
         IPBGame(gameAddress).setImageForReview{value: 2 ton}();
+    }
+
+    function deployFarming() onlyOwner external {
+        tvm.accept();
+        IPBGame(gameAddress).deployFarmingWallet{value: 2 ton}();
+    }
+
+    function setFarmingWallet(address _farmingWallet) onlyOwner external {
+        tvm.accept();
+        farmingWallet = _farmingWallet;
+    }
+
+    function setGameExtraSettings(uint128[] _extraSettings) external {
+        tvm.accept();
+        IPBGame(gameAddress).setGameExtraSettings{value: 1 ton}(_extraSettings);
     }
 }

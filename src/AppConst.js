@@ -1,14 +1,19 @@
 export const SELF_PUT_OFFSET = 1000;
+
 export const GENESIS_ADDRESS =    "0:f2ff16460f846733744e017c598cd62454e7071f3bd788f91256645d45061da1";
 export const TOKEN_ROOT_ADDRESS = "0:dbba0028173f5b8d09eb597e0cca88cb41a4875efdf8a1815bb31292f150f800";
 export const SALE_TOKEN =         "0:4ff60d4428f7c4fb04ab3b02e1be16ca20fe459003ce78b416ce6fb18b9b1374";
-export const HOST_ADDRESS = "0:bcd0c13c727229d06a9f2e51ba73df318a184b27c252d6f740bef9c1d01e68ca";
-export const CALC_ADDRESS = "0:2cefd03c6bb7e205ea0f152cd7f230979f0f0e996a0f4792d8fd695f431c9978";
+export const HOST_ADDRESS = "0:2c2ee44ef85ec5b1f25c5ac293c422465343368d65ece7ab81671d7926eea276";
+
+
+export const EMPTY_CELL = "te6ccgEBAgEABQABAAEAAA==";
+
 
 export const LOADING_STATUS_PROVIDER_NOT_LOADED:number = 1;
 export const LOADING_STATUS_PROVIDER_LOADED:number = 2;
 export const LOADING_STATUS_NO_PERMISSIONS:number = 3;
 export const LOADING_STATUS_GAME_PENDING:number = 4;
+export const LOADING_STATUS_EMPTY_GAME_LIST:number = 5;
 
 export const GAME_STATUS_COMPLETED = 3;
 

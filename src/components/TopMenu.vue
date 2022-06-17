@@ -4,22 +4,23 @@
             <b-modal id="standings-table" hide-footer title="Standings">
                 <b-container fluid class="p-0">
                     <b-row>
-                        <b-col class="font-weight-bold" cols="3">Place</b-col>
+                        <b-col class="font-weight-bold text-right" cols="3">Place</b-col>
                         <b-col class="font-weight-bold" cols="3">Wallet</b-col>
-                        <b-col class="font-weight-bold" cols="3">Captured</b-col>
+                        <b-col class="font-weight-bold text-right" cols="3">Points</b-col>
                         <b-col class="font-weight-bold" cols="3">Reward</b-col>
                     </b-row>
 
                     <b-row v-for="(player, index) in $store.state.Game.standings" :key="player.playerAddress"
                            :class="{active: isCurrentPlayer(player.playerAddress)}">
-                        <b-col class="text-center">{{ index + 1 }}
+                        <b-col class="text-right"><span class="nft" v-if="player.nft">nft</span> {{ index + 1 }}
                         </b-col>
                         <b-col class="text-left">{{ player.playerAddress | short }}</b-col>
                         <b-col class="text-center p-0">{{ player.captured }}
-                            <i class="bi bi-star-fill gold-star small" v-show="player.isLast"></i>
-                            <i class="bi bi-star gold-star small" v-show="player.isPrelast"></i>
+                            <span v-if="player.stars > 0">
+                                <i class="bi bi-star-fill small" >x{{player.stars}}</i>
+                            </span>
                         </b-col>
-                        <b-col>{{ player.reward | fixed }}</b-col>
+                        <b-col class="text-center">{{ player.reward | fixed }}</b-col>
                     </b-row>
                     <b-row>
                         <b-col class="mt-2">
@@ -48,19 +49,6 @@
                 </b-input-group>
                 <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Keep PILE <b>only</b> in this wallet to use them within the game!</p>
                 <p class="mt-1">For the guide on how to import the PILE token, see <a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
-                <p><b>Farming Calculator</b></p>
-                <p>Use this calculator to approximate how many PILE to buy to have the expected amount of tiles farmed. For example, after 100 minutes with 100 PILE you receive 76 tiles.</p>
-                <b-input-group prepend="After this time (in min):" size="sm">
-                    <b-form-input v-model="farmingTime" placeholder="Time in minutes" ></b-form-input>
-                </b-input-group>
-                <b-input-group size="sm" prepend="If your balance is (PILE):">
-                    <b-form-input v-model="farmingBalance" placeholder="Your balance" size="sm"></b-form-input>
-                    <b-input-group-append>
-                        <b-button v-on:click="calcFarming">Calculate</b-button>
-                    </b-input-group-append>
-                </b-input-group>
-
-                <p>You'll farm: <b>{{ farmingResult }}</b> tiles</p>
             </b-modal>
 
             <img src="~@/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
@@ -68,15 +56,17 @@
         <div id="top-menu-player-info">
             <p class="mb-0"><span class="text-faded">Balance: </span>
                 <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
-                <i class="bi bi-cart-check-fill color-primary pl-1" v-on:click="$bvModal.show('sale-token')"></i>
+                <i class="bi bi-cart-check-fill color-success pl-1" v-on:click="$bvModal.show('sale-token')"></i>
             </p>
             <div class="reward-grid">
-                <div class="reward-label"><span class="text-faded pr-1">Your Reward: </span></div>
+                <div class="reward-label"><span class="text-faded pr-1">Your Place: </span></div>
                 <div class="reward-value">
                     <div class="d-inline-block position-absolute">
-                        <fancy-number :value='this.$store.getters["Game/getReward"]'/>
-                        (<span
-                        :class="rewardProcentClass()">{{ rewardProcent }}%</span>)
+                        <div>{{playerPosition}}
+                            <span v-if="playerPosition === 1"><i class="bi bi-trophy-fill first-place"></i></span>
+                            <span v-if="playerPosition === 2"><i class="bi bi-trophy-fill second-place"></i></span>
+                            <span v-if="playerPosition === 3"><i class="bi bi-trophy-fill third-place"></i></span>
+                        </div>
                         <div :class="setAnimationClass">{{ animatedReward }}</div>
                     </div>
                 </div>
@@ -121,9 +111,9 @@ export default {
     methods: {
         animateReward: function (isRaising: boolean) {
 
-            this.animatedReward = new BigNumber(this.$store.getters["Game/getReward"]).toFixed(2);
+            this.animatedReward = new BigNumber(this.$store.getters["Game/getPosition"]).toFixed(0);
             this.setAnimationClass += "reward-animation ";
-            if (isRaising) {
+            if (!isRaising) {
                 this.setAnimationClass += "reward-raise ";
             } else {
                 this.setAnimationClass += "reward-decline ";
@@ -137,16 +127,7 @@ export default {
         isCurrentPlayer: function (playerAddress: string): boolean {
             return playerAddress === this.$store.state.PlayerInfo.playerAddress
         },
-        rewardProcentClass: function () {
-            const rewardProcent: number = parseFloat(this.rewardProcent);
-            switch (true) {
-                case (rewardProcent < 5):
-                    return "low-procent"
-                case (rewardProcent < 10):
-                    return "medium-procent"
-            }
-            return "high-procent"
-        },
+
         reloadGame: async function () {
             this.isLoading = true;
             await this.$store.dispatch('Ever/reloadGame');
@@ -156,14 +137,11 @@ export default {
         copyAddress: function() {
             this.$refs.tsAddress.focus();
             document.execCommand('copy');
-        },
-        calcFarming: async function() {
-            this.farmingResult = await this.$store.getters["Ever/calcFarming"](this.farmingTime * 60, this.farmingBalance * 1e9);
         }
 
     },
     watch: {
-        rewardChange: function (newReward, oldReward) {
+        playerPosition: function (newReward, oldReward) {
             if (oldReward !== 0) {
                 this.animateReward(newReward > oldReward);
             }
@@ -171,16 +149,11 @@ export default {
         }
     },
     computed: {
-        rewardChange: function () {
-            return this.$store.getters["Game/getReward"];
+
+        playerPosition: function () {
+            return this.$store.getters["Game/getPosition"];
         },
-        rewardProcent: function () {
-            if (this.$store.state.Game.status !== GAME_STATUS_COMPLETED) {
-                return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalRewardDynamic).toFixed(1);
-            } else {
-                return new BigNumber(this.$store.getters["Game/getReward"] * 100 / this.$store.state.Game.totalReward).toFixed(1);
-            }
-        },
+
         gameActive: function () {
             return this.$store.state.Game.status !== GAME_STATUS_COMPLETED;
         },
@@ -257,7 +230,7 @@ export default {
 .reward-grid {
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 5em 1fr;
+    grid-template-columns: 4.2em 1fr;
 }
 
 .reward-label {
@@ -270,4 +243,28 @@ export default {
     grid-row: 1;
 }
 
+.first-place {
+    color: var(--primary) !important;
+}
+
+.second-place {
+    color: var(--light) !important;
+}
+
+.third-place {
+    color: var(--cyan) !important;
+}
+
+.color-success {
+    color: var(--green);
+}
+
+.nft {
+    background-color: #282846;
+    border-radius: 5px;
+    color: white;
+    padding-left: 4px;
+    padding-right: 4px;
+    font-variant: small-caps;
+}
 </style>

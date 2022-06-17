@@ -1,5 +1,6 @@
 // @flow
 import Vue from 'vue';
+import type {Contract} from "@/AppTypes";
 export const PlayerInfo: {
     state: {
         walletAddress: string,
@@ -7,7 +8,11 @@ export const PlayerInfo: {
         currentColor: number,
         balance: number,
         claimableTiles: number,
-        isJoined: boolean
+        farmingContract: ?Contract,
+        farmingAddress: ?string,
+        isFarmingActive: boolean,
+        farmingBalance: number,
+        farmingEstimation: number
     }
 } = {
     namespaced: true,
@@ -18,17 +23,29 @@ export const PlayerInfo: {
         currentColor: 1,
         balance: 0,
         claimableTiles: 0,
-        isJoined: false
+        farmingAddress: null,
+        farmingContract: null,
+        isFarmingActive: false,
+        tokensToAdd: 0,
+        farmingEstimation: 0
     },
     mutations: {
-        updateJoined(state, joined:boolean) {
-            state.isJoined = joined;
+
+        updateFarmingContract(state, newContract) {
+            state.farmingContract = newContract;
         },
+
         updateColors(state, newColors) {
             state.colors = newColors;
         },
         updateWalletAddress(state, newWalletAddress) {
             state.walletAddress = newWalletAddress;
+        },
+        updateFarmingAddress(state, newFarmingAddress) {
+            state.farmingAddress = newFarmingAddress;
+        },
+        updateFarmingActive(state, isFarmingActive) {
+            state.isFarmingActive = isFarmingActive;
         },
         updatePlayerAddress(state, newPlayerAddress) {
             state.playerAddress = newPlayerAddress;
@@ -46,6 +63,12 @@ export const PlayerInfo: {
         },
         updateClaimableTiles(state, newTiles) {
             state.claimableTiles = newTiles;
+        },
+        updateLockedInFarming(state, farmingBalance) {
+            state.farmingBalance = farmingBalance;
+        },
+        updateFarmingEstimation(state, newEstimation) {
+            state.farmingEstimation = newEstimation;
         }
     },
 

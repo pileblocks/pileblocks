@@ -10,11 +10,18 @@ struct ColorTile {
 struct PlayerInfo {
     address walletAddress;
     uint16 captured;
-    bool isLast;
-    bool isPrelast;
+    uint16 stars;
     uint64 lastPutTime;
     uint128 reward;
     bool isReceived;
+    bool nft;
+}
+
+struct GameExtraSettings {
+    uint8 maxStars;
+    uint16 scorePerStar;
+    uint8 currentStars;
+    uint8 percentOfReward;
 }
 
 struct GameInfo {

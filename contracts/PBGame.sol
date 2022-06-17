@@ -9,15 +9,19 @@ import "./interfaces/IGameHost.sol";
 import "./interfaces/IAcceptTokensTransferCallback.sol";
 
 import "./TokenWallet.sol";
+import "./FarmingWallet.sol";
 import "./PBConstants.sol";
-import "./abstract/RewardCalculatorShouldering.sol";
+import "./abstract/RewardCalculatorNFT.sol";
+import "./abstract/GameEvents.sol";
+import "./libraries/ExpMath.sol";
 
 
-contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransferCallback {
+contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallback {
 
     // PILE token info
     TvmCell static walletCode;
     address static tokenRootAddress;
+    TvmCell static farmingCode;
 
     // Game params
     uint64 static created;
@@ -38,8 +42,16 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
     string gameName;
     uint64 gameStartTime;
 
+    //Game extra settings
+    uint8 maxStars;
+    uint16 scorePerStar;
+    uint8 currentStars;
+    uint8 percentOfReward;
+
     mapping(address => PlayerInfo) public players;
     mapping(address => uint16[]) public playerColors;
+    mapping(address => uint128) public playerBalances;
+
     mapping(uint8 => uint8[][]) public field;
     mapping(uint8 => uint8[][]) public template;
 
@@ -58,26 +70,19 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         _;
     }
 
-    event OperationCompleted(
-        string name,
-        address player,
-        uint8 gameStatus,
-        uint64 timestamp,
-        uint128 value
-    );
-
     constructor (uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) public {
 
         optional(TvmCell) optSalt = tvm.codeSalt(tvm.code());
         require(optSalt.hasValue(), FAILED_FETCH_GAME_ID);
-        (gameId, gameHost) = optSalt
+        gameHost = optSalt
             .get()
             .toSlice()
-            .decode(uint32, address);
+            .decode(address);
 
         require(msg.sender == gameHost, INVALID_GAME_HOST);
         gameName = _gameName;
         gameStartTime = _gameStartTime;
+        currentStars = 0;
         //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
         renderSettings = _renderSettings;
         vertFragments = uint8(renderSettings[0]);
@@ -110,6 +115,11 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
     function onDeploy(address gWallet) external {
     }
 
+    function setGameId(uint32 _gameId) external onlyHost {
+        tvm.accept();
+        gameId = _gameId;
+    }
+
     function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) external internalMsg onlyImageOwner {
         require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
         require(fragmentNum < uint8(vertFragments * horizFragments), WRONG_FRAGMENT_COUNT);
@@ -140,27 +150,47 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
     }
 
     /*
-        @notice An owner calls the wallet's claimTiles method, and the wallet calls back onClaimTiles with the number of tiles,
+        @notice A game may define some extra playground settings, for example, the number of stars and their size
+    */
+    function setGameExtraSettings(uint128[] _gameExtraSettings) external onlyImageOwner {
+        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
+        maxStars = uint8(_gameExtraSettings[0]);
+        scorePerStar = uint16(_gameExtraSettings[1]);
+        percentOfReward = uint8(_gameExtraSettings[2]);
+    }
+
+    function getGameExtraSettings() external view returns(GameExtraSettings){
+        return GameExtraSettings(maxStars,
+                    scorePerStar,
+                    currentStars,
+                    percentOfReward);
+    }
+
+    function notifyBalanceChange(address ownerAddress, uint128 tokenBalance) external {
+        require(msg.sender == getFarmingAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
+        playerBalances[ownerAddress] = tokenBalance;
+        ownerAddress.transfer({value: 0, flag: 64});
+    }
+
+    /*
+        @notice An owner calls the farming wallet's claimTiles method, and the wallet calls back onClaimTilesFarming with the number of tiles,
         the game records these tiles and assigns colors.
         @param ownerAddress - the game needs it to allocate tiles to the correct player
                (we assume that players initially only have their ownerAddress, the address
                with EVERs)
         @param tilesNum - the number of tiles a player wants to transform to colored tiles
+        @param tokenBalance - the number of tokens on the farming account
     */
-    function onClaimTiles(address ownerAddress, uint16 tilesNum) external internalMsg {
-        require(msg.sender == getWalletAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
+    function onClaimTilesFarming(address ownerAddress, uint16 tilesNum) external internalMsg {
+        require(msg.sender == getFarmingAddress(ownerAddress), WALLET_DOES_NOT_MATCH_OWNER);
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(now >= gameStartTime, GAME_NOT_STARTED);
+        require(msg.value >= MIN_CLAIM_AMOUNT, NOT_ENOUGH_TOKENS_TO_CLAIM_TILE);
 
         uint16[] pColors = playerColors[ownerAddress];
+
         if (pColors.empty()) {
             pColors = new uint16[](maxColors);
-            if (tilesNum > 0) {
-                tilesNum = 16;
-            }
-            else {
-                tilesNum = 0;
-            }
         }
 
         uint16[] coloredTiles = getColoredTiles(tilesNum);
@@ -170,6 +200,7 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         }
         playerColors[ownerAddress] = pColors;
         emit OperationCompleted("onClaimTiles", ownerAddress, status, now, tilesNum);
+        ownerAddress.transfer({value: 0, flag: 64});
     }
 
     /*
@@ -201,43 +232,40 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         }
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
 
-        // Reserve a fee per put
-        tvm.rawReserve(address(this).balance - msg.value + SERVICE_FEE, 2);
+        PBGame(this).putTiles{value: 0, flag: 64}(tiles, sender);
 
-        addTilesToField(tiles, sender);
+    }
+
+    function putTiles(ColorTile[] tiles, address ownerAddress) external internalMsg {
+        require(msg.sender == address(this), WRONG_GAME_ADDRESS);
+        addTilesToField(tiles, ownerAddress);
+        PBGame(this).postPutTiles{value: 0, flag: 64}(ownerAddress, uint128(tiles.length));
+    }
+
+    function postPutTiles(address ownerAddress, uint128 tilesQty) external internalMsg {
+        require(msg.sender == address(this), WRONG_GAME_ADDRESS);
+        tvm.rawReserve(SERVICE_FEE, 4);
 
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
             IGameHost(gameHost).onGameCompleted{value: 0.3 ton}(getInfo());
         }
-        emit OperationCompleted("onAcceptTokensTransfer", sender, status, now, uint128(tiles.length));
+        emit OperationCompleted("onAcceptTokensTransfer", ownerAddress, status, now, tilesQty);
+
+        tvm.log(format("Before sending: {}", ownerAddress));
+
+        ownerAddress.transfer({value: 0, flag: 128});
     }
 
     function packTiles(ColorTile[] tiles) external pure returns (TvmCell){
         return abi.encode(tiles);
     }
 
-    function completeGame(uint128 totalReward) external internalMsg {
+    function completeGame(uint128 _totalReward) external internalMsg {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
-        uint16 _totalTiles = uint16(ROW_COUNT) * uint16(COL_COUNT) * uint16(vertFragments * horizFragments);
-        rewardLastPlayer(totalReward);
-        rewardPrelastPlayer(totalReward);
-        totalReward = (totalReward / 100) * 85;
-        calculateRewards(totalReward, _totalTiles);
-    }
-
-    function rewardLastPlayer(uint128 totalReward) internal {
-        address pAddress = getPlayerWithLastTile();
-        PlayerInfo pl = players[pAddress];
-        pl.reward += totalReward / 10;
-        players[pAddress] = pl;
-    }
-
-    function rewardPrelastPlayer(uint128 totalReward) internal {
-        address pAddress = getPlayerWithPrelastTile();
-        PlayerInfo pl = players[pAddress];
-        pl.reward += totalReward / 20;
-        players[pAddress] = pl;
+        uint128 _totalTiles = uint128(ROW_COUNT) * uint128(COL_COUNT) * uint128(vertFragments) * uint128(horizFragments);
+        uint128 totalReward = uint128(_totalTiles) * uint128(tokensPerPut) * uint128(percentOfReward) / (uint128(MAX_PUT_PER_TURN) * 100);
+        calculateRewards(totalReward);
     }
 
     function sendReward(address playerAddress, uint128 rewardValue) override internal {
@@ -245,6 +273,13 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         player.reward += rewardValue;
         players[playerAddress] = player;
         tvm.log(format("Calculate reward for {} is {:t}", playerAddress, rewardValue));
+    }
+
+    function assignNFT(address playerAddress) override internal {
+        PlayerInfo player = getPlayer(playerAddress);
+        player.nft = true;
+        players[playerAddress] = player;
+        tvm.log(format("NFT for {}", playerAddress));
     }
 
     function claimReward() external {
@@ -266,6 +301,29 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
                 emit OperationCompleted("claimReward", msg.sender, status, now, player.reward);
             }
         }
+    }
+
+    function deployFarmingWallet() external view {
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
+        require(now >= gameStartTime, GAME_NOT_STARTED);
+
+        TvmCell initData = tvm.buildStateInit({
+            contr: FarmingWallet,
+            varInit: {
+                game: address(this),
+                owner: msg.sender,
+                tokenRootAddress: tokenRootAddress
+            },
+            pubkey: 0,
+            code: farmingCode
+        });
+
+        address wallet = new FarmingWallet {
+            stateInit: initData,
+            value: 0.6 ton
+        }();
+
+        msg.sender.transfer({value: 0, flag: 64});
     }
 
 //
@@ -303,22 +361,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
 //        Service functions
 //
 
-    function getPlayerWithLastTile() internal view returns(address) {
-        for ((address pAddress, PlayerInfo player): players) {
-            if (player.isLast) {
-                return pAddress;
-            }
-        }
-    }
-
-    function getPlayerWithPrelastTile() internal view returns(address) {
-        for ((address pAddress, PlayerInfo player): players) {
-            if (player.isPrelast) {
-                return pAddress;
-            }
-        }
-    }
-
     function isImageComplete() public view returns (bool) {
         uint8 frNum = uint8(vertFragments * horizFragments);
         uint8[] fragmentArr;
@@ -350,11 +392,30 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
         return address(tvm.hash(stateInit));
     }
 
+    /*
+        @notice Derive farming wallet contract address from owner credentials
+        @param owner_address_ Address of a wallet which owns the token wallet
+    */
+    function getFarmingAddress(address walletOwner) public view returns (address) {
+        TvmCell stateInit = tvm.buildStateInit({
+            contr: FarmingWallet,
+            varInit: {
+                game: address(this),
+                owner: walletOwner,
+                tokenRootAddress: tokenRootAddress
+            },
+            pubkey: 0,
+            code: farmingCode
+        });
+
+        return address(tvm.hash(stateInit));
+    }
+
     function getPlayer(address ownerAddress) private view returns (PlayerInfo player) {
         if (players.exists(ownerAddress)) {
             player = players[ownerAddress];
         } else {
-            player = PlayerInfo(getWalletAddress(ownerAddress), 0, false, false, 0, 0, false);
+            player = PlayerInfo(getWalletAddress(ownerAddress), 0, 0, 0, 0, false, false);
         }
     }
 
@@ -402,12 +463,6 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
                 fieldTemp[tile.f][tile.y][tile.x] = tile.color;
                 pColors[tile.color - 1] -= 1;
                 remainingTilesTemp -= 1;
-                if (remainingTilesTemp == 1) {
-                    player.isPrelast = true;
-                }
-                if (remainingTilesTemp == 0) {
-                    player.isLast = true;
-                }
             }
             else {
                 isError = true;
@@ -415,14 +470,35 @@ contract PBGame is PBConstants, RewardCalculatorShouldering, IAcceptTokensTransf
             }
         }
         if (!isError) {
+            uint16 tileNum = uint16(tiles.length);
+            if (checkIfAddStar(playerBalances[ownerAddress], tileNum, remainingTilesTemp) && currentStars < maxStars) {
+                player.stars += 1;
+                currentStars += 1;
+                player.captured += scorePerStar;
+                emit GameBattleEvent("starClaimed", ownerAddress, now, scorePerStar);
+            }
             player.lastPutTime = now;
-            player.captured += uint16(tiles.length);
+            player.captured += tileNum;
             field = fieldTemp;
             remainingTiles = remainingTilesTemp;
             players[ownerAddress] = player;
             playerColors[ownerAddress] = pColors;
         }
         return isError;
+    }
+
+    function checkIfAddStar(uint128 tokenBalance, uint16 tileNum, uint16 tilesLeft) internal returns (bool) {
+        rnd.shuffle();
+        uint8 chance = rnd.next(100);
+        uint8 bonusForTokens = uint8(ExpMath.getNumPower(tokenBalance / 1e9));
+        uint8 bonusForTiles = uint8(tileNum / 10);
+        uint32 _totalTiles = uint32(ROW_COUNT) * uint32(COL_COUNT) * uint32(vertFragments * horizFragments);
+        uint8 remaingingProcent = uint8(uint32(tilesLeft) * 100 / _totalTiles);
+        uint8 totalBonus = 10 + bonusForTokens + bonusForTiles + (100 - remaingingProcent) / 5;
+        tvm.log(format("chance: {}", chance));
+        tvm.log(format("totalBonus: {}", totalBonus));
+        return chance < totalBonus;
+
     }
 
     function getInfo() public view returns (GameInfo) {

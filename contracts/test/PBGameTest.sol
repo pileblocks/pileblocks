@@ -34,12 +34,7 @@ contract PBGameTest is PBGame {
         rnd.shuffle();
         //TODO: Remove this in prod!
 
-        bool isLast;
-        bool isPrelast;
-
         for (uint8 i=0; i < playerNum; i++) {
-            isLast = false;
-            isPrelast = false;
             uint256 addr = rnd.next();
             uint64 lastPut = rnd.next(uint64(100));
             uint16 captured = rnd.next(uint16(100));
@@ -51,14 +46,8 @@ contract PBGameTest is PBGame {
                 remainingTiles -= captured;
             }
             address playerAddress= address.makeAddrStd(0, addr);
-            if (i == 0) {
-                isPrelast = true;
-            }
-            if (i == 1) {
-                isLast = true;
-            }
 
-            players[playerAddress] = PlayerInfo(playerAddress, captured, isLast, isPrelast, lastPut, 0);
+            players[playerAddress] = PlayerInfo(playerAddress, captured, 0, lastPut, 0, false, false);
 
             rnd.shuffle();
             if (remainingTiles == 0) {

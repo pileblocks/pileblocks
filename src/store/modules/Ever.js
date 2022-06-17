@@ -5,7 +5,7 @@ import {_dataToNumbers} from "@/utils"
 import type {PlayerStats, RawPlayerStats, Contract} from "@/AppTypes";
 import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
-import {GENESIS_ADDRESS} from "@/AppConst";
+import {EMPTY_CELL, GENESIS_ADDRESS} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
 import type {PlayerAddress} from "@/AppTypes";
 
@@ -28,8 +28,7 @@ export const Ever: {
         operationInProgress: false,
         tokenRoot: null,
         host: null,
-        game: null,
-        calc: null
+        game: null
     },
     mutations: {
         updateApi(state, newApi) {
@@ -52,9 +51,6 @@ export const Ever: {
         },
         updateGame(state, game) {
             state.game = game;
-        },
-        updateCalc(state, calc) {
-            state.calc = calc;
         }
     },
 
@@ -72,20 +68,12 @@ export const Ever: {
                 let tmpPlayer: PlayerStats = {};
                 tmpPlayer.playerAddress = player[0].toString();
                 tmpPlayer.captured = parseInt(player[1].captured);
-                tmpPlayer.isLast = player[1].isLast;
-                tmpPlayer.reward = rootState.Game.cachedReward;
-
-                // We cannot use it right away since the reward calculation is asynchronous, so we would need another status to just collect
-                // the result of the blockchain calculation. Thankfully, the client-side calc works good as well.
-                // if (tmpPlayer.playerAddress === rootState.PlayerInfo.playerAddress && rootState.Game.status !== GAME_STATUS_COMPLETED) {
-                //     tmpPlayer.reward = rootState.Game.cachedReward;
-                // } else {
-                //     tmpPlayer.reward = new BigNumber(player[1].reward).dividedBy(1e9).toNumber();
-                // }
-                tmpPlayer.isPrelast = player[1].isPrelast;
+                tmpPlayer.stars = parseInt(player[1].stars);
+                tmpPlayer.reward = parseInt(player[1].reward);
                 tmpPlayer.lastPutTime = parseInt(player[1].lastPutTime);
                 tmpPlayer.walletAddress = player[1].walletAddress.toString();
                 tmpPlayer.isReceived = player[1].isReceived;
+                tmpPlayer.nft = player[1].nft;
                 standings.push(tmpPlayer);
             }
             commit("Game/updateStandings", standings, {root: true});
@@ -114,34 +102,48 @@ export const Ever: {
             commit("Game/updateRemainingTiles", parseInt(gameInfo.remainingTiles), {root: true})
         },
 
-        async setClaimTiles({commit, dispatch, rootState}) {
+        async setClaimTiles({commit, rootState}) {
             let ever = rootState.Ever.api;
-            let isDeployed: boolean = await dispatch('isWalletDeployed');
-            if (isDeployed) {
-                const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
-                const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
-                commit("PlayerInfo/updateClaimableTiles", await EverAPI.wallet.getTiles(wallet), {root: true});
+
+            if (await EverAPI.isActiveContract(ever, rootState.PlayerInfo.farmingAddress)) {
+                commit("PlayerInfo/updateClaimableTiles", await EverAPI.farmingWallet.getTiles(rootState.PlayerInfo.farmingContract), {root: true});
+            }
+
+        },
+
+        async getLockedInFarming({commit, rootState}) {
+            let ever = rootState.Ever.api;
+            if (await EverAPI.isActiveContract(ever, rootState.PlayerInfo.farmingAddress)) {
+                commit("PlayerInfo/updateLockedInFarming", await EverAPI.farmingWallet.getLockedInFarming(rootState.PlayerInfo.farmingContract), {root: true});
             }
         },
 
         async reloadGame({dispatch, commit}) {
             commit('Game/cancelPut', null, {root: true});
+            await dispatch('checkFarmingWalletActive');
+            await dispatch('getLockedInFarming');
             await dispatch('updateGameStatus');
             await dispatch('setStandings');
+            commit('Game/calculateRewards', null, {root: true});
             await dispatch('setRemainingTiles');
             await dispatch('setWalletBalance');
             await dispatch('setClaimTiles');
             await dispatch('updateColors');
-            commit('Game/calculateRewards', null, {root: true});
-            await dispatch('Game/updateRewardCache', null, {root: true});
             await dispatch('setField');
         },
 
-        async claimTiles({state, rootState}) {
-            const ever = rootState.Ever.api;
-            const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
-            const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
-            await EverAPI.wallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, state.game.address.toString(), GENESIS_ADDRESS);
+        async claimTiles({rootState}) {
+            const wallet = rootState.PlayerInfo.farmingContract;
+            await EverAPI.farmingWallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, GENESIS_ADDRESS);
+        },
+
+        async joinGame({state, rootState}) {
+            await EverAPI.game.deployFarmingWallet(state.game, rootState.PlayerInfo.playerAddress);
+        },
+
+        async checkFarmingWalletActive({commit, rootState}) {
+            const isFarmingActive = await EverAPI.isActiveContract(rootState.Ever.api, rootState.PlayerInfo.farmingAddress);
+            commit("PlayerInfo/updateFarmingActive", isFarmingActive, {root: true});
         },
 
         async putTiles({state, rootState}) {
@@ -158,12 +160,32 @@ export const Ever: {
             );
         },
 
+        async putFarmingTiles({rootState}, tokensToPut) {
+            const ever = rootState.Ever.api;
+            const walletAddress = new Address(rootState.PlayerInfo.walletAddress);
+            const wallet = new ever.Contract(TokenWalletContract.abi, walletAddress);
+
+            await EverAPI.wallet.putTiles(wallet,
+                tokensToPut,
+                rootState.PlayerInfo.farmingAddress,
+                rootState.PlayerInfo.playerAddress,
+                EMPTY_CELL
+            );
+        },
+
+        async releaseFarmingTiles({rootState}, {playerAddress, tokensToRelease}) {
+            const wallet = rootState.PlayerInfo.farmingContract;
+            await EverAPI.farmingWallet.releaseTokens(wallet,
+                playerAddress,
+                tokensToRelease
+            );
+        },
+
         async updateColors({commit, rootState}) {
             const game = rootState.Ever.game;
             const playerColors: Array<[PlayerAddress, number[]]> = await EverAPI.game.getColors(game);
             const colors = playerColors.find((item: [PlayerAddress, number[]]) => item[0].toString() === rootState.PlayerInfo.playerAddress);
             if (colors !== undefined) {
-                commit('PlayerInfo/updateJoined', true, {root: true});
                 commit('PlayerInfo/updateColors', colors[1].map((item) => parseInt(item)), {root: true});
             }
         },
@@ -177,13 +199,16 @@ export const Ever: {
             await EverAPI.game.claimReward(state.game, rootState.PlayerInfo.playerAddress);
 
         },
+
+        async updateFarmingEstimation({commit, rootState}, {time, balance}) {
+            const wallet = rootState.PlayerInfo.farmingContract;
+            if (wallet !== null && await EverAPI.isActiveContract(rootState.Ever.api, rootState.PlayerInfo.farmingAddress)) {
+                commit('PlayerInfo/updateFarmingEstimation', await EverAPI.farmingWallet.calcFarming(wallet, time, balance), {root: true});
+            }
+        }
     },
 
     getters: {
-        calcFarming: function (state, getters, rootState) {
-            return async function (time, balance) {
-                    return await EverAPI.calc.calcFarming(rootState.Ever.calc, time, balance);
-            }
-        }
+
     }
 };
