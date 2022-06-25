@@ -87,7 +87,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         renderSettings = _renderSettings;
         vertFragments = uint8(renderSettings[0]);
         horizFragments = uint8(renderSettings[1]);
-        tokensPerPut = uint128(renderSettings[2]) * uint128(1e9);
+        tokensPerPut = uint128(renderSettings[2]);
         maxColors = uint8(renderSettings[3]);
 
 

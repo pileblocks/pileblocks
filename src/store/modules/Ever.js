@@ -153,7 +153,7 @@ export const Ever: {
 
             const tilesPayload = await EverAPI.game.packTiles(state.game, rootState.Game.tilesToPut);
             await EverAPI.wallet.putTiles(wallet,
-                rootState.Game.payPerMove * 1e9,
+                rootState.Game.payPerMove,
                 state.game.address.toString(),
                 rootState.PlayerInfo.playerAddress,
                 tilesPayload
