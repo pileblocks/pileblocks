@@ -19,7 +19,8 @@ export const Game: {
         status: number,
         gameStartTime: number,
         extraSettings: ?GameExtraSettings,
-        gameId: number
+        gameId: number,
+        columns: number
     }
 } = {
     namespaced: true,
@@ -37,7 +38,8 @@ export const Game: {
         status: 1,
         gameStartTime: 0,
         extraSettings: null,
-        gameId: 0
+        gameId: 0,
+        columns: 0
     },
     mutations: {
         addTile(state, tilePlusColor: TileCoordinatePlusColor) {
@@ -93,6 +95,10 @@ export const Game: {
 
         updateTotalFieldFragments(state, totalFieldFragments) {
             state.totalFieldFragments = totalFieldFragments;
+        },
+
+        updateColumns(state, newColumns) {
+            state.columns = newColumns;
         },
 
         updateRemainingTiles(state, remainingTiles) {

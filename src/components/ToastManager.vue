@@ -2,92 +2,94 @@
     <div>
         <b-toast id="wrong-color" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Choose Another Color!
+            <div>{{ $t('toast.anotherColorTitle') }}
             </div>
           </template>
-          Please choose color <div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div> from the bottom menu.
+          {{ $t('toast.anotherColorText1') }}<div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div> {{ $t('toast.anotherColorText2') }}
         </b-toast>
 
         <b-toast id="zero-tiles-left" auto-hide-delay="5000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Use Another Color!
+            <div>{{ $t('toast.noColorLeftTitle') }}
             </div>
           </template>
-            Unfortunately, <b>0 tiles</b> of color <div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div> left.<br/>
-            Please <b>choose</b> another color from the bottom menu<br/><br/>
+            {{ $t('toast.noColorLeftText1') }}<div :class="_getColorClassByNum(this.correctColorNum)">{{correctColorNum}}</div>{{ $t('toast.noColorLeftText2') }}<br/>
+            <p v-html="$t('toast.noColorLeftText3')"></p>
             <img src="~@/assets/colors.png"  width="131" height="53" alt=""/>
-            <br/>
-            or <b>CLAIM</b> more tiles.
+            <br/><br/>
+            <p v-html="$t('toast.noColorLeftText4')"></p>
         </b-toast>
 
         <b-toast id="50-tiles-put" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Tiles Limit Reached!
+            <div>{{ $t('toast.tilesLimitReachedTitle') }}
             </div>
           </template>
-            You have already reached the limit of <b>50 tiles</b>, please submit them before putting more tiles.
+            <p v-html="$t('toast.tilesLimitReachedText1')"></p>
+
         </b-toast>
 
         <b-toast id="zero-balance" auto-hide-delay="2000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Your Balance is 0 PILE!
+            <div>{{ $t('toast.zeroBalanceTitle') }}
             </div>
           </template>
-            Your balance is <b>0 PILE</b>. Please top-up your balance by clicking the <span class="dark-box p-1"><i class="bi bi-cart-check-fill color-primary"></i></span> icon.
+
+            <p v-html="$t('toast.zeroBalanceText1')"></p>
+
         </b-toast>
 
-        <b-toast id="zero-claim" auto-hide-delay="10000" variant="secondary" solid toaster="b-toaster-top-center">
+        <b-toast id="zero-claim" auto-hide-delay="60000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-              <div>You have <b>0 tiles</b> to claim!
+              <div>{{ $t('toast.noTilesToClaimTitle') }}
             </div>
           </template>
-            <p>Please click the <span class="dark-box p-1"><i class="bi bi-gear-fill color-primary"></i></span> and add a few PILE tokens to farming.</p>
-            <p><b>NOTE:</b>The more PILE you put to farming, the <b>more</b> you receive!</p>
+            <p v-html="$t('toast.noTilesToClaimText1')"></p>
+            <p v-html="$t('toast.noTilesToClaimText2')"></p>
         </b-toast>
 
         <b-toast id="not-enough-pile-to-put" auto-hide-delay="10000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-              <div>Your PILE balance is not enough to put!
+              <div>{{ $t('toast.putBalanceNotEnoughTitle') }}
             </div>
           </template>
-            <p>Currently you have <i>{{balance}} PILE</i>, and the put operation costs <b>{{payPerMove}} PILE</b>.</p>
-            <p>Please top-up your balance!</p>
+            <p v-html="$t('toast.putBalanceNotEnoughText1', {'balance': balance, 'payPerMove': payPerMove})"></p>
         </b-toast>
 
         <b-toast id="op-in-progress" auto-hide-delay="2000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Operation in Progress!
+            <div>{{ $t('toast.operationInProgressTitle') }}
             </div>
           </template>
-            Please wait until the app completes the claim or put operation.
+            {{ $t('toast.operationInProgressText1') }}
         </b-toast>
         <b-toast id="message-expired" auto-hide-delay="20000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>Operation Didn't Succeed!
+            <div>{{ $t('toast.operationFailedTitle') }}
             </div>
           </template>
-            The operation could not be completed, please try again.
+            {{ $t('toast.operationFailedText1') }}
         </b-toast>
         <b-toast id="on-claim-tiles" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>👾 Activity Detected!
+            <div>{{ $t('toast.activityDetectedTitle') }}
             </div>
           </template>
-            Somebody has just claimed <b>{{claimValue}} tiles</b>.
+            <p v-html="$t('toast.activityDetectedClaim', {claimValue: claimValue})"></p>
         </b-toast>
         <b-toast id="on-put-tiles" auto-hide-delay="3000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>👾 Activity Detected!
+            <div>{{ $t('toast.activityDetectedTitle') }}
             </div>
           </template>
-            Somebody has just put <b>{{putValue}} tiles</b>.
+            <p v-html="$t('toast.activityDetectedPut', {putValue: putValue})"></p>
         </b-toast>
         <b-toast id="star-claimed" auto-hide-delay="5000" variant="secondary" solid toaster="b-toaster-top-center">
           <template #toast-title>
-            <div>⭐ You've Received a STAR! ⭐
+            <div>{{ $t('toast.starReceivedTitle') }}
             </div>
           </template>
-            This ⭐star⭐ gives you  <b>+{{pointsGained}}</b> points!.
+            <p v-html="$t('toast.starReceivedText1', {pointsGained: pointsGained})"></p>
         </b-toast>
 
     </div>
@@ -148,8 +150,11 @@ const ToastManager: {} = {
 export default ToastManager;
 </script>
 
-<style scoped>
+<style>
 .dark-box {
-    background-color: var(--gray-dark);
+    background-color: var(--gray-dark) !important;
+}
+.color-success {
+    color: var(--green);
 }
 </style>

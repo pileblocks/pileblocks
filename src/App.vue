@@ -90,11 +90,11 @@ export default App;
 #field {
     text-align: center;
     grid-row: 2;
-    overflow-y: scroll;
     background-image: url('~@/assets/game-wp.png');
     background-repeat-y: no-repeat;
     background-size: cover;
     background-position: center;
+    overflow-y: hidden;
 
 }
 
@@ -134,7 +134,7 @@ export default App;
 #top-menu {
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 1fr 3fr;
+    grid-template-columns: 1fr 1fr 1fr 2fr 40px;
     border-bottom-color: #fefefe;
     border-bottom-style: solid;
     border-bottom-width: 1px;

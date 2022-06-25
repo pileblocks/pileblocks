@@ -221,6 +221,7 @@ export default {
         setTotalFieldFragments: function (renderConfig) {
             let totalFragments = parseInt(renderConfig[0]) * parseInt(renderConfig[1]);
             this.$store.commit('Game/updateTotalFieldFragments', totalFragments)
+            this.$store.commit('Game/updateColumns', parseInt(renderConfig[1]));
         },
         setRemainingTiles: function (gameInfo:GameInfo) {
             this.$store.commit("Game/updateRemainingTiles", gameInfo.remainingTiles)
@@ -263,7 +264,6 @@ export default {
             //         connection: 'local',
             //     }),
         });
-
         if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
             this.$store.commit('Ever/toggleLoading', false);
             return;

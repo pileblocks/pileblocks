@@ -12,25 +12,25 @@
                 </b-button>
                 <b-button size=md variant="primary" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
 
-                    <span v-show="!isLoading && this.tempClaimableTiles === 0">Claim<br/>
+                    <span v-show="!isLoading && this.tempClaimableTiles === 0">{{ $t('bottomMenu.claim') }}<br/>
                         <small v-if="this.$store.state.PlayerInfo.claimableTiles > 0">{{ this.$store.state.PlayerInfo.claimableTiles }}</small>
                     </span>
-                    <span v-show="!isLoading && this.tempClaimableTiles > 0">Claim<br/>
+                    <span v-show="!isLoading && this.tempClaimableTiles > 0">{{ $t('bottomMenu.claim') }}<br/>
                         <small :class="setAnimationClass">{{ this.tempClaimableTiles }}</small>
                     </span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
                 <b-button size="lg" variant="primary" v-on:click="joinGame" v-if="!this.$store.state.PlayerInfo.isFarmingActive">
-                    <span v-show="!isLoading">Join</span>
+                    <span v-show="!isLoading">{{ $t('bottomMenu.join') }}</span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
             </div>
             <div v-if="tilesArePut && !isMainScreen" class="d-flex flex-column mt-1">
                 <b-button size="lg" variant="primary" v-on:click="putTiles">
-                    <span v-show="!isLoading">Put <small>{{ this.$store.state.Game.tilesToPut.length }}</small></span>
+                    <span v-show="!isLoading">{{ $t('bottomMenu.put') }}<small>{{ this.$store.state.Game.tilesToPut.length }}</small></span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
-                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut" v-show="!isLoading">Cancel <i class="bi bi-x-circle"></i></b-button>
+                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut" v-show="!isLoading">{{ $t('bottomMenu.cancel') }} <i class="bi bi-x-circle"></i></b-button>
             </div>
         </div>
         <div v-if="isGameCompleted" class="claim-reward">
@@ -39,28 +39,28 @@
                     <i class="bi bi-gear-fill"></i>
                 </b-button>
 
-                <b-button size="lg" variant="primary" v-on:click="claimReward" v-show="!isReceived & isInRoaster">
-                    <span v-show="!isLoading">Get Reward <small>{{ this.$store.getters["Game/getReward"] | fixed }}</small></span>
+                <b-button size="lg" variant="primary" v-on:click="claimReward" v-show="!isReceived & isInRoaster & $store.state.Game.totalReward > 0">
+                    <span v-show="!isLoading">{{ $t('bottomMenu.getReward') }}<small>{{ this.$store.getters["Game/getReward"] | fixed }}</small></span>
                     <b-spinner v-show="isLoading"></b-spinner>
                 </b-button>
         </div>
-        <b-modal id="farming-settings" hide-footer title="Farming Settings">
-            <p>Add PILE from your balance to farming. In return, you will start receiving tiles. The more PILE you lock, the more tiles you receive. You can always release tokens from farming by clicking the (x) icon.</p>
+        <b-modal id="farming-settings" hide-footer :title="$t('bottomMenu.farmingSettings.title')">
+            <p>{{ $t('bottomMenu.farmingSettings.p1') }}</p>
 
-            <p>Current balance: <b>{{ this.$store.state.PlayerInfo.balance | fixed }}</b> PILE</p>
-            <p>In farming: <b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill"></i></span></p>
-            <p>Add this amount of PILE to farming:</p>
+            <p>{{ $t('bottomMenu.farmingSettings.p2') }}<b>{{ this.$store.state.PlayerInfo.balance | fixed }}</b> PILE</p>
+            <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill"></i></span></p>
+            <p>{{ $t('bottomMenu.farmingSettings.p4') }}</p>
             <b-input-group size="sm">
-                <b-form-input v-model="tokensToAdd" placeholder="Your balance" size="sm" :state="validateAddBalance()"></b-form-input>
+                <b-form-input v-model="tokensToAdd" :placeholder="$t('bottomMenu.farmingSettings.placeholderBalance')" size="sm" :state="validateAddBalance()"></b-form-input>
             </b-input-group>
 
             <b-form-invalid-feedback :state="validateAddBalance()">
-            The farming value should be less than your balance value.
+                <span>{{ $t('bottomMenu.farmingSettings.error') }}</span>
             </b-form-invalid-feedback>
 
-            <p>Then you'll farm approximately:<br/> <b>{{ calcFarming() }}</b> tiles/minute.</p>
+            <p>{{ $t('bottomMenu.farmingSettings.youGet') }}<br/> <b>{{ calcFarming() }}</b> {{ $t('bottomMenu.farmingSettings.tileMin') }}</p>
             <div class="d-flex justify-content-end">
-            <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">Add to Farming</b-button>
+            <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</b-button>
             </div>
         </b-modal>
     </div>
@@ -184,7 +184,7 @@ export default {
         },
 
         validateAddBalance: function () {
-            return (parseInt(this.tokensToAdd) >= 0 && parseInt(this.tokensToAdd) <=  this.$store.state.PlayerInfo.balance);
+            return (parseInt(this.tokensToAdd) >= 0 && parseInt(this.tokensToAdd) + 1 <=  this.$store.state.PlayerInfo.balance);
         },
 
         calcFarming: function() {

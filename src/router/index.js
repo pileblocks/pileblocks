@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-//import Home from '../views/Home'
+import GamePic from '../views/GamePic'
 //import FieldTilesPart from '../views/FieldTilesPart'
 const Home = () => import('../views/Home');
 const FieldTilesPart = () => import('../views/FieldTilesPart');
@@ -30,6 +30,12 @@ const routes = [
         name: 'Game',
         component: Home
     },
+    {
+        path: '/gamepic/',
+        name: 'GamePic',
+        component: GamePic
+    },
+
 ]
 
 const router = new VueRouter({

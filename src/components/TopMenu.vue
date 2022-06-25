@@ -1,42 +1,32 @@
 <template>
     <div>
         <div id="top-menu-logo">
-            <b-modal id="standings-table" hide-footer title="Standings">
-                <b-container fluid class="p-0">
+            <b-modal id="standings-table" hide-footer :title="$t('topMenu.standings.title')">
+                <b-container fluid class="p-0 mb-4">
                     <b-row>
-                        <b-col class="font-weight-bold text-right" cols="3">Place</b-col>
-                        <b-col class="font-weight-bold" cols="3">Wallet</b-col>
-                        <b-col class="font-weight-bold text-right" cols="3">Points</b-col>
-                        <b-col class="font-weight-bold" cols="3">Reward</b-col>
+                        <b-col class="font-weight-bold text-right">{{ $t('topMenu.standings.place') }}</b-col>
+                        <b-col class="font-weight-bold text-center">{{ $t('topMenu.standings.wallet') }}</b-col>
+                        <b-col class="font-weight-bold text-center">{{ $t('topMenu.standings.points') }}</b-col>
+                        <b-col class="font-weight-bold" v-if="$store.state.Game.totalReward > 0">{{ $t('topMenu.standings.reward') }}</b-col>
                     </b-row>
 
                     <b-row v-for="(player, index) in $store.state.Game.standings" :key="player.playerAddress"
                            :class="{active: isCurrentPlayer(player.playerAddress)}">
                         <b-col class="text-right"><span class="nft" v-if="player.nft">nft</span> {{ index + 1 }}
                         </b-col>
-                        <b-col class="text-left">{{ player.playerAddress | short }}</b-col>
+                        <b-col class="text-center">{{ player.playerAddress | short }}</b-col>
                         <b-col class="text-center p-0">{{ player.captured }}
                             <span v-if="player.stars > 0">
-                                <i class="bi bi-star-fill small" >x{{player.stars}}</i>
+                                ({{player.stars}}<i class="bi bi-star-fill small" ></i>)
                             </span>
                         </b-col>
-                        <b-col class="text-center">{{ player.reward | fixed }}</b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col class="mt-2">
-                            <p class="small" v-if="gameActive"><b>Note: </b>Until the game is completed, rewards for the last (10%) and pre-last (5%) tiles are
-                                excluded from the calculation.</p>
-                            <p class="small" v-if="!gameActive">
-                               <i class="bi bi-star-fill gold-star"></i> = Player claimed the last tile<br/>
-                               <i class="bi bi-star gold-star"></i> = Player claimed the pre-last tile
-                            </p>
-                        </b-col>
+                        <b-col class="text-center" v-if="$store.state.Game.totalReward > 0">{{ player.reward | fixed }}</b-col>
                     </b-row>
                 </b-container>
             </b-modal>
 
-            <b-modal id="sale-token" hide-footer title="Get PILE Tokens!">
-                <p>To get PILE tokens, add the PILE token root address to FlatQube and swap for WEVER.<br/></p>
+            <b-modal id="sale-token" hide-footer :title="$t('topMenu.getTokens.title')">
+                <p>{{ $t('topMenu.getTokens.p1') }}<br/></p>
                 <b-input-group>
                     <b-form-input :value="saleTokenAddress"
                                v-on:focus="$event.target.select()"
@@ -47,19 +37,19 @@
                         <b-button variant="primary" v-on:click="copyAddress">Copy</b-button>
                     </template>
                 </b-input-group>
-                <p class="mt-3">Your connected wallet is: <b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>Keep PILE <b>only</b> in this wallet to use them within the game!</p>
-                <p class="mt-1">For the guide on how to import the PILE token, see <a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
+                <p class="mt-3">{{ $t('topMenu.getTokens.p2') }}<b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>{{ $t('topMenu.getTokens.p3') }}</p>
+                <p class="mt-1">{{ $t('topMenu.getTokens.p4') }}<a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
             </b-modal>
 
             <img src="~@/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
         </div>
         <div id="top-menu-player-info">
-            <p class="mb-0"><span class="text-faded">Balance: </span>
+            <p class="mb-0"><span class="text-faded">{{ $t('topMenu.balance') }}</span>
                 <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
                 <i class="bi bi-cart-check-fill color-success pl-1" v-on:click="$bvModal.show('sale-token')"></i>
             </p>
             <div class="reward-grid">
-                <div class="reward-label"><span class="text-faded pr-1">Your Place: </span></div>
+                <div class="reward-label"><span class="text-faded pr-1">{{ $t('topMenu.yourPlace') }}</span></div>
                 <div class="reward-value">
                     <div class="d-inline-block position-absolute">
                         <div>{{playerPosition}}
@@ -83,6 +73,10 @@
                 <i class="bi bi-arrow-clockwise" v-show="!isLoading"></i>
                 <b-spinner v-show="isLoading" small></b-spinner>
             </b-button>
+        </div>
+        <div id="top-menu-game-lang" class="d-flex flex-column">
+            <img src="~@/assets/gb_flag.svg" width="30" height="30" alt="" v-on:click="changeLocale('en')" v-if="$i18n.locale !== 'en'"/>
+            <img src="~@/assets/kr_flag.svg" width="30" height="30" alt="" v-on:click="changeLocale('kr')" v-if="$i18n.locale !== 'kr'"/>
         </div>
     </div>
 </template>
@@ -137,6 +131,10 @@ export default {
         copyAddress: function() {
             this.$refs.tsAddress.focus();
             document.execCommand('copy');
+        },
+
+        changeLocale: function (lang: string) {
+            this.$i18n.locale = lang;
         }
 
     },

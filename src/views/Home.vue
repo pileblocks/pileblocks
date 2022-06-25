@@ -1,10 +1,10 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats mt-1 mb-1">
-            <p class="mb-0" v-on:click="updateStandings"><small>YOUR POINTS:</small> {{ $store.getters["Game/getCapturedTiles"] }}
+            <p class="mb-0" v-on:click="updateStandings"><small>{{$t("home.yourPoints")}}</small> {{ $store.getters["Game/getCapturedTiles"] }}
             </p>
-            <p class="mb-0"><small>REMAINING:</small> {{ $store.state.Game.remainingTiles }}</p>
-            <p class="mb-0"><small>TOTAL REWARD:</small> {{ $store.state.Game.totalReward }}</p>
+            <p class="mb-0"><small>{{$t("home.remainingTiles")}}</small> {{ $store.state.Game.remainingTiles }}</p>
+            <p class="mb-0" v-if="$store.state.Game.totalReward > 0"><small>{{$t("home.totalReward")}}</small> {{ $store.state.Game.totalReward }}</p>
         </div>
         <div class="d-flex flex-row justify-content-center">
             <div v-for="index in 2" :key="index" class="d-grid">
@@ -64,6 +64,7 @@ const Home: {} = {
         FieldPart
     },
     mounted: function () {
+        console.log(this.$i18n.locale);
         this.totalFieldFragments = this.$store.state.Game.totalFieldFragments;
         this.$store.commit('Game/updateIsMainScreen', true);
     }
