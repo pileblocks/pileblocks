@@ -44,9 +44,10 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         tvm.log(format("Farming account: {}", address(this)));
         tvm.log(format("Farming wallet: {}", tokenWallet));
         IPBGame(game).askFarmingSpeed{value: 0.1 ton}(owner);
+        emit OperationCompleted("farmingWalletCreated", owner, 0, now, 0);
         tvm.rawReserve(0.1 ton, 4);
         owner.transfer({ value: 0, flag: 128 });
-        emit OperationCompleted("farmingWalletCreated", owner, 0, now, 0);
+
     }
 
     function onAcceptTokensTransfer(
@@ -60,8 +61,8 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         require(msg.sender == tokenWallet, WRONG_NOTIFICATION_SENDER);
         notifyBalanceChange();
         _balance += amount;
-        IPBGame(game).notifyBalanceChange{value: 0, flag: 64}(owner, _balance);
         emit OperationCompleted("farmingBalanceUpdated", sender, 0, now, _balance);
+        IPBGame(game).notifyBalanceChange{value: 0, flag: 64}(owner, _balance);
     }
 
     function releaseTokens(uint128 amount) external onlyOwner {
@@ -76,9 +77,9 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
             true,
             payload
         );
+        emit OperationCompleted("farmingBalanceUpdated", owner, 0, now, _balance);
         tvm.rawReserve(0, 4);
         IPBGame(game).notifyBalanceChange{value: 0, flag: 128}(owner, _balance);
-        emit OperationCompleted("farmingBalanceUpdated", owner, 0, now, _balance);
     }
 
     function setFarmingSpeed(uint128 newSpeed) external internalMsg {

@@ -48,8 +48,7 @@
             <p>{{ $t('bottomMenu.farmingSettings.p1') }}</p>
 
             <p>{{ $t('bottomMenu.farmingSettings.p2') }}<b>{{ this.$store.state.PlayerInfo.balance | fixed }}</b> PILE</p>
-            <p><input type="text" v-model="releaseAmount"/><span class="pr-1 color-primary" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill"></i></span>
-            <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE</p>
+            <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill"></i></span></p>
             <p>{{ $t('bottomMenu.farmingSettings.p4') }}</p>
             <b-input-group size="sm">
                 <b-form-input v-model="tokensToAdd" :placeholder="$t('bottomMenu.farmingSettings.placeholderBalance')" size="sm" :state="validateAddBalance()"></b-form-input>
@@ -79,8 +78,7 @@ export default {
         return {
             tokensToAdd: 0,
             tempClaimableTiles: 0,
-            setAnimationClass: "",
-            releaseAmount: 0
+            setAnimationClass: ""
         }
     },
     methods: {
@@ -160,7 +158,7 @@ export default {
             try {
                 this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/releaseFarmingTiles', {playerAddress: this.$store.state.PlayerInfo.playerAddress,
-                    tokensToRelease: this.releaseAmount * 1e9});
+                    tokensToRelease: this.$store.state.PlayerInfo.farmingBalance * 1e9});
                 await this.$store.dispatch('Ever/getLockedInFarming');
                 await this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
             } catch(e) {
