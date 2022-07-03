@@ -18,7 +18,7 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
     address static tokenRootAddress;
 
     address public tokenWallet;
-
+    uint128 public farmingSpeed;
 
     // Farming
     uint128 public _balance;
@@ -31,6 +31,7 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
     }
 
     constructor () public {
+        farmingSpeed = 1;
         ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: FarmingWallet.onDeploy}(
             address(this),
             0.3 ton
@@ -42,6 +43,9 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         tokenWallet = gWallet;
         tvm.log(format("Farming account: {}", address(this)));
         tvm.log(format("Farming wallet: {}", tokenWallet));
+        IPBGame(game).askFarmingSpeed{value: 0.1 ton}(owner);
+        tvm.rawReserve(0.1 ton, 4);
+        owner.transfer({ value: 0, flag: 128 });
         emit OperationCompleted("farmingWalletCreated", owner, 0, now, 0);
     }
 
@@ -77,6 +81,12 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         emit OperationCompleted("farmingBalanceUpdated", owner, 0, now, _balance);
     }
 
+    function setFarmingSpeed(uint128 newSpeed) external internalMsg {
+        require(msg.sender == game, WALLET_DOES_NOT_MATCH_OWNER);
+        farmingSpeed = newSpeed;
+        tvm.log(format("Farming speed: {}", farmingSpeed));
+        owner.transfer({value: 0, flag: 64});
+    }
 
     //
     // Farming functions
@@ -91,7 +101,7 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         if (tokenBalance == 0) {
             return 0;
         }
-        return  (time * (100 + 6 * ExpMath.getNumPower(math.divr(tokenBalance, 1e9))) * ExpMath.log_2(1 + math.divr(tokenBalance, 1e9))) / (100 * 8);
+        return  (time * (100 + 6 * ExpMath.getNumPower(math.divr(tokenBalance, 1e9))) * ExpMath.log_2(1 + math.divr(tokenBalance, 1e9))) / (100 * 8 * farmingSpeed);
     }
 
     function cropTiles(uint128 pNum) private pure returns (uint16) {

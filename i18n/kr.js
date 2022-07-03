@@ -7,16 +7,16 @@ export default {
             cancel: "취소 ",
             getReward: "보상 받다",
             farmingSettings: {
-                title: "농업 설정",
-                p1: "저울에서 농업에 PILE을 추가하십시오. 그 대가로 타일을 받기 시작합니다. 더 많은 PILE을 잠글수록 더 많은 타일을 받습니다. (x) 아이콘을 클릭하면 언제든지 농사에서 토큰을 해제할 수 있습니다.",
+                title: "파밍 설정",
+                p1: "저울에서 파밍 PILE을 추가하십시오. 그 대가로 타일을 받기 시작합니다. 더 많은 PILE을 잠글수록 더 많은 타일을 받습니다. (x) 아이콘을 클릭하면 언제든지 농사에서 토큰을 해제할 수 있습니다.",
                 p2: "현재의 균형: ",
-                p3: "농업에서: ",
-                p4: "이 양의 PILE을 농업에 추가합니다:",
+                p3: "파밍에서: ",
+                p4: "이 양의 PILE을 파밍 추가합니다:",
                 placeholderBalance: "잔액",
                 error: "풋 작업을 위해 1개의 PILE을 잔고에 남겨두십시오. 또한 값은 잔액 값보다 작아야 합니다.",
                 youGet: "그러면 대략 다음과 같이 농사를 짓게 됩니다:",
                 tileMin: "타일/분.",
-                addToFarming: "농업에 추가"
+                addToFarming: "파밍에 추가"
             }
         },
         home: {
@@ -56,8 +56,8 @@ export default {
             putBalanceNotEnoughTitle: "PILE 잔액이 부족합니다!",
             putBalanceNotEnoughText1: "현재 <i>{balance} PILE</i>이(가) 있으며 풋 작업 비용은 <b>{payPerMove} PILE</b>입니다.<br/>잔액을 충전하세요!",
             noTilesToClaimTitle: "주장할 타일이 0개 있습니다!",
-            noTilesToClaimText1: "를 <span class=\"p-1\"><i class=\"bi bi-gear-fill dark-box color-primary\"></i></span> 클릭하고 몇 가지 PILE 토큰을 농업에 추가하십시오.",
-            noTilesToClaimText2: "<b>참고:</b> PILE을 농업에 더 많이 투자할수록 <b>더 많이</b> 받게 됩니다!",
+            noTilesToClaimText1: "를 <span class=\"p-1\"><i class=\"bi bi-gear-fill dark-box color-primary\"></i></span> 클릭하고 몇 가지 PILE 토큰을 파밍에 추가하십시오.",
+            noTilesToClaimText2: "<b>참고:</b> PILE을 파밍에 더 많이 투자할수록 <b>더 많이</b> 받게 됩니다!",
             zeroBalanceTitle: "귀하의 잔액은 0PILE입니다!",
             zeroBalanceText1: "잔액이 <b>0 PILE</b>입니다. <span class=\"dark-box p-1\"><i class=\"bi bi-cart-check-fill color-success\"></i></span> 아이콘을 클릭하여 잔액을 충전하십시오.",
             operationInProgressTitle: "작업 진행 중!",

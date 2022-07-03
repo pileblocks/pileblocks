@@ -22,6 +22,7 @@ struct GameExtraSettings {
     uint16 scorePerStar;
     uint8 currentStars;
     uint8 percentOfReward;
+    uint128 farmingSpeed;
 }
 
 struct GameInfo {

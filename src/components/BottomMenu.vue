@@ -7,7 +7,7 @@
         </div>
         <div id="claim-tiles" v-if="isBalancePositive && !isGameCompleted">
             <div v-if="!tilesArePut">
-                <b-button size="sm" variant="secondary" class="mr-2 color-primary" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="$bvModal.show('farming-settings')">
+                <b-button size="sm" variant="secondary" class="mr-2 color-primary" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
                     <i class="bi bi-gear-fill"></i>
                 </b-button>
                 <b-button size=md variant="primary" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
@@ -58,7 +58,7 @@
                 <span>{{ $t('bottomMenu.farmingSettings.error') }}</span>
             </b-form-invalid-feedback>
 
-            <p>{{ $t('bottomMenu.farmingSettings.youGet') }}<br/> <b>{{ calcFarming() }}</b> {{ $t('bottomMenu.farmingSettings.tileMin') }}</p>
+            <p>{{ $t('bottomMenu.farmingSettings.youGet') }}<br/> <b>{{ farmingEstimation }}</b> {{ $t('bottomMenu.farmingSettings.tileMin') }}</p>
             <div class="d-flex justify-content-end">
             <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</b-button>
             </div>
@@ -70,6 +70,7 @@
 // @flow
 import BottomMenuColor from "./BottomMenuColor";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
+
 export default {
     name: "BottomMenu",
     components: {BottomMenuColor},
@@ -144,7 +145,8 @@ export default {
                 this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/putFarmingTiles', this.tokensToAdd * 1e9);
                 this.tokensToAdd = 0;
-                await this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 })
+                await this.$store.dispatch('Ever/getLockedInFarming');
+                await this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
             } catch(e) {
                 this.$store.commit('Ever/isOpInProgress', false);
                 this.errorHandler(e);
@@ -157,6 +159,8 @@ export default {
                 this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/releaseFarmingTiles', {playerAddress: this.$store.state.PlayerInfo.playerAddress,
                     tokensToRelease: this.$store.state.PlayerInfo.farmingBalance * 1e9});
+                await this.$store.dispatch('Ever/getLockedInFarming');
+                await this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
             } catch(e) {
                 this.$store.commit('Ever/isOpInProgress', false);
                 this.errorHandler(e);
@@ -187,12 +191,9 @@ export default {
             return (parseInt(this.tokensToAdd) >= 0 && parseInt(this.tokensToAdd) + 1 <=  this.$store.state.PlayerInfo.balance);
         },
 
-        calcFarming: function() {
-            if (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance > 0) {
-                this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
-                return this.$store.state.PlayerInfo.farmingEstimation;
-            }
-            return 0;
+        showFarmingSettings: function () {
+            this.$bvModal.show('farming-settings');
+            this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
         }
 
     },
@@ -213,13 +214,27 @@ export default {
                     chain = chain.then(()=>changeValue(i)).then(()=>sleep(50))
                 }
                 await chain;
-        }
+        },
+
+        tokensToAdd: async function (newValue) {
+            if (parseInt(newValue) >= 0 && parseInt(newValue) + this.$store.state.PlayerInfo.farmingBalance > 0) {
+                await this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
+            }
+        },
     },
 
     computed: {
 
         claimableTilesWatcher: function(): number {
             return this.$store.state.PlayerInfo.claimableTiles;
+        },
+
+        farmingEstimation: function(): number {
+            return this.$store.state.PlayerInfo.farmingEstimation;
+        },
+
+        farmingBalanceWatcher: function(): number {
+            return this.$store.state.PlayerInfo.farmingBalance;
         },
 
         tilesArePut: function (): boolean {

@@ -53,7 +53,7 @@ INDEX_CODE=$(tonos-cli decode stateinit --tvc GameIndex.tvc | tail -n +5 | ../no
 FARMING_CODE=$(tonos-cli decode stateinit --tvc FarmingWallet.tvc | tail -n +5 | ../node_modules/node-jq/bin/jq -r .code)
 
 NONCE=$(date +%s)
-#echo $GAME_CODE
+echo $GAME_CODE
 
 echo "Deploying calc..."
 CALC_ADDRESS=$(tondev contract deploy FarmingCalculator.abi.json -n $NWK -s $SIGNER -v 250000000 -d _randomNonce:$NONCE | grep "Address:" | cut -d " " -f 4)
@@ -95,7 +95,7 @@ echo "Player2 address: ${PLAYER2_ADDRESS}"
 
 TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i  "{\"_renderSettings\": [2, 1, 5, 5, 16711422, 11186364, 12456217, 3093818, 1974824], \"_gameName\": \"Follow the White Rabbit 🐇\", \"_gameStartTime\": $GAMESTARTDATE}")
 
-sleep 2
+sleep 45
 
 GAME_ADDRESS=$(tondev contract run-local PlayerTest.abi.json -n $NWK -s $SIGNER -a $PLAYER1_ADDRESS gameAddress | grep "gameAddress" | cut -d " " -f 10 | tr -d '"')
 echo "GAME address: $GAME_ADDRESS"
@@ -110,8 +110,8 @@ TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $S
 echo "Template provided!"
 
 echo "tondev contract run-local PBGame.abi.json -a $GAME_ADDRESS -n $NWK -s $SIGNER template"
-#_extraSettings = [MAX_STARS, scorePerStar, percentOfReward]
-TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameExtraSettings -i '{"_extraSettings": [10, 100, 100]}')
+#_extraSettings = [MAX_STARS, scorePerStar, percentOfReward, farmingSpeed]
+TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameExtraSettings -i '{"_extraSettings": [10, 100, 0, 5]}')
 echo "Extra settings provided!"
 
 TEMP=$(tondev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setImageForReview)

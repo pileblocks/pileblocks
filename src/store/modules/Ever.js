@@ -127,7 +127,6 @@ export const Ever: {
             commit('Game/calculateRewards', null, {root: true});
             await dispatch('setRemainingTiles');
             await dispatch('setWalletBalance');
-            await dispatch('setClaimTiles');
             await dispatch('updateColors');
             await dispatch('setField');
         },

@@ -307,7 +307,7 @@ export default {
              sleep(duration).then(() => poll(promiseFn, duration)))
 
         poll(() => new Promise( () => {
-            if (this.$store.state.PlayerInfo.isFarmingActive) {
+            if (this.$store.state.PlayerInfo.isFarmingActive && !this.$store.state.Ever.operationInProgress && this.$store.state.PlayerInfo.farmingBalance > 0) {
                 this.$store.dispatch('Ever/setClaimTiles');
             }
         }), 5000)

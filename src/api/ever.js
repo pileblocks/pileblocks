@@ -32,6 +32,7 @@ export const EverAPI = {
                 .methods
                 .walletOf({answerId: 1, walletOwner: playerAddress})
                 .call();
+            console.log("API getWallet call run");
             return result.value0.toString();
         }
     },
@@ -41,6 +42,7 @@ export const EverAPI = {
                 .methods
                 .calcFarming({time: time, tokenBalance: tokenBalance})
                 .call();
+            console.log("API calcFarming call run");
             return parseInt(result.farmValue);
         }
     },
@@ -50,6 +52,7 @@ export const EverAPI = {
                 .methods
                 .currentGameId({})
                 .call();
+            console.log("API getCurrentGameId call run");
             return parseInt(result.currentGameId);
         },
         isNextGameEmpty: async function (gHost): Promise<boolean> {
@@ -57,6 +60,7 @@ export const EverAPI = {
                 .methods
                 .isNextGameEmpty({})
                 .call();
+            console.log("API isNextGameEmpty call run");
             return result.value0;
         },
         _getIndexAddress: async function (gHost, gameId: number): Promise<Address> {
@@ -64,6 +68,7 @@ export const EverAPI = {
                 .methods
                 .getIndexAddress({_gameId: gameId})
                 .call();
+            console.log("API _getIndexAddress call run");
             return result.value0;
         },
         getRewardPerGame: async function (gHost): Promise<number> {
@@ -71,6 +76,7 @@ export const EverAPI = {
                 .methods
                 .getRewardPerGame({})
                 .call();
+            console.log("API getRewardPerGame call run");
             return parseInt(result.value0 / 1e9);
         },
     },
@@ -80,6 +86,7 @@ export const EverAPI = {
                 .methods
                 .gameAddress({})
                 .call();
+            console.log("API getGameAddress call run");
             return result.gameAddress;
         }
 
@@ -90,6 +97,7 @@ export const EverAPI = {
                 .methods
                 .getInfo({})
                 .call();
+            console.log("API getGameInfo call run");
             return result.value0;
         },
 
@@ -98,7 +106,7 @@ export const EverAPI = {
                 .methods
                 .getGameExtraSettings({})
                 .call();
-
+            console.log("API getGameExtraSettings call run");
             return {
                 maxStars: parseInt(result.value0.maxStars),
                 scorePerStar: parseInt(result.value0.scorePerStar),
@@ -112,6 +120,7 @@ export const EverAPI = {
                 .methods
                 .getFarmingAddress({walletOwner: playerAddress})
                 .call();
+            console.log("API getFarmingAddress call run");
             return result.value0;
         },
 
@@ -122,7 +131,7 @@ export const EverAPI = {
                 .deployFarmingWallet({})
                 .send({
                     from: pAddress,
-                    amount: '500000000',
+                    amount: '1000000000',
                     bounce: true,
                 });
 
@@ -133,6 +142,7 @@ export const EverAPI = {
                 .methods
                 .field({})
                 .call();
+            console.log("API getField call run");
             return result.field;
         },
         getTemplate: async function (game): Promise<Object> {
@@ -140,6 +150,7 @@ export const EverAPI = {
                 .methods
                 .template({})
                 .call();
+            console.log("API getTemplate call run");
             return result.template;
         },
         getPlayers: async function (game): Promise<Array<Array<[Address, RawPlayerStats]>>> {
@@ -147,6 +158,7 @@ export const EverAPI = {
                 .methods
                 .players({})
                 .call();
+            console.log("API getPlayers call run");
             return result.players;
 
         },
@@ -155,6 +167,7 @@ export const EverAPI = {
                 .methods
                 .playerColors({})
                 .call();
+            console.log("API getColors call run");
             return result.playerColors;
         },
         claimReward: async function (gameContract: Contract, playerAddress: string) {
@@ -174,6 +187,7 @@ export const EverAPI = {
                 .methods
                 .packTiles({tiles: tiles})
                 .call();
+            console.log("API packTiles call run");
             return result.value0;
         }
     },
@@ -188,6 +202,7 @@ export const EverAPI = {
                 .methods
                 .balance({answerId: 1})
                 .call();
+            console.log("API getBalance call run");
             return parseInt(result.value0) / 1e9;
         },
 
@@ -221,6 +236,7 @@ export const EverAPI = {
                 .methods
                 .showTiles({})
                 .call();
+            console.log("API getTiles call run");
             return parseInt(result.value0);
         },
 
@@ -229,6 +245,7 @@ export const EverAPI = {
                 .methods
                 ._balance({})
                 .call();
+            console.log("API getLockedInFarming call run");
             return parseInt(result._balance) / 1e9;
         },
 
@@ -237,6 +254,7 @@ export const EverAPI = {
                 .methods
                 .calcFarming({time: time, tokenBalance: tokenBalance})
                 .call();
+            console.log("API calcFarming call run");
             return parseInt(result.value0);
         },
 

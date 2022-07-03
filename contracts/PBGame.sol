@@ -7,6 +7,7 @@ import "./interfaces/ITokenRoot.sol";
 import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IGameHost.sol";
 import "./interfaces/IAcceptTokensTransferCallback.sol";
+import "./interfaces/IFarmingWallet.sol";
 
 import "./TokenWallet.sol";
 import "./FarmingWallet.sol";
@@ -47,6 +48,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
     uint16 scorePerStar;
     uint8 currentStars;
     uint8 percentOfReward;
+    uint128 farmingSpeed;
 
     mapping(address => PlayerInfo) public players;
     mapping(address => uint16[]) public playerColors;
@@ -157,13 +159,16 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         maxStars = uint8(_gameExtraSettings[0]);
         scorePerStar = uint16(_gameExtraSettings[1]);
         percentOfReward = uint8(_gameExtraSettings[2]);
+        farmingSpeed = uint128(_gameExtraSettings[3]);
     }
 
     function getGameExtraSettings() external view returns(GameExtraSettings){
         return GameExtraSettings(maxStars,
                     scorePerStar,
                     currentStars,
-                    percentOfReward);
+                    percentOfReward,
+                    farmingSpeed
+                );
     }
 
     function notifyBalanceChange(address ownerAddress, uint128 tokenBalance) external {
@@ -320,10 +325,14 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
 
         address wallet = new FarmingWallet {
             stateInit: initData,
-            value: 0.6 ton
+            value: 0,
+            flag: 64
         }();
+    }
 
-        msg.sender.transfer({value: 0, flag: 64});
+    function askFarmingSpeed(address walletOwner) external view {
+        require(msg.sender == getFarmingAddress(walletOwner), WALLET_DOES_NOT_MATCH_OWNER);
+        IFarmingWallet(msg.sender).setFarmingSpeed{value: 0, flag: 64}(farmingSpeed);
     }
 
 //

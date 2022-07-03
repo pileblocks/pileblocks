@@ -15,4 +15,5 @@ interface IPBGame {
     function notifyBalanceChange(address ownerAddress, uint128 tokenBalance) external;
     function setGameExtraSettings(uint128[] _gameExtraSettings) external;
     function setGameId(uint32 _gameId) external;
+    function askFarmingSpeed(address ownerAddress) external;
 }
