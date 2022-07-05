@@ -22,7 +22,9 @@ export default {
         home: {
             remainingTiles: "Remaining:",
             yourPoints: "Your Points:",
-            totalReward: "Total Reward:"
+            totalReward: "Total Reward:",
+            previousGame: "Previous Game",
+            nextGame: "Next Game"
         },
         topMenu: {
             balance: "Balance: ",

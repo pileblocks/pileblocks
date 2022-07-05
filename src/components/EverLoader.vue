@@ -56,6 +56,9 @@ export default {
         initGame: async function (ever) {
 
             let host = this.$store.state.Ever.host;
+            let updateLastGameId = parseInt(await EverAPI.host.getCurrentGameId(host)) - 1;
+            this.$store.commit("Game/updateLastGameId", updateLastGameId);
+
             if (host !== null) {
                 let currentGameId = 0;
                 if (this.$route.name === "Game") {
@@ -278,6 +281,8 @@ export default {
 
         const gameInfo = await EverAPI.game.getGameInfo(this.$store.state.Ever.game);
 
+        this.setGameId(gameInfo);
+
         if (this.setGameStartTime(gameInfo) > new Date().getTime() / 1000) {
             this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_GAME_PENDING);
             this.$store.commit('Ever/toggleLoading', false);
@@ -290,7 +295,6 @@ export default {
         this.setTotalFieldFragments(gameInfo.renderConfig);
         this.setRemainingTiles(gameInfo);
         this.setGameName(gameInfo);
-        this.setGameId(gameInfo);
         this.setGameInitConfig(gameInfo);
         await this.setExtraSettings();
 

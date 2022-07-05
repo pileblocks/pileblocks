@@ -14,7 +14,7 @@
         </div>
         <div>
             <p class="season-slogan fancy-font">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
-            <b-button size="sm" variant="secondary" v-if="this.$store.state.Game.gameId > 1" v-on:click="loadPrevGame"><i class="bi bi-chevron-double-left"></i> Previous Game</b-button>
+            <game-navigation></game-navigation>
         </div>
     </div>
 </template>
@@ -23,6 +23,7 @@
 // @flow
 
 import FieldPart from "../components/FieldPart";
+import GameNavigation from "@/components/GameNavigation";
 
 const Home: {} = {
     name: "FieldParts",
@@ -51,17 +52,10 @@ const Home: {} = {
             }
             return fragmentPairs;
 
-        },
-        loadPrevGame: function () {
-            window.location.href = `#/game/${this.prevGame()}/`;
-            window.location.reload();
-        },
-        prevGame: function() {
-            return this.$store.state.Game.gameId - 1;
         }
     },
     components: {
-        FieldPart
+        FieldPart, GameNavigation
     },
     mounted: function () {
         console.log(this.$i18n.locale);

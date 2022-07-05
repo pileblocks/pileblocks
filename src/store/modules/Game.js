@@ -20,7 +20,8 @@ export const Game: {
         gameStartTime: number,
         extraSettings: ?GameExtraSettings,
         gameId: number,
-        columns: number
+        columns: number,
+        lastGameId: number
     }
 } = {
     namespaced: true,
@@ -39,7 +40,8 @@ export const Game: {
         gameStartTime: 0,
         extraSettings: null,
         gameId: 0,
-        columns: 0
+        columns: 0,
+        lastGameId: 0
     },
     mutations: {
         addTile(state, tilePlusColor: TileCoordinatePlusColor) {
@@ -55,6 +57,10 @@ export const Game: {
         },
         putTile(state, coordinates: TileCoordinatePlusColor) {
             Vue.set(state.field[coordinates.f.toString()][coordinates.y], coordinates.x, coordinates.color);
+        },
+
+        updateLastGameId(state, newGameId) {
+            state.lastGameId = newGameId;
         },
 
         updateGameStartTime(state, newStartTime) {

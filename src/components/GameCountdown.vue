@@ -20,12 +20,17 @@
             </div>
         </div>
         <div class="text-center"> Please reload the page once ready.</div>
+
+        <game-navigation></game-navigation>
+
     </div>
 </template>
 
 <script>
+import GameNavigation from "@/components/GameNavigation";
 export default {
     name: "GameCountdown",
+    components: {GameNavigation},
     data: function () {
         return {
             rDate: { rDays: 0, rHours: 0, rMinutes: 0, rSeconds: 0 },
@@ -52,6 +57,7 @@ export default {
             this.rDate.rMinutes = Math.floor((this.gameStartTime - now - this.rDate.rDays * 60 * 60 * 24 - this.rDate.rHours * 60 * 60) / 60);
             this.rDate.rSeconds = Math.floor(this.gameStartTime - now - this.rDate.rDays * 60 * 60 * 24 - this.rDate.rHours * 60 * 60 - this.rDate.rMinutes * 60);
         },
+
     },
 
     mounted() {

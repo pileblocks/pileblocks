@@ -22,7 +22,9 @@ export default {
         home: {
             remainingTiles: "남은:",
             yourPoints: "귀하의 포인트:",
-            totalReward: "총 보상:"
+            totalReward: "총 보상:",
+            previousGame: "이전 게임",
+            nextGame: "다음 게임"
         },
         topMenu: {
             balance: "균형: ",
