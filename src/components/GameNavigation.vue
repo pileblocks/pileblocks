@@ -10,10 +10,10 @@ export default {
     name: "GameNavigation",
     methods: {
         loadPrevGame: function () {
-            window.location.replace(`/game/${this.$store.state.Game.gameId - 1}/`);
+            window.location.replace(`/game/${this.$store.state.Game.gameId - 1}`);
         },
         loadNextGame: function () {
-            window.location.replace(`/game/${this.$store.state.Game.gameId + 1}/`);
+            window.location.replace(`/game/${this.$store.state.Game.gameId + 1}`);
         }
     }
 }
