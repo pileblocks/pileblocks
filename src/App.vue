@@ -15,7 +15,7 @@
         </div>
         <div class="game-container" v-if="!noGames && !gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
             <top-menu id="top-menu" class="stat-block"/>
-            <div id="field">
+            <div id="field" class="branded-bg">
                 <router-view/>
             </div>
             <bottom-menu id="bottom-menu"/>
@@ -95,7 +95,6 @@ export default App;
     background-size: cover;
     background-position: center;
     overflow-y: hidden;
-
 }
 
 @media (min-width: 576px) {
@@ -106,7 +105,12 @@ export default App;
     #claim-tiles {
         margin-top: 1em;
     }
+
+
 }
+
+
+
 
 #loader {
     display: flex;
@@ -235,5 +239,21 @@ body, html {
 .color-primary {
     color: var(--primary) !important;
 }
+.branded-body {
+      background-color: #872819 !important;
+}
+.branded-main-text {
+    color: #872819 !important;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
 
+.branded-bg {
+    background-image: url('~@/assets/game-bg.png') !important;
+}
+
+@media (max-width: 576px) {
+    .branded-bg {
+        background-image: url('~@/assets/game-bg-mob.png') !important;
+    }
+}
 </style>

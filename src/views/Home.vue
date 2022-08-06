@@ -1,6 +1,6 @@
 <template>
     <div id="field-parts-wrapper">
-        <div class="stat-block text-left field-stats mt-1 mb-1">
+        <div class="stat-block text-left field-stats mt-1 mb-1 branded-main-text">
             <p class="mb-0" v-on:click="updateStandings"><small>{{$t("home.yourPoints")}}</small> {{ $store.getters["Game/getCapturedTiles"] }}
             </p>
             <p class="mb-0"><small>{{$t("home.remainingTiles")}}</small> {{ $store.state.Game.remainingTiles }}</p>
@@ -13,7 +13,7 @@
             </div>
         </div>
         <div>
-            <p class="season-slogan fancy-font">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
+            <p class="season-slogan fancy-font branded-main-text">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
             <game-navigation></game-navigation>
         </div>
     </div>

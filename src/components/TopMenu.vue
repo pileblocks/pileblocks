@@ -12,7 +12,7 @@
 
                     <b-row v-for="(player, index) in $store.state.Game.standings" :key="player.playerAddress"
                            :class="{active: isCurrentPlayer(player.playerAddress)}">
-                        <b-col class="text-right"><span class="nft" v-if="player.nft">nft</span> {{ index + 1 }}
+                        <b-col class="text-right"><span class="nft" v-if="player.nft"><a :href="'https://everscan.io/accounts/'+player.playerAddress" target="_blank">win</a></span> {{ index + 1 }}
                         </b-col>
                         <b-col class="text-center">{{ player.playerAddress | short }}</b-col>
                         <b-col class="text-center p-0">{{ player.captured }}
