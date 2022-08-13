@@ -240,20 +240,26 @@ body, html {
     color: var(--primary) !important;
 }
 .branded-body {
-      background-color: #872819 !important;
+      /* background-color: #872819 !important; */
 }
 .branded-main-text {
+    /*
     color: #872819 !important;
     text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+     */
 }
 
 .branded-bg {
+    /*
     background-image: url('~@/assets/game-bg.png') !important;
+     */
 }
 
 @media (max-width: 576px) {
     .branded-bg {
+        /*
         background-image: url('~@/assets/game-bg-mob.png') !important;
+         */
     }
 }
 </style>
