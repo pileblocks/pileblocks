@@ -96,3 +96,13 @@ export type GameEvent = {
     event: string,
     data: RewardsCalculated | OperationCompleted
 }
+
+export type NotificationMessage = {
+    toastName: string,
+    data: ToastWrongColor|ToastZeroTilesLeft
+}
+
+export type NotificationObj = {
+    received: number,
+    payload: NotificationMessage
+}

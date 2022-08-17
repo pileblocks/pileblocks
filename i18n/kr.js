@@ -26,6 +26,9 @@ export default {
             previousGame: "이전 게임",
             nextGame: "다음 게임"
         },
+        toastList: {
+          popupTitle: "알림",
+        },
         topMenu: {
             balance: "균형: ",
             yourPlace: "장소: ",

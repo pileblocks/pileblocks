@@ -16,10 +16,10 @@
         <div class="game-container" v-if="!noGames && !gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
             <top-menu id="top-menu" class="stat-block"/>
             <div id="field" class="branded-bg">
+                <toast-list></toast-list>
                 <router-view/>
             </div>
             <bottom-menu id="bottom-menu"/>
-            <toast-manager></toast-manager>
         </div>
         <div class="game-container" v-if="!noGames && !gamePending && !providerLoaded && !this.$store.state.Ever.isLoading">
             <div class="game-error-notification">
@@ -51,10 +51,11 @@ import {
 } from "@/AppConst";
 import GameCountdown from "@/components/GameCountdown";
 import GameListEmpty from "@/components/GameListEmpty";
+import ToastList from "@/components/ToastList";
 
 const App: {} = {
     name: 'App',
-    components: {GameListEmpty, GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
+    components: {ToastList, GameListEmpty, GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
     computed: {
         providerLoaded: function() {
             return !(this.$store.state.Ever.loadingStatus in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]);
@@ -207,6 +208,7 @@ body, html {
 .color-span {
     height: 20px;
     width: 20px;
+    border: rgba(200, 200, 200, 0.8) 1px solid;
 }
 
 #pile-colors {
@@ -239,6 +241,7 @@ body, html {
 .color-primary {
     color: var(--primary) !important;
 }
+
 .branded-body {
       /* background-color: #872819 !important; */
 }
@@ -262,4 +265,5 @@ body, html {
          */
     }
 }
+
 </style>

@@ -26,6 +26,9 @@ export default {
             previousGame: "Previous Game",
             nextGame: "Next Game"
         },
+        toastList: {
+          popupTitle: "Notifications",
+        },
         topMenu: {
             balance: "Balance: ",
             yourPlace: "Your Place: ",
@@ -52,7 +55,7 @@ export default {
             noColorLeftText1: "Unfortunately, 0 tiles of color ",
             noColorLeftText2: " left.",
             noColorLeftText3: "Please <b>choose</b> another color from the bottom menu<br/>",
-            noColorLeftText4: "or <b>CLAIM</b> more tiles.",
+            noColorLeftText4: "or <b>JOIN/CLAIM</b> more tiles.",
             tilesLimitReachedTitle: "Tiles Limit Reached!",
             tilesLimitReachedText1: "You have already reached the limit of <b>50 tiles</b>, please submit them before putting more tiles.",
             putBalanceNotEnoughTitle: "Your PILE balance is not enough to put!",
