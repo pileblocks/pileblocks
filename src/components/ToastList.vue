@@ -1,12 +1,32 @@
 <template>
-    <div class="d-flex justify-content-end align-items-center position-relative">
-        <b-button size="sm" variant="primary" :class="setAnimationClass" :disabled="$store.state.Toast.messagesNumber === 0" v-on:click="openNotifications">
-            <i class="bi bi-envelope" v-if="$store.state.Toast.hasNewItems"></i>
-            <i class="bi bi-check-circle" v-if="!$store.state.Toast.hasNewItems"></i>
-            <span v-if="$store.state.Toast.hasNewItems">❗</span>
-        </b-button>
+    <div>
+
+        <div class="notification-div">
+            <img src="~@/assets/icon-top-menu-notifications.svg" alt=""/>
+            <div class="notification-content">
+                <button :class="setAnimationClass" type="button" v-on:click="openNotifications" :disabled="$store.state.Toast.messagesNumber === 0">
+
+                    <img src="~@/assets/icon-envelope.svg" alt="Existing notifications" class="button-icon" v-if="$store.state.Toast.hasNewItems"/>
+                    <img src="~@/assets/icon-notifications-read.svg" alt="No notifications" class="button-icon" v-if="!$store.state.Toast.hasNewItems"/>
+                    <img src="~@/assets/icon-new-envelope.svg" class="pl-1" alt="New notificatoins" v-if="$store.state.Toast.hasNewItems"/>
+
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+            </div>
+        </div>
 
         <b-modal id="show-notifications" hide-footer :title="$t('toastList.popupTitle')">
+            <template #modal-header-close>
+                <img src="~@/assets/popup-close-button.svg"/>
+            </template>
+
             <div v-for="(message, index) in this.$store.state.Toast.messages.slice().reverse()" :key="index">
 
                 <div v-if="message.payload.toastName === 'wrong-color'">
@@ -126,7 +146,18 @@
                 </div>
 
             </div>
-            <b-button size="sm" variant="secondary" v-on:click="clearNotifications">Clear All</b-button>
+
+            <button class="btn btn-menu" type="button" v-on:click="clearNotifications">
+                <span  class="span p-2">{{ $t('toastList.clearNotifications') }}</span>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                </span>
+            </button>
+
         </b-modal>
     </div>
 </template>
@@ -136,13 +167,13 @@ export default {
     name: "ToastList",
     data() {
         return {
-            setAnimationClassDefault: "mt-1 mr-1 button-envelope notification-div",
-            setAnimationClass: "mt-1 mr-1 button-envelope notification-div"
+            setAnimationClassDefault: "btn btn-menu",
+            setAnimationClass: "btn btn-menu"
         }
     },
     methods: {
         _getColorClassByNum(colorNum: number):string {
-            return `color-span color-${colorNum} d-inline-block text-center fancy-font`
+            return `color-span color-${colorNum} d-inline-block text-center height-16`
         },
         openNotifications: function () {
             this.$store.commit('Toast/readAll');
@@ -180,13 +211,14 @@ export default {
 }
 .notification-div {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 55px;
+    left: calc(50% - 62px);
 }
 
 .color-change-2x {
 	-webkit-animation: color-change-2x 2s linear 2 alternate both;
 	animation: color-change-2x 2s linear 2 alternate both;
+    animation-iteration-count: infinite;
 }
 @-webkit-keyframes color-change-2x {
   0% {
@@ -210,5 +242,12 @@ export default {
     background: var(--primary);
   }
 }
-
+.notification-content {
+    position: absolute;
+    top: 0px;
+    left: 32px;
+}
+.height-16 {
+    line-height: 16px;
+}
 </style>

@@ -7,48 +7,112 @@
         </div>
         <div id="claim-tiles" v-if="isBalancePositive && !isGameCompleted">
             <div v-if="!tilesArePut">
-                <b-button size="sm" variant="secondary" class="mr-2 color-primary" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
-                    <i class="bi bi-gear-fill"></i>
-                </b-button>
-                <b-button size=md variant="primary" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
 
-                    <span v-show="!isLoading && this.tempClaimableTiles === 0">{{ $t('bottomMenu.claim') }}<br/>
+                <!-- claim -->
+                <button class="btn btn-menu mt-2" type="button" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
+
+                    <span v-show="!isLoading && this.tempClaimableTiles === 0" class="span p-1">{{ $t('bottomMenu.claim') }}<br/>
                         <small v-if="this.$store.state.PlayerInfo.claimableTiles > 0">{{ this.$store.state.PlayerInfo.claimableTiles }}</small>
                     </span>
-                    <span v-show="!isLoading && this.tempClaimableTiles > 0">{{ $t('bottomMenu.claim') }}<br/>
+                    <span v-show="!isLoading && this.tempClaimableTiles > 0" class="span">{{ $t('bottomMenu.claim') }}<br/>
                         <small :class="setAnimationClass">{{ this.tempClaimableTiles }}</small>
                     </span>
-                    <b-spinner v-show="isLoading"></b-spinner>
-                </b-button>
-                <b-button size="lg" variant="primary" v-on:click="joinGame" v-if="!this.$store.state.PlayerInfo.isFarmingActive">
-                    <span v-show="!isLoading">{{ $t('bottomMenu.join') }}</span>
-                    <b-spinner v-show="isLoading"></b-spinner>
-                </b-button>
+                    <b-spinner small class="span button-spinner" v-show="isLoading"></b-spinner>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+
+                <!-- farming settings -->
+                <button class="btn btn-menu" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
+                    <img src="~@/assets/icon-farming-settings.svg" alt="Farming Settings"/>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+
+                <!-- join -->
+                <button class="btn btn-menu" type="button" v-on:click="joinGame" v-if="!this.$store.state.PlayerInfo.isFarmingActive">
+                    <span class="span p-2" v-show="!isLoading">{{ $t('bottomMenu.join') }}</span>
+                    <b-spinner small class="span button-spinner" v-show="isLoading"></b-spinner>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+
             </div>
             <div v-if="tilesArePut && !isMainScreen" class="d-flex flex-column mt-1">
-                <b-button size="lg" variant="primary" v-on:click="putTiles">
-                    <span v-show="!isLoading">{{ $t('bottomMenu.put') }}<small>{{ this.$store.state.Game.tilesToPut.length }}</small></span>
-                    <b-spinner v-show="isLoading"></b-spinner>
-                </b-button>
-                <b-button size="sm" variant="secondary" class="mt-1" v-on:click="cancelPut" v-show="!isLoading">{{ $t('bottomMenu.cancel') }} <i class="bi bi-x-circle"></i></b-button>
+
+                <!-- put -->
+                <button class="btn btn-menu" type="button" v-on:click="putTiles">
+                    <span v-show="!isLoading" class="span">{{ $t('bottomMenu.put') }}<small>{{ this.$store.state.Game.tilesToPut.length }}</small></span>
+                    <b-spinner small class="span button-spinner" v-show="isLoading"></b-spinner>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+
+
+				<!-- cancel -->
+                <button class="btn btn-menu" type="button" v-on:click="cancelPut" v-show="!isLoading">
+                    <span v-show="!isLoading" class="span">{{ $t('bottomMenu.cancel') }}</span>
+
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-danger">
+                        <span class="btn__inner-shadow"></span>
+                    </span>
+                </button>
+
+
             </div>
         </div>
         <div v-if="isGameCompleted" class="claim-reward">
 
-                <b-button size="sm" variant="secondary" class="mr-2 color-primary" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="$bvModal.show('farming-settings')">
-                    <i class="bi bi-gear-fill"></i>
-                </b-button>
+                <!-- farming settings -->
+                <button class="btn btn-menu" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
+                    <img src="~@/assets/icon-farming-settings.svg" alt="Farming Settings"/>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
 
-                <b-button size="lg" variant="primary" v-on:click="claimReward" v-show="!isReceived & isInRoaster & $store.state.Game.totalReward > 0">
-                    <span v-show="!isLoading">{{ $t('bottomMenu.getReward') }}<small>{{ this.$store.getters["Game/getReward"] | fixed }}</small></span>
-                    <b-spinner v-show="isLoading"></b-spinner>
-                </b-button>
         </div>
         <b-modal id="farming-settings" hide-footer :title="$t('bottomMenu.farmingSettings.title')">
+            <template #modal-header-close>
+                <img src="~@/assets/popup-close-button.svg"/>
+            </template>
             <p>{{ $t('bottomMenu.farmingSettings.p1') }}</p>
 
             <p>{{ $t('bottomMenu.farmingSettings.p2') }}<b>{{ this.$store.state.PlayerInfo.balance | fixed }}</b> PILE</p>
-            <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill"></i></span></p>
+            <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill btn-reject"></i></span></p>
             <p>{{ $t('bottomMenu.farmingSettings.p4') }}</p>
             <b-input-group size="sm">
                 <b-form-input v-model="tokensToAdd" :placeholder="$t('bottomMenu.farmingSettings.placeholderBalance')" size="sm" :state="validateAddBalance()"></b-form-input>
@@ -60,7 +124,23 @@
 
             <p>{{ $t('bottomMenu.farmingSettings.youGet') }}<br/> <b>{{ farmingEstimation }}</b> {{ $t('bottomMenu.farmingSettings.tileMin') }}</p>
             <div class="d-flex justify-content-end">
-            <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</b-button>
+
+                <!--
+                <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</b-button>
+                -->
+                <button class="btn btn-menu" type="button" v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">
+                    <span class="span p-2">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</span>
+                    <span class="btn__border">
+                        <span class="btn__border-top"></span>
+                        <span class="btn__border-bot"></span>
+                    </span>
+                    <span class="btn__inner btn__inner-main">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+
+
             </div>
         </b-modal>
     </div>
@@ -200,6 +280,12 @@ export default {
 
     watch: {
         claimableTilesWatcher: async function (newReward, oldReward) {
+
+				if (newReward > oldReward + 10) {
+					this.tempClaimableTiles = newReward;
+					return
+				}
+
                 this.setAnimationClass += "font-weight-bold ";
                 setTimeout(() => {
                     this.setAnimationClass = "";
@@ -210,7 +296,7 @@ export default {
 
                 let chain = changeValue(oldReward);
 
-                for (let i=oldReward; i< newReward; i++) {
+                for (let i=oldReward; i<= newReward; i++) {
                     chain = chain.then(()=>changeValue(i)).then(()=>sleep(50))
                 }
                 await chain;

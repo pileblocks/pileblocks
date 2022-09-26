@@ -28,10 +28,11 @@ export default {
         },
         toastList: {
           popupTitle: "Notifications",
+          clearNotifications: "Clear All"
         },
         topMenu: {
             balance: "Balance: ",
-            yourPlace: "Your Place: ",
+            yourPlace: "place:",
             standings: {
                 place: "Place",
                 wallet: "Wallet",

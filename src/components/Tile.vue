@@ -124,19 +124,23 @@ export default Tile;
 .pb-tile {
     width: 21px;
     height: 21px;
-    background-color: rgb(254, 208, 73);
-    border: 1px solid var(--secondary);
+    background-color: #F5DE09;
+    border: 1px solid #D9C300;
     line-height: 19px;
     text-align: center;
     cursor: pointer;
     user-select: none;
+    color: #4F480C;
+    font-family: 'Arial';
+    font-size: 10pt;
 }
 
 .filled-tile {
     color: transparent;
     background-image: url("~@/assets/tile-bg.svg");
-    background-repeat: repeat;
+    background-repeat: no-repeat;
     background-position: center;
+    border: 1px solid var(--secondary);
 }
 
 .filled-tile-light {

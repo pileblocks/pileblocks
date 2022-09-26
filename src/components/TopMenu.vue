@@ -1,7 +1,77 @@
 <template>
     <div>
-        <div id="top-menu-logo">
+        <div id="top-menu-player-info">
+
+            <div class="btn balance-menu">
+                <div class="d-flex flex-column">
+                    <div class="span"><img src="~@/assets/coin-logo.svg" alt="PileBlocks Token Logo" class="coin-logo"/>
+                        <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
+                    </div>
+                    <span class="span text-left small-text">{{ $t('topMenu.yourPlace') }}{{playerPosition}}</span>
+                </div>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner-menu">
+                </span>
+                <img class="balance-info-popup" src="~@/assets/balance-information-popup.svg" alt=""/>
+            </div>
+        </div>
+        <div id="top-menu-game-stats">
+
+            <button class="btn btn-menu" type="button" v-on:click="$bvModal.show('standings-table')">
+                <div>
+                    <img src="~@/assets/icon-standings.svg" alt="Reload" class="button-icon"/>
+                    <span class="span pl-1">{{ $store.state.Game.standings.length }}</span>
+                </div>
+
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
+
+        </div>
+        <div id="top-menu-game-reload">
+
+            <button class="btn btn-menu" type="button" :disabled="isOpInProgress" v-on:click="reloadGame">
+                <img src="~@/assets/icon-reload.svg" alt="Reload" class="button-icon" v-show="!isLoading"/>
+                <b-spinner small class="span button-spinner" v-show="isLoading"></b-spinner>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
+
+        </div>
+        <div id="top-menu-game-lang">
+            <button class="btn btn-menu" type="button">
+                <img src="~@/assets/gb_flag.svg" class="button-icon" alt="" v-on:click="changeLocale('en')" v-if="$i18n.locale !== 'en'"/>
+                <img src="~@/assets/kr_flag.svg" class="button-icon" alt="" v-on:click="changeLocale('kr')" v-if="$i18n.locale !== 'kr'"/>
+
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
+
             <b-modal id="standings-table" hide-footer :title="$t('topMenu.standings.title')">
+                <template #modal-header-close>
+                    <img src="~@/assets/popup-close-button.svg"/>
+                </template>
                 <b-container fluid class="p-0 mb-4">
                     <b-row>
                         <b-col class="font-weight-bold text-right">{{ $t('topMenu.standings.place') }}</b-col>
@@ -26,6 +96,9 @@
             </b-modal>
 
             <b-modal id="sale-token" hide-footer :title="$t('topMenu.getTokens.title')">
+                <template #modal-header-close>
+                    <img src="~@/assets/popup-close-button.svg"/>
+                </template>
                 <p>{{ $t('topMenu.getTokens.p1') }}<br/></p>
                 <b-input-group>
                     <b-form-input :value="saleTokenAddress"
@@ -40,44 +113,8 @@
                 <p class="mt-3">{{ $t('topMenu.getTokens.p2') }}<b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>{{ $t('topMenu.getTokens.p3') }}</p>
                 <p class="mt-1">{{ $t('topMenu.getTokens.p4') }}<a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
             </b-modal>
-
-            <img src="~@/assets/logo.svg" alt="PileBlocks" class="logo-img"/>
         </div>
-        <div id="top-menu-player-info">
-            <p class="mb-0"><span class="text-faded">{{ $t('topMenu.balance') }}</span>
-                <fancy-number :value='this.$store.getters["PlayerInfo/getBalance"]'/>
-                <i class="bi bi-cart-check-fill color-success pl-1" v-on:click="$bvModal.show('sale-token')"></i>
-            </p>
-            <div class="reward-grid">
-                <div class="reward-label"><span class="text-faded pr-1">{{ $t('topMenu.yourPlace') }}</span></div>
-                <div class="reward-value">
-                    <div class="d-inline-block position-absolute">
-                        <div>{{playerPosition}}
-                            <span v-if="playerPosition === 1"><i class="bi bi-trophy-fill first-place"></i></span>
-                            <span v-if="playerPosition === 2"><i class="bi bi-trophy-fill second-place"></i></span>
-                            <span v-if="playerPosition === 3"><i class="bi bi-trophy-fill third-place"></i></span>
-                        </div>
-                        <div :class="setAnimationClass">{{ animatedReward }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="top-menu-game-stats">
-            <b-button size="sm" variant="primary" v-on:click="$bvModal.show('standings-table')"><i
-                class="bi bi-person-lines-fill"></i>
-                {{ $store.state.Game.standings.length }}
-            </b-button>
-        </div>
-        <div id="top-menu-game-reload">
-            <b-button size="sm" variant="primary" :disabled="isOpInProgress" v-on:click="reloadGame">
-                <i class="bi bi-arrow-clockwise" v-show="!isLoading"></i>
-                <b-spinner v-show="isLoading" small></b-spinner>
-            </b-button>
-        </div>
-        <div id="top-menu-game-lang" class="d-flex flex-column">
-            <img src="~@/assets/gb_flag.svg" width="30" height="30" alt="" v-on:click="changeLocale('en')" v-if="$i18n.locale !== 'en'"/>
-            <img src="~@/assets/kr_flag.svg" width="30" height="30" alt="" v-on:click="changeLocale('kr')" v-if="$i18n.locale !== 'kr'"/>
-        </div>
+        <toast-list/>
     </div>
 </template>
 
@@ -87,10 +124,13 @@ import BigNumber from "bignumber.js";
 import FancyNumber from "./FancyNumber";
 import {TOKEN_ROOT_ADDRESS} from "@/AppConst";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
+import ToastList from "@/components/ToastList";
 
 export default {
     name: "TopMenu",
-    components: {FancyNumber},
+    components: {
+        FancyNumber, ToastList
+    },
     data: function () {
         return {
             animatedReward: "",
@@ -208,7 +248,7 @@ export default {
 }
 
 .active {
-    background-color: var(--primary);
+    color: var(--primary);
 }
 
 .high-procent {
@@ -264,5 +304,20 @@ export default {
     padding-left: 4px;
     padding-right: 4px;
     font-variant: small-caps;
+}
+.coin-logo {
+    height: 20px;
+    width: 20px;
+    padding-right: 3px;
+}
+
+.balance-info-popup {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    height: 20px;
+}
+.balance-menu {
+    min-width: 7em;
 }
 </style>

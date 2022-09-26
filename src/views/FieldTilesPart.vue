@@ -1,9 +1,5 @@
 <template>
-    <div>
-        <div class="d-flex mb-2 justify-content-center mt-2 mb-2">
-            <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
-            <p class="lead fragment-number mb-0 ml-2 branded-main-text" v-on:click="updateFlag">{{ currentFragment() }} of {{totalFragments}}</p>
-        </div>
+    <div class="mt-5">
 
         <div v-for="fragment in this.items" :key="fragment">
             <div class="pb-container" v-for="(row, rowindex) in _getFieldFragment(fragment)"
@@ -14,6 +10,22 @@
                           :isPut="_checkIfPut(fragment, rowindex, colindex)" :coordinates="{f: fragment, x:colindex, y:rowindex}"></tile>
                 </div>
             </div>
+        </div>
+
+        <div class="d-flex mb-2 justify-content-center mt-2">
+            <!--
+            <b-button size="sm" :to="{ name: 'Home'}"><i class="bi bi-arrow-left"></i></b-button>
+            -->
+            <router-link :to="{ name: 'Home'}">
+                <button class="btn btn-nav" type="button">
+                    <i class="bi bi-arrow-left span"></i>
+                    <span class="btn__inner btn__inner-nav">
+                        <span class="btn__inner-shadow"></span>
+                        <span class="btn__inner-rect"></span>
+                    </span>
+                </button>
+            </router-link>
+            <p class="lead fragment-number mb-0 ml-2 branded-main-text" v-on:click="updateFlag">{{ currentFragment() }} of {{totalFragments}}</p>
         </div>
     </div>
 </template>

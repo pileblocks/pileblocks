@@ -1,8 +1,8 @@
 <template>
 
     <div id="app">
-        <div class="overlay" v-if="this.$store.state.Ever.isLoading">
-                <img src="~@/assets/logo.svg" class="img-fluid" alt=""/>
+	
+        <div class="overlay overlay-background" v-if="this.$store.state.Ever.isLoading">
               <b-spinner  variant="primary"></b-spinner>
         </div>
         <div>
@@ -14,16 +14,19 @@
             <ever-loader></ever-loader>
         </div>
         <div class="game-container" v-if="!noGames && !gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
-            <top-menu id="top-menu" class="stat-block"/>
-            <div id="field" class="branded-bg">
-                <toast-list></toast-list>
-                <router-view/>
+            <div class="game-container-wrapper">
+                <top-menu id="top-menu" class="stat-block pt-1 position-relative"/>
+                <div id="field" class="branded-bg">
+                    <div id="field-bg-overlay">
+                        <router-view/>
+                    </div>
+                </div>
+                <bottom-menu id="bottom-menu"/>
             </div>
-            <bottom-menu id="bottom-menu"/>
         </div>
         <div class="game-container" v-if="!noGames && !gamePending && !providerLoaded && !this.$store.state.Ever.isLoading">
             <div class="game-error-notification">
-                <div class="fancy-font stat-block text-center">Install the <span class="color-primary"><u><a href="https://l1.broxus.com/" target="_blank">EVER wallet</a></u></span> or update the permissions</div>
+                <div class="p-4 stat-block text-center">PileBlocks requires the EVER wallet to launch. Please install the <span class="color-primary"><u><a href="https://l1.broxus.com/" target="_blank">EVER wallet</a></u></span> or update the permissions</div>
             </div>
         </div>
         <div class="game-container" v-if="!noGames && gamePending && !this.$store.state.Ever.isLoading">
@@ -40,7 +43,6 @@
 // @flow
 
 import BottomMenu from "./components/BottomMenu";
-import ToastManager from "./components/ToastManager";
 import TopMenu from "./components/TopMenu";
 import EverLoader from "./components/EverLoader";
 import {
@@ -55,7 +57,7 @@ import ToastList from "@/components/ToastList";
 
 const App: {} = {
     name: 'App',
-    components: {ToastList, GameListEmpty, GameCountdown, EverLoader, TopMenu, ToastManager, BottomMenu},
+    components: {ToastList, GameListEmpty, GameCountdown, EverLoader, TopMenu, BottomMenu},
     computed: {
         providerLoaded: function() {
             return !(this.$store.state.Ever.loadingStatus in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]);
@@ -91,10 +93,6 @@ export default App;
 #field {
     text-align: center;
     grid-row: 2;
-    background-image: url('~@/assets/game-wp.png');
-    background-repeat-y: no-repeat;
-    background-size: cover;
-    background-position: center;
     overflow-y: hidden;
 }
 
@@ -121,11 +119,39 @@ export default App;
 }
 
 .game-container {
+    background-image: url('~@/assets/field-background.svg');
+    background-repeat: repeat;
+    background-position: center;
+    height: 100%;
+    overflow-y: hidden;
+	animation-name: game-container-bg-animation;
+	animation-duration: 105s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+}
+
+@keyframes game-container-bg-animation {
+  from {
+      background-position-x: 0px;
+      background-position-y: 0px;
+  }
+  to {
+      background-position-x: 210px;
+      background-position-y: -210px;
+  }
+}
+
+.game-container-wrapper {
     display: grid;
     grid-template-rows: 75px 1fr 90px;
     grid-template-columns: 1fr;
+    width: 100%;
     height: 100%;
-    overflow-y: hidden;
+    background-image: url('~@/assets/field-overlay.svg');
+    background-repeat: no-repeat;
+    background-size: cover;
+	background-position: center;
 }
 
 .game-error-notification {
@@ -134,47 +160,45 @@ export default App;
     display: flex;
     justify-content: center;
     flex-direction: column;
+    height: 100%;
 }
 
 #top-menu {
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 1fr 2fr 40px;
-    border-bottom-color: #fefefe;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
+    grid-template-columns: 1fr 1fr 2fr 40px;
     align-items: center;
-    margin-top: 0.5em;
+    background-image: url('~@/assets/top-menu.svg');
+    background-repeat-x: repeat;
+    background-repeat-y: no-repeat;
+    background-position: top;
+    background-size: contain;
 }
 
 .stat-block {
     color: #fff;
     font-size: 12pt;
-    font-family: 'Bebas Neue', cursive;
+
 }
 
 .fancy-font {
-    font-family: 'Bebas Neue', cursive;
 }
 
-#top-menu-logo {
-    grid-row: 1;
-    grid-column: 1;
-    display: flex;
-    justify-content: center;
-}
 
 #top-menu-player-info {
     grid-row: 1;
-    grid-column: 4;
+    grid-column: 2;
     padding-right: 5px;
+    height: 100%;
 }
 
 #top-menu-game-stats {
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 1;
     display: flex;
     justify-content: center;
+    height: 100%;
+    align-items: flex-start;
 }
 
 #top-menu-game-reload {
@@ -182,6 +206,17 @@ export default App;
     grid-column: 3;
     display: flex;
     justify-content: center;
+    height: 100%;
+    align-items: flex-start;
+}
+
+#top-menu-game-lang {
+    grid-row: 1;
+    grid-column: 4;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    align-items: flex-start;
 }
 
 #bottom-menu {
@@ -189,15 +224,14 @@ export default App;
     grid-row: 3;
     grid-column: 1;
     grid-template-rows: 1fr;
-    grid-template-columns: 4fr 2fr;
-    border-top-color: #fff;
-    border-top-width: 1px;
-    border-top-style: solid;
+    grid-template-columns: 3fr 1fr;
+    background-image:  url('~@/assets/bottom-menu.svg');
 
 }
 
 body, html {
     height: 100%;
+    font-family: 'Maven Pro', sans-serif !important;
 }
 
 .logo-img {
@@ -225,12 +259,6 @@ body, html {
     align-items: center;
 }
 
-.field-stats {
-    display: flex;
-    column-gap: 1em;
-    justify-content: space-around;
-}
-
 .d-contents {
     display: contents;
 }
@@ -243,13 +271,11 @@ body, html {
 }
 
 .branded-body {
-      /* background-color: #872819 !important; */
 }
 .branded-main-text {
-    /*
-    color: #872819 !important;
-    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-     */
+    font-weight: 800;
+    text-shadow: #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px;
+
 }
 
 .branded-bg {
@@ -266,4 +292,60 @@ body, html {
     }
 }
 
+.modal-header {
+    background-image: url('~@/assets/title-background.svg');
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+}
+
+.modal-content {
+    border: 0;
+    background-color: #5A1C80 !important;
+    background-image: url('~@/assets/popup-background.png');
+}
+
+.modal-body {
+
+}
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0 !important;
+    }
+}
+.close {
+    opacity: 1 !important;
+    font-size: 1rem !important;
+}
+.close:not(:disabled):not(.disabled):hover {
+    opacity: 1 !important;
+}
+
+.button-icon {
+    height: 25px;
+    width: 25px;
+    margin: 5px 0px;
+}
+#field-bg-overlay {
+	height: 100%;
+}
+
+.button-spinner {
+    min-width: 25px;
+    min-height: 25px;
+    margin: 5px 0px;
+    color: var(--secondary)
+}
+
+.app-overlay {
+	background-image: url('~@/assets/bottom-menu.svg');
+}
+
+.overlay-background {
+    background-image: url('~@/assets/hero.webp');
+    background-position: right;
+    background-size: cover;
+}
 </style>

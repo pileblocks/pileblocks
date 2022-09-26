@@ -1,8 +1,25 @@
 <template>
-    <div class="text-center mt-3">
-        <b-button size="sm" variant="secondary" v-if="this.$store.state.Game.gameId > 2" v-on:click="loadPrevGame" class="mr-3"><i class="bi bi-chevron-double-left"></i> {{$t("home.previousGame")}}</b-button>
-        <b-button size="sm" variant="secondary" v-if="this.$store.state.Game.gameId < this.$store.state.Game.lastGameId" v-on:click="loadNextGame">{{$t("home.nextGame")}} <i class="bi bi-chevron-double-right"></i></b-button>
-    </div>
+    <div class="d-flex justify-content-center align-items-end">
+
+        <button class="btn btn-nav" type="button" :disabled="this.$store.state.Game.gameId <= 2" v-on:click="loadPrevGame">
+            <img src="~@/assets/icon-nav-prev.svg" class="button-icon" alt="" />
+            <span class="btn__inner btn__inner-nav">
+                <span class="btn__inner-shadow"></span>
+                <span class="btn__inner-rect"></span>
+            </span>
+        </button>
+
+        <p class="season-slogan fancy-font branded-main-text pl-5 pr-5">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
+
+        <button class="btn btn-nav" type="button" :disabled="this.$store.state.Game.gameId >= this.$store.state.Game.lastGameId" v-on:click="loadNextGame">
+            <img src="~@/assets/icon-nav-next.svg" class="button-icon" alt="" />
+            <span class="btn__inner btn__inner-nav">
+                <span class="btn__inner-shadow"></span>
+                <span class="btn__inner-rect"></span>
+            </span>
+        </button>
+
+     </div>
 </template>
 
 <script>

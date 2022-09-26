@@ -1,10 +1,8 @@
 <template>
     <div id="field-parts-wrapper">
         <div class="stat-block text-left field-stats mt-1 mb-1 branded-main-text">
-            <p class="mb-0" v-on:click="updateStandings"><small>{{$t("home.yourPoints")}}</small> {{ $store.getters["Game/getCapturedTiles"] }}
-            </p>
-            <p class="mb-0"><small>{{$t("home.remainingTiles")}}</small> {{ $store.state.Game.remainingTiles }}</p>
-            <p class="mb-0" v-if="$store.state.Game.totalReward > 0"><small>{{$t("home.totalReward")}}</small> {{ $store.state.Game.totalReward }}</p>
+            <p class="mb-0 ml-3" v-on:click="updateStandings"><small>{{$t("home.yourPoints")}}</small> {{ $store.getters["Game/getCapturedTiles"] }}</p>
+            <p class="mb-0 mr-3"><small>{{$t("home.remainingTiles")}}</small> {{ $store.state.Game.remainingTiles }}</p>
         </div>
         <div class="d-flex flex-row justify-content-center">
             <div v-for="index in 2" :key="index" class="d-grid">
@@ -12,8 +10,7 @@
                             :fragmentsCount="1" :key="_genKey(item)"></field-part>
             </div>
         </div>
-        <div>
-            <p class="season-slogan fancy-font branded-main-text">GAME {{ this.$store.state.Game.gameId }}: {{ this.$store.state.Game.name }}</p>
+        <div class="mt-3">
             <game-navigation></game-navigation>
         </div>
     </div>
@@ -85,5 +82,11 @@ export default Home;
 }
 .season-slogan {
  color: white;
+}
+
+.field-stats {
+    display: flex;
+    column-gap: 1em;
+    justify-content: space-between;
 }
 </style>

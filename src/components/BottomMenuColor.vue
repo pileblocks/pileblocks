@@ -1,9 +1,17 @@
 <template>
-    <div class="ml-2 mt-2">
-        <b-button size="sm" :variant="isActive" v-on:click="setActiveColor">
-            <div :class="colorClass">{{this.btnColor}}</div>
-            <span class="small">{{ paddedColorNum }}</span>
-        </b-button>
+    <div class="ml-0 mt-2">
+        <div class="btn balance-menu" v-on:click="setActiveColor">
+            <div class="d-flex">
+                <div :class="colorClass">{{this.btnColor}}</div>
+                <span class="xxs-text span">{{ paddedColorNum }}</span>
+            </div>
+            <span class="btn__border">
+                <span class="btn__border-top"></span>
+                <span class="btn__border-bot"></span>
+            </span>
+            <span class="btn__inner-menu" :class="{'btn__inner-menu-active': isActive==='primary'}">
+            </span>
+        </div>
     </div>
 </template>
 
@@ -23,7 +31,7 @@ export default {
             return this.btnColor===this.$store.state.PlayerInfo.currentColor ? "primary" : "secondary";
         },
         colorClass: function():string {
-            let basicClass = "fancy-font color-span d-inline-block mr-2 ";
+            let basicClass = "span color-span d-inline-block mr-2 small no-outline ";
             if ([4,5].includes(this.btnColor)) {
                 basicClass += "light-border ";
             }

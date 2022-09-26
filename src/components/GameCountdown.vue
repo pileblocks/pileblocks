@@ -1,25 +1,62 @@
 <template>
     <div class="game-error-notification fancy-font stat-block">
         <div class="text-center lead mb-4"> The new game <span class="emphasis">starts</span> in:</div>
-        <div class="d-flex width-100 justify-content-evenly mb-4">
-            <div class="time-cell d-flex flex-column">
-                <div class="text-center countdown-value">{{ rDate.rDays }}</div>
-                <div class="text-uppercase">days</div>
+        <div class="d-flex width-100 justify-content-center mb-4 countdown-box align-items-center">
+
+            <div class="btn">
+                <div class="time-cell d-flex flex-column span">
+                    <div class="text-center countdown-value">{{ rDate.rDays }}</div>
+                    <div class="text-uppercase">days</div>
+                </div>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner-menu">
+                </span>
             </div>
-            <div class="time-cell d-flex flex-column">
-                <div class="text-center countdown-value">{{ rDate.rHours }}</div>
-                <div class="text-uppercase">hours</div>
+
+            <div class="btn">
+                <div class="time-cell d-flex flex-column span">
+                    <div class="text-center countdown-value">{{ rDate.rHours }}</div>
+                    <div class="text-uppercase">hrs</div>
+                </div>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner-menu">
+                </span>
             </div>
-            <div class="time-cell d-flex flex-column">
-                <div class="text-center countdown-value">{{ rDate.rMinutes }}</div>
-                <div class="text-uppercase">min</div>
+
+            <div class="btn">
+                <div class="time-cell d-flex flex-column span">
+                    <div class="text-center countdown-value">{{ rDate.rMinutes }}</div>
+                    <div class="text-uppercase">min</div>
+                </div>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner-menu">
+                </span>
             </div>
-            <div class="time-cell d-flex flex-column">
-                <div class="text-center countdown-value">{{ rDate.rSeconds }}</div>
-                <div class="text-uppercase">sec</div>
+
+            <div class="btn">
+                <div class="time-cell d-flex flex-column span">
+                    <div class="text-center countdown-value">{{ rDate.rSeconds }}</div>
+                    <div class="text-uppercase">sec</div>
+                </div>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner-menu">
+                </span>
             </div>
+
         </div>
-        <div class="text-center"> Please reload the page once ready.</div>
+        <div class="text-center mb-5"> Please reload the page once ready.</div>
 
         <game-navigation></game-navigation>
 
@@ -75,5 +112,12 @@ export default {
 }
 .countdown-value {
     color: var(--primary);
+}
+.countdown-box {
+    background-image: url('~@/assets/icon-countdown-box.svg');
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: contain;
+    height: 190px;
 }
 </style>
