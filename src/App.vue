@@ -1,7 +1,7 @@
 <template>
 
     <div id="app">
-	
+
         <div class="overlay overlay-background" v-if="this.$store.state.Ever.isLoading">
               <b-spinner  variant="primary"></b-spinner>
         </div>
@@ -106,6 +106,7 @@ export default App;
     }
 
 
+
 }
 
 
@@ -144,7 +145,7 @@ export default App;
 
 .game-container-wrapper {
     display: grid;
-    grid-template-rows: 75px 1fr 90px;
+    grid-template-rows: 75px 1fr 80px;
     grid-template-columns: 1fr;
     width: 100%;
     height: 100%;
@@ -173,6 +174,7 @@ export default App;
     background-repeat-y: no-repeat;
     background-position: top;
     background-size: contain;
+    height: 65px;
 }
 
 .stat-block {
@@ -331,6 +333,13 @@ body, html {
 #field-bg-overlay {
 	height: 100%;
 }
+
+@media (max-width: 576px) {
+    #field-bg-overlay {
+        overflow-y: scroll;
+    }
+}
+
 
 .button-spinner {
     min-width: 25px;

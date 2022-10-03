@@ -6,7 +6,7 @@
             </div>
         </div>
         <div id="claim-tiles" v-if="isBalancePositive && !isGameCompleted">
-            <div v-if="!tilesArePut">
+            <div v-if="!tilesArePut" class="d-flex flex-sm-column flex-md-row">
 
                 <!-- claim -->
                 <button class="btn btn-menu mt-2" type="button" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
@@ -29,7 +29,7 @@
                 </button>
 
                 <!-- farming settings -->
-                <button class="btn btn-menu" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
+                <button class="btn btn-menu mt-2" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
                     <img src="~@/assets/icon-farming-settings.svg" alt="Farming Settings"/>
                     <span class="btn__border">
                         <span class="btn__border-top"></span>
@@ -351,8 +351,6 @@ export default {
 <style scoped>
 .claim-reward {
     display: flex;
-    grid-row: 1;
-    grid-column: 1 / 3;
     align-items: center;
     justify-content: center;
 }
