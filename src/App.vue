@@ -125,11 +125,6 @@ export default App;
     background-position: center;
     height: 100%;
     overflow-y: hidden;
-	animation-name: game-container-bg-animation;
-	animation-duration: 105s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-
 }
 
 @keyframes game-container-bg-animation {
