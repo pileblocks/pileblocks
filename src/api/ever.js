@@ -55,10 +55,10 @@ export const EverAPI = {
             console.log("API getCurrentGameId call run");
             return parseInt(result.currentGameId);
         },
-        isNextGameEmpty: async function (gHost): Promise<boolean> {
+        isQueueFinished: async function (gHost): Promise<boolean> {
             const result = await gHost
                 .methods
-                .isNextGameEmpty({})
+                .isQueueFinished({})
                 .call();
             console.log("API isNextGameEmpty call run");
             return result.value0;

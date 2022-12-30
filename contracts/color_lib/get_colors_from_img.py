@@ -9,22 +9,22 @@ def rgb2light(r, g, b, a=0):
     return (min(r, g, b) + max(r, g, b))/(2*255)
 
 #im = Image.open("ren4.png")
-im = Image.open("punks_64.png")
+im = Image.open("broxie_961.jpg")
 pix = im.load()
 
 d = []
 
 
 def get_number_by_color(hexcolor):
-    if hexcolor == '#5effa4':
+    if hexcolor == '#fef3d7':
         return 1
-    elif hexcolor == '#ffe501':
+    elif hexcolor == '#e2a741':
         return 2
-    elif hexcolor == '#01b901':
+    elif hexcolor == '#b1732a':
         return 3
-    elif hexcolor == '#944a01':
+    elif hexcolor == '#822810':
         return 4
-    elif hexcolor == '#030101':
+    elif hexcolor == '#000000':
         return 5
     else:
         return 5
@@ -43,13 +43,13 @@ def get_number_by_light(light_level):
         return 5
 
 def get_number_by_light_kwong(light_level):
-    if light_level > 0.78:
+    if light_level > 0.65:
         return 1
-    elif light_level > 0.70:
+    elif light_level > 0.50:
         return 2
-    elif light_level > 0.55:
+    elif light_level > 0.46:
         return 3
-    elif light_level > 0.23:
+    elif light_level > 0.20:
         return 4
     else:
         return 5
@@ -71,7 +71,7 @@ def get_colors_from_light_32x64():
     for y in range(64):
         tempdict = []
         for x in range(32):
-            tempdict.append(get_number_by_light(rgb2light(*pix[12 + x * 30, 15 + y * 30])))
+            tempdict.append(get_number_by_light_kwong(rgb2light(*pix[12 + x * 30, 15 + y * 30])))
         d.append(tempdict)
         y += 1
     return d
@@ -94,6 +94,6 @@ def get_dictx16():
     return dictx16
 
 
-list32x64 = get_colors_from_img_32x64()
+list32x64 = get_colors_from_light_32x64()
 
 print(get_dictx16())

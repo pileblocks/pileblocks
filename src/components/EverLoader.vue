@@ -65,9 +65,6 @@ export default {
                     currentGameId =parseInt(this.$route.params.id) + 1;
                 } else {
                     currentGameId = await EverAPI.host.getCurrentGameId(host);
-                    if (!await EverAPI.host.isNextGameEmpty(host)) {
-                        currentGameId -= 1;
-                    }
                 }
                 const gameIndexAddress = await EverAPI.host._getIndexAddress(host, currentGameId - 1);
 

@@ -18,11 +18,8 @@ struct PlayerInfo {
 }
 
 struct GameExtraSettings {
-    uint8 maxStars;
-    uint16 scorePerStar;
-    uint8 currentStars;
-    uint8 percentOfReward;
     uint128 farmingSpeed;
+    uint8 blockColorsProbability;
 }
 
 struct GameInfo {

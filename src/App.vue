@@ -106,7 +106,6 @@ export default App;
     }
 
 
-
 }
 
 
@@ -125,17 +124,6 @@ export default App;
     background-position: center;
     height: 100%;
     overflow-y: hidden;
-}
-
-@keyframes game-container-bg-animation {
-  from {
-      background-position-x: 0px;
-      background-position-y: 0px;
-  }
-  to {
-      background-position-x: 210px;
-      background-position-y: -210px;
-  }
 }
 
 .game-container-wrapper {

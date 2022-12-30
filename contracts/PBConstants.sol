@@ -24,6 +24,9 @@ contract PBConstants {
     uint16 constant WRONG_GAME_ADDRESS = 1019;
     uint16 constant GAME_NOT_STARTED = 1020;
     uint16 constant WRONG_NOTIFICATION_SENDER = 1021;
+    uint16 constant FARMING_SPEED_MORE_THAN_ZERO = 1022;
+    uint16 constant FAILED_TO_EXTRACT_DEPLOY_DATA = 1023;
+    uint16 constant WRONG_SENDER = 1024;
 
     // Game status
     uint8 constant STATUS_GAME_DRAFT = 1;
@@ -47,5 +50,19 @@ contract PBConstants {
 
     uint8 constant MAX_PUT_PER_TURN = 50;
 
+    // Game modifiers
+    uint8 constant OP_SET_BLOCK_COLOR = 1;
+    uint8 constant OP_CHANGE_FARM_SPEED = 2;
+
+    // Messaging params
+
+    uint128 DEPLOY_VALUE = 0.3 ever;
+    uint128 MIN_BALANCE = 0.2 ever;
+    uint128 MESSAGE_VALUE = 0.2 ever;
+
+    modifier onlyOwner() {
+        require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
+        _;
+    }
 
 }

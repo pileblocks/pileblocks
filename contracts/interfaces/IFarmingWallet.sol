@@ -1,6 +1,6 @@
 pragma ton-solidity >= 0.47.0;
 
-import "./PBStructs.sol";
+import "../structures/PBStructs.sol";
 
 interface IFarmingWallet {
     function releaseTokens(uint128 amount) external;

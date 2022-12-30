@@ -6,27 +6,24 @@ pragma AbiHeader pubkey;
 import "./PBGame.sol";
 import "./GameIndex.sol";
 import "./interfaces/IGameQueue.sol";
+import "./interfaces/IGameMap.sol";
 
 contract GameHost is PBConstants {
 
     uint64 static _randomNonce;
 
     uint32 public currentGameId;
-    address nextGameAddress;
     TvmCell public indexCode;
     TvmCell gameCode;
     TvmCell farmingCode;
     TvmCell walletCode;
     address tokenRootAddress;
     address walletAddress;
-    uint128 rewardPerGame;
 
     address public queueAddress;
+    bool public isQueueFinished;
 
-    modifier onlyOwner() {
-        require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
-        _;
-    }
+    address public gameMap;
 
     constructor (
                 TvmCell _indexCode,
@@ -41,8 +38,9 @@ contract GameHost is PBConstants {
         indexCode = _indexCode;
         walletCode = _walletCode;
         tokenRootAddress = _tokenRootAddress;
+
         currentGameId = 1;
-        rewardPerGame = 5_000_000_000_000;
+        isQueueFinished = true;
 
         ITokenRoot(tokenRootAddress).walletOf{value: 0.3 ton, callback: GameHost.onGetWalletAddress}(address(this));
 
@@ -59,6 +57,11 @@ contract GameHost is PBConstants {
         require(msg.sender == tokenRootAddress, WRONG_ROOT_TOKEN_ADDRESS);
         walletAddress = _walletAddress;
         tvm.log(format("Host wallet: {}", walletAddress));
+    }
+
+    function setGameMap(address _gameMap) external externalMsg onlyOwner {
+        tvm.accept();
+        gameMap = _gameMap;
     }
 
     /*
@@ -84,7 +87,7 @@ contract GameHost is PBConstants {
         @dev to find the upcoming games
         @param gameId - ID of a game one wants to deploy
     */
-    function getGameHash(uint32 gameId) external view returns (uint256) {
+    function getGameHash() external view returns (uint256) {
         TvmBuilder salt;
         salt.store(address(this));
         return tvm.hash(tvm.setCodeSalt(gameCode, salt.toCell()));
@@ -116,7 +119,7 @@ contract GameHost is PBConstants {
                 created: now,
                 imageOwner: imageOwner
             },
-            pubkey: tvm.pubkey(),
+            pubkey: 0,
             code: getGameCode()
         });
         address game = new PBGame{
@@ -145,9 +148,14 @@ contract GameHost is PBConstants {
         return index;
     }
 
-    function runGameInQueue() external externalMsg onlyOwner {
+    function runGameInQueue() external view externalMsg onlyOwner {
         tvm.accept();
         IGameQueue(queueAddress).getNextGame{value: 1 ton, callback: GameHost.onGetNextGame}();
+    }
+
+    function setGameStatus(address gameAddress, uint8 newStatus) external pure externalMsg onlyOwner {
+        tvm.accept();
+        IPBGame(gameAddress).setGameStatus{value: 0.1 ton}(newStatus);
     }
 
     function onGetNextGame(address newGameAddress) external internalMsg {
@@ -156,49 +164,35 @@ contract GameHost is PBConstants {
         tvm.accept();
 
         if (newGameAddress.value != 0) {
+            isQueueFinished = false;
             IPBGame(newGameAddress).setGameStatus{value: 0.1 ton}(STATUS_GAME_ACTIVE);
             IPBGame(newGameAddress).setGameId{value: 0.1 ton}(currentGameId);
             deployIndex(currentGameId, newGameAddress);
             tvm.log(format("Deployed a game: {}", newGameAddress));
-            nextGameAddress = address(0);
             currentGameId += 1;
+        } else {
+            isQueueFinished = true;
         }
     }
 
-    function onGameCompleted(GameInfo gameInfo) external internalMsg {
-            require(getGameAddress(gameInfo) == msg.sender, WRONG_GAME_ADDRESS);
-            require(gameInfo.gameHost == address(this), INVALID_GAME_HOST);
-            require(gameInfo.status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
+    function onGameCompleted(GameInfo gameInfo) external view internalMsg {
+        require(getGameAddress(gameInfo) == msg.sender, WRONG_GAME_ADDRESS);
+        require(gameInfo.gameHost == address(this), INVALID_GAME_HOST);
+        require(gameInfo.status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
 
-            tvm.accept();
-            IPBGame(msg.sender).completeGame{value: 1 ton}(rewardPerGame);
-            IGameQueue(queueAddress).getNextGame{value: 1 ton, callback: GameHost.onGetNextGameAfterComplete}();
-    }
-
-    function onGetNextGameAfterComplete(address newGameAddress) external internalMsg {
-            require(msg.sender == queueAddress, WALLET_DOES_NOT_MATCH_OWNER);
-            tvm.accept();
-            // Auto-start the new game if it was selected
-            if (newGameAddress.value != 0) {
-                IPBGame(newGameAddress).setGameStatus{value: 0.1 ton}(STATUS_GAME_ACTIVE);
-                IPBGame(newGameAddress).setGameId{value: 0.1 ton}(currentGameId);
-                deployIndex(currentGameId, newGameAddress);
-                tvm.log(format("Deployed a game: {}", newGameAddress));
-                nextGameAddress = address(0);
-                currentGameId += 1;
-            }
-
-
-
-    }
-
-    function setRewardPerGame(uint128 newRewardPerGame) external externalMsg onlyOwner {
         tvm.accept();
-        rewardPerGame = newRewardPerGame;
+        IPBGame(msg.sender).completeGame{value: 1 ton}();
+        IGameQueue(queueAddress).getNextGame{value: DEPLOY_VALUE, callback: GameHost.onGetNextGame}();
     }
+    /* @notice Triggers when a game winner is defined. We need this to create a farming wallet
 
-    function getRewardPerGame() external view externalMsg returns (uint128) {
-        return rewardPerGame;
+    */
+    function onWinnerSet(GameInfo gameInfo, address winnerAddress) external view internalMsg {
+        require(getGameAddress(gameInfo) == msg.sender, WRONG_GAME_ADDRESS);
+        require(gameInfo.gameHost == address(this), INVALID_GAME_HOST);
+        require(gameInfo.status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
+        tvm.accept();
+        IGameMap(gameMap).deployMapFarm{value: DEPLOY_VALUE}(winnerAddress, gameInfo.gameId);
     }
 
     function getGameAddress(GameInfo gameInfo) public view returns (address) {
@@ -211,7 +205,7 @@ contract GameHost is PBConstants {
                 farmingCode: farmingCode,
                 imageOwner: gameInfo.imageOwner
             },
-            pubkey: tvm.pubkey(),
+            pubkey: 0,
             code: getGameCode()
         });
 
@@ -229,10 +223,6 @@ contract GameHost is PBConstants {
         });
 
         return address(tvm.hash(stateInit));
-    }
-
-    function isNextGameEmpty() external view returns (bool) {
-        return nextGameAddress == address(0);
     }
 
     function setQueueAddress(address _queueAddress) external externalMsg onlyOwner {
@@ -284,7 +274,5 @@ contract GameHost is PBConstants {
         tvm.accept();
         IPBGame(gameAddress).drainTokens{value: 0.5 ton}(value);
     }
-
-
 
 }

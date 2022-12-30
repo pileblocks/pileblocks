@@ -11,12 +11,7 @@ contract Genesis is PBConstants {
 
     uint64 static _randomNonce;
 
-    modifier onlyOwner() {
-        require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
-        _;
-    }
-
-    function mint(address tokenRoot, uint128 amount, address recipient) external onlyOwner {
+    function mint(address tokenRoot, uint128 amount, address recipient) external pure onlyOwner {
         tvm.accept();
         TvmCell payload;
         ITokenRoot(tokenRoot).mint{value: 0.5 ton}(amount, recipient, 0.3 ton, address(this), true, payload);
@@ -30,7 +25,7 @@ contract Genesis is PBConstants {
     function transferOwner(
         address tokenRoot,
         address newOwner
-    ) onlyOwner external view
+    ) onlyOwner external pure
     {
         tvm.accept();
         ITransferableOwnership(tokenRoot).transferOwnership{value:0.3 ton}(

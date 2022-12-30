@@ -12,11 +12,6 @@ contract GameQueue is PBConstants {
 
     uint64 static _randomNonce;
 
-    modifier onlyOwner() {
-        require(tvm.pubkey() == msg.pubkey(), WRONG_PUBLIC_KEY);
-        _;
-    }
-
     constructor (
                 address _hostAddress
                 )

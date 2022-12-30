@@ -9,7 +9,7 @@ import "./interfaces/ITokenWallet.sol";
 import "./interfaces/IPBWallet.sol";
 import "./interfaces/IPBGame.sol";
 import "./interfaces/IFarmingWallet.sol";
-import "./interfaces/PBStructs.sol";
+import "./structures/PBStructs.sol";
 
 contract PlayerTest {
 
@@ -52,17 +52,17 @@ contract PlayerTest {
 //    WALLET OPERATIONS
 //
 
-    function claimTiles() onlyOwner external {
+    function claimTiles() onlyOwner external view {
         tvm.accept();
         IFarmingWallet(farmingWallet).claimTiles{value: 1 ton}(genesis);
     }
 
-    function releaseTokens(uint128 amount) onlyOwner external {
+    function releaseTokens(uint128 amount) onlyOwner external view {
         tvm.accept();
         IFarmingWallet(farmingWallet).releaseTokens{value: 1 ton}(amount);
     }
 
-    function putTiles(ColorTile[] tiles, uint128 amount) onlyOwner external {
+    function putTiles(ColorTile[] tiles, uint128 amount) onlyOwner external view {
         tvm.accept();
         ITokenWallet(walletAddress).transfer{value: 2 ton}(amount, gameAddress, 0, address(this), true, abi.encode(tiles));
     }
@@ -71,7 +71,7 @@ contract PlayerTest {
 //    GAME OPERATIONS
 //
 
-    function deployGame(uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) onlyOwner external returns(address) {
+    function deployGame(uint24[] _renderSettings, string _gameName, uint64 _gameStartTime) onlyOwner external view returns(address) {
         tvm.accept();
         IGameHost(gameHost).deployGame{value: 2 ton, callback: PlayerTest.setGameAddress}(_renderSettings, _gameName, _gameStartTime);
     }
@@ -82,17 +82,17 @@ contract PlayerTest {
         gameAddress = _gameAddress;
     }
 
-    function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) onlyOwner external {
+    function saveImageFragment(uint8 fragmentNum, uint8[][] tiles) onlyOwner external view {
         tvm.accept();
         IPBGame(gameAddress).saveImageFragment{value: 2 ton}(fragmentNum, tiles);
     }
 
-    function setImageForReview() onlyOwner external {
+    function setImageForReview() onlyOwner external view {
         tvm.accept();
         IPBGame(gameAddress).setImageForReview{value: 2 ton}();
     }
 
-    function deployFarming() onlyOwner external {
+    function deployFarming() onlyOwner external view {
         tvm.accept();
         IPBGame(gameAddress).deployFarmingWallet{value: 2 ton}();
     }
@@ -102,7 +102,7 @@ contract PlayerTest {
         farmingWallet = _farmingWallet;
     }
 
-    function setGameExtraSettings(uint128[] _extraSettings) external {
+    function setGameExtraSettings(uint128[] _extraSettings) external view {
         tvm.accept();
         IPBGame(gameAddress).setGameExtraSettings{value: 1 ton}(_extraSettings);
     }

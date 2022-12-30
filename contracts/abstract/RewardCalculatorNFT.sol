@@ -5,8 +5,6 @@ import "../abstract/GameEvents.sol";
 
 abstract contract RewardCalculatorNFT is GameEvents {
 
-    uint128 totalReward;
-
     mapping (Sortable => address) mSortablePlayers;
 
     struct Sortable {
@@ -14,8 +12,7 @@ abstract contract RewardCalculatorNFT is GameEvents {
         int64 created;
     }
 
-    function calculateRewards(uint128 _totalReward) internal {
-        totalReward = _totalReward;
+    function calculateRewards() internal pure {
         RewardCalculatorNFT(this).fillSortable{value: 0, flag: 128}(address(0));
     }
 
@@ -46,37 +43,10 @@ abstract contract RewardCalculatorNFT is GameEvents {
             }
         }
         if (!success) {
-            RewardCalculatorNFT(this).distributeRewards{value: 0, flag: 128}(Sortable(0, 0));
+            RewardCalculatorNFT(this).drawNFT{value: 0, flag: 128}();
             return;
         }
         RewardCalculatorNFT(this).fillSortable{value: 0, flag: 128}(startPlayerAddress);
-    }
-
-
-    function distributeRewards(Sortable startPlayerSortable) external internalMsg {
-        require(msg.sender == address(this), 1110);
-        optional(Sortable, address) sPlayer;
-        bool success;
-        Sortable startSortable;
-        sPlayer = mSortablePlayers.max();
-
-        uint128[] rewards = getRewardsPerPlace();
-
-        success = sPlayer.hasValue();
-        for (uint8 i=0; i < 5; i++) {
-            if (success) {
-                (Sortable s, address saddr) = sPlayer.get();
-                startSortable = s;
-                sendReward(saddr, rewards[i]);
-                sPlayer = mSortablePlayers.prev(s);
-                success = sPlayer.hasValue();
-            }
-            else {
-                break;
-            }
-        }
-
-        RewardCalculatorNFT(this).drawNFT{value: 0, flag: 128}();
     }
 
     function drawNFT() external internalMsg {
@@ -126,7 +96,7 @@ abstract contract RewardCalculatorNFT is GameEvents {
 
         for (uint8 i=2; i >= 0; i--) {
             if (chance < winnersShare[i]) {
-                assignNFT(winnersAddress[i]);
+                assignReward(winnersAddress[i]);
                 break;
             }
         }
@@ -136,18 +106,7 @@ abstract contract RewardCalculatorNFT is GameEvents {
         return;
     }
 
-    function getRewardsPerPlace() internal returns (uint128[] rewardsPerPlace) {
-        rewardsPerPlace = new uint128[](5);
-        rewardsPerPlace[0] = totalReward * 45 / 100;
-        rewardsPerPlace[1] = totalReward * 25 / 100;
-        rewardsPerPlace[2] = totalReward * 15 / 100;
-        rewardsPerPlace[3] = totalReward * 10 / 100;
-        rewardsPerPlace[4] = totalReward *  5 / 100;
-    }
-
-    function sendReward(address playerAddress, uint128 rewardValue) virtual internal;
-
-    function assignNFT(address playerAddress) virtual internal;
+    function assignReward(address playerAddress) virtual internal;
 
     function drain() virtual internal view;
 

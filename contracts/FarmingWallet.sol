@@ -25,13 +25,14 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
     uint128 public tilesNum;
     uint128 public tilesChangeTime;
 
-    modifier onlyOwner() {
+    modifier onlyOwnerSender() {
         require(msg.sender == owner, WALLET_DOES_NOT_MATCH_OWNER);
         _;
     }
 
     constructor () public {
         farmingSpeed = 1;
+        tvm.rawReserve(0.1 ton, 0);
         ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: FarmingWallet.onDeploy}(
             address(this),
             0.3 ton
@@ -40,32 +41,34 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
 
     function onDeploy(address gWallet) external {
         require(msg.sender == tokenRootAddress, WALLET_DOES_NOT_MATCH_OWNER);
+        tvm.rawReserve(0, 4);
         tokenWallet = gWallet;
         tvm.log(format("Farming account: {}", address(this)));
         tvm.log(format("Farming wallet: {}", tokenWallet));
         IPBGame(game).askFarmingSpeed{value: 0.1 ton}(owner);
         emit OperationCompleted("farmingWalletCreated", owner, 0, now, 0);
-        tvm.rawReserve(0.1 ton, 4);
         owner.transfer({ value: 0, flag: 128 });
 
     }
 
     function onAcceptTokensTransfer(
-        address tokenRoot,
+        address,
         uint128 amount,
         address sender,
-        address senderWallet,
-        address remainingGasTo,
-        TvmCell payload
+        address ,
+        address ,
+        TvmCell
     ) override external {
         require(msg.sender == tokenWallet, WRONG_NOTIFICATION_SENDER);
+        tvm.rawReserve(0, 4);
         notifyBalanceChange();
         _balance += amount;
         emit OperationCompleted("farmingBalanceUpdated", sender, 0, now, _balance);
-        IPBGame(game).notifyBalanceChange{value: 0, flag: 64}(owner, _balance);
+        IPBGame(game).notifyBalanceChange{value: 0, flag: 128}(owner, _balance);
     }
 
-    function releaseTokens(uint128 amount) external onlyOwner {
+    function releaseTokens(uint128 amount) external onlyOwnerSender {
+        tvm.rawReserve(0, 4);
         notifyBalanceChange();
         _balance -= amount;
         TvmCell payload;
@@ -78,15 +81,15 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
             payload
         );
         emit OperationCompleted("farmingBalanceUpdated", owner, 0, now, _balance);
-        tvm.rawReserve(0, 4);
         IPBGame(game).notifyBalanceChange{value: 0, flag: 128}(owner, _balance);
     }
 
     function setFarmingSpeed(uint128 newSpeed) external internalMsg {
         require(msg.sender == game, WALLET_DOES_NOT_MATCH_OWNER);
+        tvm.rawReserve(0, 4);
         farmingSpeed = newSpeed;
         tvm.log(format("Farming speed: {}", farmingSpeed));
-        owner.transfer({value: 0, flag: 64});
+        owner.transfer({value: 0, flag: 128});
     }
 
     //
@@ -116,12 +119,13 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         return cropTiles(tilesNum + calcFarming(now - tilesChangeTime, _balance));
     }
 
-    function claimTiles(address genesis) external onlyOwner {
+    function claimTiles(address genesis) external onlyOwnerSender {
+        tvm.rawReserve(0, 4);
         uint16 existingTiles = showTiles();
         tilesNum = 0;
         tilesChangeTime = now;
         IGenesis(genesis).giveHomage();
-        IPBGame(game).onClaimTilesFarming{value: 0, flag: 64, bounce: false}(owner, existingTiles);
+        IPBGame(game).onClaimTilesFarming{value: 0, flag: 128, bounce: false}(owner, existingTiles);
     }
 
 }

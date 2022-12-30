@@ -2,7 +2,7 @@ pragma ton-solidity >= 0.57.0;
 
 library ExpMath {
 
-    function log_2(uint128 x) external pure returns (uint128) {
+    function log_2(uint128 x) external returns (uint128) {
 
         require(x >= 1);
         uint128 n = 0;
@@ -17,7 +17,7 @@ library ExpMath {
         return uint128(n);
     }
 
-    function getNumPower(uint128 contractedBalance) external pure returns(uint128) {
+    function getNumPower(uint128 contractedBalance) external returns(uint128) {
         uint128 power = 0;
         while (contractedBalance > 1) {
             contractedBalance = math.divr(contractedBalance, 10);

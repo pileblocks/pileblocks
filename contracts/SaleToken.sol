@@ -67,22 +67,22 @@ contract SaleToken is IAcceptTokensTransferCallback, IAcceptTokensMintCallback {
     }
 
     function onAcceptTokensTransfer(
-        address tokenRoot,
+        address ,
         uint128 amount,
-        address sender,
-        address senderWallet,
-        address remainingGasTo,
-        TvmCell payload
+        address ,
+        address ,
+        address ,
+        TvmCell
     ) override external {
         require(msg.sender == wallet, WRONG_NOTIFICATION_SENDER);
         totalReady += amount;
     }
 
     function onAcceptTokensMint(
-        address tokenRoot,
+        address ,
         uint128 amount,
-        address remainingGasTo,
-        TvmCell payload
+        address ,
+        TvmCell
     ) override external {
         require(msg.sender == wallet, WRONG_NOTIFICATION_SENDER);
         totalReady += amount;
