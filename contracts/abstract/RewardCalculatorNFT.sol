@@ -100,15 +100,10 @@ abstract contract RewardCalculatorNFT is GameEvents {
                 break;
             }
         }
-
         emit RewardsCalculated(now);
-        drain();
-        return;
     }
 
     function assignReward(address playerAddress) virtual internal;
-
-    function drain() virtual internal view;
 
     function getPlayers() virtual internal returns(mapping(address => PlayerInfo));
 }

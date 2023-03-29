@@ -9,13 +9,16 @@ import '@itgold/everscale-tip/contracts/TIP4_1/TIP4_1Nft.sol';
 import '@itgold/everscale-tip/contracts/TIP4_2/TIP4_2Nft.sol';
 import '@itgold/everscale-tip/contracts/TIP4_3/TIP4_3Nft.sol';
 import './ITokenBurned.sol';
+import "../PBConstants.sol";
+import "../interfaces/IPBGame.sol";
 
-contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
+contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, PBConstants {
 
-    uint16 _paramType;
-    uint128 _paramIndex;
-    uint128 _paramValue;
-    uint8[] _paramArray;
+    uint8 paramType;
+    uint128 paramIndex;
+    uint128 paramValue;
+    uint8[] paramArray;
+    uint8 applyNumTimes;
 
     constructor(
         address owner,
@@ -39,6 +42,7 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
     )
     public {
         tvm.accept();
+        paramArray = new uint8[](5);
     }
 
     /// See interfaces/ITIP4_2JSON_Metadata.sol
@@ -46,13 +50,54 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
         return {value: 0, flag: 64, bounce: false} _json;
     }
 
-    function setParamType(uint32 points) external {
+    function setParams(uint8 _paramType,uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray, uint8 _applyNumTimes) external {
+        require(msg.sender == _collection, sender_is_not_collection);
         tvm.rawReserve(0, 4);
-        msg.sender.transfer({
-            value: 0,
-            flag: 128 + 2,
-            bounce: false
-        });
+        paramType = _paramType;
+        paramIndex = _paramIndex;
+        paramValue = _paramValue;
+        paramArray = _paramArray;
+        applyNumTimes = _applyNumTimes;
+        msg.sender.transfer({value: 0, flag: 128});
+    }
+
+    function setJson (string json) external {
+        require(msg.sender == _collection, sender_is_not_collection);
+        tvm.rawReserve(0, 4);
+        _json = json;
+        msg.sender.transfer({value: 0, flag: 128});
+    }
+
+    function getParams() external view returns(uint8 _paramType,uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray){
+        return (paramType, paramIndex, paramValue, paramArray);
+    }
+
+    function getOpData(address targetPlayerAddress) external view returns (TvmCell) {
+        TvmBuilder opData;
+        opData.store(paramType);
+        opData.store(_owner);
+
+        if (paramType == OP_CHANGE_FARM_SPEED) {
+            opData.store(targetPlayerAddress);
+            opData.store(paramValue);
+        }
+        else if (paramType == OP_SET_BLOCK_COLOR) {
+            opData.store(paramArray);
+        }
+        else if (paramType == OP_MINUS_CAPTURED_TILES) {
+            opData.store(targetPlayerAddress);
+            opData.store(paramValue);
+        }
+        else if (paramType == OP_PLUS_CAPTURED_TILES) {
+            opData.store(targetPlayerAddress);
+            opData.store(paramValue);
+        }
+        else if (paramType == OP_MINUS_COLORS) {
+            opData.store(targetPlayerAddress);
+            opData.store(paramIndex);
+            opData.store(paramValue);
+        }
+        return opData.toCell();
     }
 
     function _beforeTransfer(
@@ -93,6 +138,17 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft {
         tvm.accept();
         ITokenBurned(_collection).onTokenBurned(_id, _owner, _manager);
         selfdestruct(dest);
+    }
+
+    function applyNft(address _gameAddress, TvmCell _opData) external onlyManager {
+        require(msg.value >= 10 * MIN_MESSAGE, WRONG_AMOUNT);
+        tvm.rawReserve(0, 4);
+        applyNumTimes -= 1;
+        IPBGame(_gameAddress).runNftAction{value: msg.value - 2 * MIN_MESSAGE}(_id, _opData);
+        if (applyNumTimes == 0) {
+            ITokenBurned(_collection).onTokenBurned{value: MIN_MESSAGE}(_id, _owner, _manager);
+            selfdestruct(_manager);
+        }
     }
 
 }

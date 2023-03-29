@@ -31,11 +31,11 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
     }
 
     constructor () public {
+        tvm.rawReserve(MIN_MESSAGE, 0);
         farmingSpeed = 1;
-        tvm.rawReserve(0.1 ton, 0);
         ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: FarmingWallet.onDeploy}(
             address(this),
-            0.3 ton
+            DEPLOY_VALUE
         );
     }
 

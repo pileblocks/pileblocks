@@ -10,6 +10,11 @@ import '@itgold/everscale-tip/contracts/access/OwnableExternal.sol';
 import './ITokenBurned.sol';
 import './Nft.sol';
 
+interface INft {
+    function setParams(uint8 _paramType,uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray, uint8 _applyNumTimes) external;
+    function setJson(string json) external;
+}
+
 contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITokenBurned {
 
     /**
@@ -28,6 +33,9 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
     uint128 _mintingFee;
 
     uint64 static _nonce;
+
+    // Limit minting to a certain address
+    address public mintAddress = address(0xe512476d3b2e2635cc2cc55ae478b55ea57f86b8d3bdf540d5f3298e39a9c7c9);
 
     constructor(
         TvmCell codeNft, 
@@ -51,6 +59,7 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
     }
 
     function mintNft(string json) external virtual {
+        require(msg.sender == mintAddress, sender_is_not_owner);
         require(msg.value > _remainOnNft + _mintingFee + (2 * _indexDeployValue), value_is_less_than_required);
         tvm.rawReserve(_mintingFee, 4);
 
@@ -117,6 +126,34 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
             varInit: {_id: id},
             code: code
         });
+    }
+
+    function setNftParams(address nftAddress, uint8 _paramType, uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray, uint8 _applyNumTimes) external {
+        require(msg.sender == mintAddress, sender_is_not_owner);
+        tvm.rawReserve(0, 4);
+        Nft(nftAddress).setParams{value: 0, flag: 128}(_paramType, _paramIndex, _paramValue, _paramArray, _applyNumTimes);
+    }
+
+    function setMintAddress(address _mintAddress) external onlyOwner {
+        tvm.accept();
+        mintAddress = _mintAddress;
+    }
+
+    function setJson(address nftAddress, string json) external {
+        require(msg.sender == mintAddress, sender_is_not_owner);
+        tvm.accept();
+        Nft(nftAddress).setJson{value: 0.3 ever}(json);
+    }
+
+    function nftOwnerCodeHash(
+        address _nftOwner
+    ) public view returns (string codeHash) {
+        TvmBuilder salt;
+        salt.store("nft");
+        salt.store(address(this));
+        salt.store(_nftOwner);
+        TvmCell codeIndexWithSalt = tvm.setCodeSalt(_codeIndex, salt.toCell());
+        return format("{:x}", tvm.hash(codeIndexWithSalt));
     }
 
 }

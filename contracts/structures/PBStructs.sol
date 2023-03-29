@@ -35,3 +35,12 @@ struct GameInfo {
     string gameName;
     uint64 gameStartTime;
 }
+
+struct MapFarmInfo {
+    address playerAddress;
+    address mapFarmAddress;
+    uint8 mineralNumber;
+    uint128 farmingSpeed;
+    uint128 usedSupply;
+    uint128 maxSupply;
+}

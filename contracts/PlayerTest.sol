@@ -106,4 +106,10 @@ contract PlayerTest {
         tvm.accept();
         IPBGame(gameAddress).setGameExtraSettings{value: 1 ton}(_extraSettings);
     }
+
+    function setOracleAddress(address _oracleAddress) external view {
+        tvm.accept();
+        IPBGame(gameAddress).setOracleAddress{value: 1 ton}(_oracleAddress);
+    }
+
 }

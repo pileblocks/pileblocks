@@ -1,7 +1,7 @@
 pragma ton-solidity >= 0.58.1;
 import "OracleModifiersAndStructs.sol";
 
-contract FakeNft {
+contract DummyNft {
     uint256 static _id;
 }
 
@@ -25,9 +25,10 @@ abstract contract NftOracle is OracleModifiersAndStructs {
         return tvm.setCodeSalt(nftCode, salt.toCell());
     }
 
-    function verifyNftSender(uint256 id, TvmCell callbackData) external view responsible returns (address, TvmCell) {
+    function verifyNftSender(address msgSender, uint256 id, TvmCell callbackData) external view responsible returns (bool, TvmCell) {
+        tvm.rawReserve(0, 4);
         TvmCell data = tvm.buildDataInit({
-            contr: FakeNft,
+            contr: DummyNft,
             varInit: {_id: id}
         });
         TvmCell saltCode= _buildNftCode();
@@ -36,6 +37,6 @@ abstract contract NftOracle is OracleModifiersAndStructs {
         uint16 codeDepth = saltCode.depth();
         uint16 dataDepth = data.depth();
         uint256 hash = tvm.stateInitHash(codeHash, dataHash, codeDepth, dataDepth);
-        return (address.makeAddrStd(address(this).wid, hash), callbackData);
+        return {value: 0, flag: 128} (msgSender == address.makeAddrStd(address(this).wid, hash), callbackData);
     }
 }

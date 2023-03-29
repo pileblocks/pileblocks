@@ -8,6 +8,9 @@ import "./MapFarm.sol";
 
 contract GameMap is PBConstants {
 
+    uint32 public startGameId;
+    uint8[] public minerals;
+
     address public hostAddress;
     TvmCell public profileCode;
     TvmCell public mapFarmCode;
@@ -32,6 +35,16 @@ contract GameMap is PBConstants {
         hostAddress = _hostAddress;
     }
 
+    function setMinerals(uint8[] _minerals) external onlyOwner {
+        tvm.accept();
+        minerals = _minerals;
+    }
+
+    function setStartGameId(uint32 _gameId) external onlyOwner {
+        tvm.accept();
+        startGameId = _gameId;
+    }
+
     function setMapFarmCode(TvmCell _mapFarmCode) external onlyOwner {
         tvm.accept();
         mapFarmCode = _mapFarmCode;
@@ -47,7 +60,7 @@ contract GameMap is PBConstants {
         address mapFarm = new MapFarm{
             stateInit: _buildFarmMapState(playerAddress, gameId),
             value: DEPLOY_VALUE
-        }();
+        }(minerals[gameId - startGameId], 100, 100000);
         tvm.log(format("New mapFarm: {}", mapFarm));
         msg.sender.transfer({value: 0, flag: 128});
     }
@@ -65,7 +78,7 @@ contract GameMap is PBConstants {
     /*
         SERVICE FUNCTIONS
     */
-    function prepareMapFarmCode(address playerAddress) public view returns (TvmCell) {
+    function prepareMapFarmCode(address playerAddress) internal view returns (TvmCell) {
         TvmBuilder salt;
         salt.store(address(this), playerAddress);
         return tvm.setCodeSalt(mapFarmCode, salt.toCell());

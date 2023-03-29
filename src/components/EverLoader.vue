@@ -311,6 +311,10 @@ export default {
             if (this.$store.state.PlayerInfo.isFarmingActive && !this.$store.state.Ever.operationInProgress && this.$store.state.PlayerInfo.farmingBalance > 0) {
                 this.$store.dispatch('Ever/setClaimTiles');
             }
+            if (this.$store.state.PlayerInfo.farmingBalance === 0) {
+                this.$store.commit('PlayerInfo/updateClaimableTiles', 0);
+            }
+
         }), 5000)
 
         await this.$store.dispatch('Ever/reloadGame');

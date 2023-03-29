@@ -170,18 +170,6 @@ export const EverAPI = {
             console.log("API getColors call run");
             return result.playerColors;
         },
-        claimReward: async function (gameContract: Contract, playerAddress: string) {
-            const pAddress = new Address(playerAddress);
-            await gameContract
-                .methods
-                .claimReward({})
-                .send({
-                    from: pAddress,
-                    amount: '500000000',
-                    bounce: true,
-                });
-
-        },
         packTiles: async function(gameContract: Contract, tiles: Array<TileCoordinatePlusColor>) {
             const result = await gameContract
                 .methods

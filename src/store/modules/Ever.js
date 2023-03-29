@@ -194,11 +194,6 @@ export const Ever: {
             commit("Game/updateStatus", parseInt(gameInfo.status), {root: true})
         },
 
-        async claimReward({state, rootState}) {
-            await EverAPI.game.claimReward(state.game, rootState.PlayerInfo.playerAddress);
-
-        },
-
         async updateFarmingEstimation({commit, rootState}, {time, balance}) {
             const wallet = rootState.PlayerInfo.farmingContract;
             if (wallet !== null && await EverAPI.isActiveContract(rootState.Ever.api, rootState.PlayerInfo.farmingAddress)) {

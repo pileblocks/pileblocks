@@ -16,4 +16,6 @@ interface IPBGame {
     function setGameExtraSettings(uint128[] _gameExtraSettings) external;
     function setGameId(uint32 _gameId) external;
     function askFarmingSpeed(address ownerAddress) external;
+    function setOracleAddress(address _oracleAddress) external;
+    function runNftAction(uint256 nftId, TvmCell opData) external;
 }

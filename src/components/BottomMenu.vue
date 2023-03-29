@@ -9,13 +9,11 @@
             <div v-if="!tilesArePut" class="d-flex flex-sm-column flex-md-row">
 
                 <!-- claim -->
-                <button class="btn btn-menu mt-2" type="button" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
+                <button class="btn btn-menu mt-2 claim-btn" type="button" v-on:click="claimTiles" v-if="this.$store.state.PlayerInfo.isFarmingActive">
 
-                    <span v-show="!isLoading && this.tempClaimableTiles === 0" class="span p-1">{{ $t('bottomMenu.claim') }}<br/>
-                        <small v-if="this.$store.state.PlayerInfo.claimableTiles > 0">{{ this.$store.state.PlayerInfo.claimableTiles }}</small>
-                    </span>
-                    <span v-show="!isLoading && this.tempClaimableTiles > 0" class="span">{{ $t('bottomMenu.claim') }}<br/>
-                        <small :class="setAnimationClass">{{ this.tempClaimableTiles }}</small>
+
+                    <span v-show="!isLoading" class="span">{{ $t('bottomMenu.claim') }}
+                        <small :class="setAnimationClass" v-show="this.tempClaimableTiles > 0"><br/>{{ this.tempClaimableTiles }}</small>
                     </span>
                     <b-spinner small class="span button-spinner" v-show="isLoading"></b-spinner>
                     <span class="btn__border">
@@ -92,7 +90,7 @@
         <div v-if="isGameCompleted" class="claim-reward">
 
                 <!-- farming settings -->
-                <button class="btn btn-menu" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
+                <button class="btn btn-menu claim-btn" type="button" v-if="this.$store.state.PlayerInfo.isFarmingActive" v-on:click="showFarmingSettings">
                     <img src="~@/assets/icon-farming-settings.svg" alt="Farming Settings"/>
                     <span class="btn__border">
                         <span class="btn__border-top"></span>
@@ -115,7 +113,7 @@
             <p>{{ $t('bottomMenu.farmingSettings.p3') }}<b>{{ this.$store.state.PlayerInfo.farmingBalance | fixed }}</b> PILE <span class="pr-1" v-on:click="releaseFarming"><i class="bi bi-x-circle-fill btn-reject"></i></span></p>
             <p>{{ $t('bottomMenu.farmingSettings.p4') }}</p>
             <b-input-group size="sm">
-                <b-form-input v-model="tokensToAdd" :placeholder="$t('bottomMenu.farmingSettings.placeholderBalance')" size="sm" :state="validateAddBalance()"></b-form-input>
+                <b-form-input ref="farmingSettingsInput" v-model="tokensToAdd" :placeholder="$t('bottomMenu.farmingSettings.placeholderBalance')" size="sm" :state="validateAddBalance()" @focus="$event.target.select()"></b-form-input>
             </b-input-group>
 
             <b-form-invalid-feedback :state="validateAddBalance()">
@@ -125,9 +123,6 @@
             <p>{{ $t('bottomMenu.farmingSettings.youGet') }}<br/> <b>{{ farmingEstimation }}</b> {{ $t('bottomMenu.farmingSettings.tileMin') }}</p>
             <div class="d-flex justify-content-end">
 
-                <!--
-                <b-button v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</b-button>
-                -->
                 <button class="btn btn-menu" type="button" v-on:click="putFarming" :disabled="isNaN(tokensToAdd) || tokensToAdd.length === 0 || tokensToAdd === 0">
                     <span class="span p-2">{{ $t('bottomMenu.farmingSettings.addToFarming') }}</span>
                     <span class="btn__border">
@@ -193,6 +188,7 @@ export default {
             try {
                 this.$store.commit('Ever/isOpInProgress', true);
                 await this.$store.dispatch('Ever/claimTiles');
+                this.tempClaimableTiles = 0;
             } catch(e) {
                 this.$store.commit('Ever/isOpInProgress', false);
                 this.errorHandler(e);
@@ -201,7 +197,7 @@ export default {
         },
         putTiles: async function() {
 
-            if (this.$store.state.PlayerInfo.balance < this.$store.state.Game.payPerMove) {
+            if (this.$store.state.PlayerInfo.balance * 10 ** 9 < this.$store.state.Game.payPerMove) {
                 this.$store.commit('Toast/sendToast', {
                     toastName: "not-enough-pile-to-put",
                     data: {payPerMove: this.$store.state.Game.payPerMove, balance: this.$store.state.PlayerInfo.balance}
@@ -248,17 +244,6 @@ export default {
             }
         },
 
-        claimReward: async function() {
-
-            try {
-                this.$store.commit('Ever/isOpInProgress', true);
-                await this.$store.dispatch('Ever/claimReward');
-            } catch(e) {
-                this.$store.commit('Ever/isOpInProgress', false);
-                this.errorHandler(e);
-                console.log(e);
-            }
-        },
         errorHandler: function (e) {
             if ('code' in e && e.code === 0) {
                 this.$store.commit('Toast/sendToast', {
@@ -280,11 +265,22 @@ export default {
 
     watch: {
         claimableTilesWatcher: async function (newReward, oldReward) {
+                console.log(`NEW VALUE:${newReward}, OLD VALUE: ${oldReward}`);
 
 				if (newReward > oldReward + 10) {
 					this.tempClaimableTiles = newReward;
-					return
+					return;
 				}
+
+				if (newReward < oldReward) {
+					this.tempClaimableTiles = 0;
+					return;
+				}
+
+                if (newReward === 0) {
+                    this.tempClaimableTiles = 0;
+                    return;
+                }
 
                 this.setAnimationClass += "font-weight-bold ";
                 setTimeout(() => {
@@ -349,9 +345,13 @@ export default {
 </script>
 
 <style scoped>
+.claim-btn {
+    height: 3em;
+}
 .claim-reward {
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
 </style>

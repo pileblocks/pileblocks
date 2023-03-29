@@ -53,6 +53,12 @@ FARMING_CODE=$(cat ../src/contract_wrappers/FarmingWallet.js | grep "code:" | cu
 NONCE=$(date +%s)
 echo $GAME_CODE
 
+ORACLE="0:bd0cefdcbb2dd1fb6b1e31105dac65599c40269ecffd044612a3fbe1ea2370bd"
+COLLECTION="0:0dc4046e69824352ad8685f8979fb8d724310de43b9cf06b5d6fdebe8a2d25b0"
+
+TMP=$(everdev contract run Oracle.abi.json -n $NWK -s $SIGNER setCollection -i _collection:\"$COLLECTION\" | grep "Address:" | cut -d " " -f 4)
+echo "Oracle received the collection address"
+
 echo "Deploying genesis..."
 GENESIS_ADDRESS=$(everdev contract deploy Genesis.abi.json -n $NWK -s $SIGNER -v 2400000000 -d _randomNonce:$NONCE | grep "Address:" | cut -d " " -f 4)
 echo "Genesis address: ${GENESIS_ADDRESS}"
@@ -89,7 +95,7 @@ echo "Player2 address: ${PLAYER2_ADDRESS}"
 
 TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER deployGame -i  "{\"_renderSettings\": [2, 1, 5, 5, 16711422, 11186364, 12456217, 3093818, 1974824], \"_gameName\": \"Follow the White Rabbit 🐇\", \"_gameStartTime\": $GAMESTARTDATE}")
 
-sleep 45
+sleep 2
 
 GAME_ADDRESS=$(everdev contract run-local PlayerTest.abi.json -n $NWK -s $SIGNER -a $PLAYER1_ADDRESS gameAddress | grep "gameAddress" | cut -d " " -f 10 | tr -d '"')
 echo "GAME address: $GAME_ADDRESS"
@@ -107,6 +113,10 @@ echo "everdev contract run-local PBGame.abi.json -a $GAME_ADDRESS -n $NWK -s $SI
 #_extraSettings = [farmingSpeed]
 TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameExtraSettings -i '{"_extraSettings": [5, 100]}')
 echo "Extra settings provided!"
+
+TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setOracleAddress -i _oracleAddress:\"$ORACLE\")
+
+echo "Oracle address set"
 
 TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setImageForReview)
 

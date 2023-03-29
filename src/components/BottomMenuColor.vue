@@ -1,5 +1,5 @@
 <template>
-    <div class="ml-0 mt-2">
+    <div class="ml-0 mt-md-2 mt-1">
         <div class="btn balance-menu" v-on:click="setActiveColor">
             <div class="d-flex">
                 <div :class="colorClass">{{this.btnColor}}</div>

@@ -27,6 +27,7 @@ export const PlayerInfo: {
         farmingContract: null,
         isFarmingActive: false,
         tokensToAdd: 0,
+        farmingBalance: 0,
         farmingEstimation: 0
     },
     mutations: {

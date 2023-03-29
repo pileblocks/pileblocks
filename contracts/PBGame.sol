@@ -125,6 +125,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
         require(fragmentNum < uint8(vertFragments * horizFragments), WRONG_FRAGMENT_COUNT);
         require(tiles.length == ROW_COUNT, WRONG_NUM_ROWS);
+        tvm.rawReserve(0, 4);
         for (uint8 i=0; i < ROW_COUNT; i++) {
             require(tiles[i].length == COL_COUNT, WRONG_NUM_COLS);
             for (uint8 j=0; j < COL_COUNT; j++) {
@@ -132,6 +133,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
             }
         }
         template[fragmentNum] = tiles;
+        msg.sender.transfer({value: 0, flag: 128});
     }
 
     function setImageForReview() external internalMsg onlyImageOwner {
@@ -147,7 +149,19 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         @param newStatus - new status, can be among the STATUS_GAME_* constants
     */
     function setGameStatus(uint8 newStatus) external internalMsg onlyHost {
+        tvm.rawReserve(0, 4);
         status = newStatus;
+        msg.sender.transfer({value: 0, flag: 128});
+    }
+
+    /*
+        @notice A game may define an oracle which will accept NFTs
+    */
+    function setOracleAddress(address _oracleAddress) external onlyImageOwner {
+        require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
+        tvm.rawReserve(0, 4);
+        oracleAddress = _oracleAddress;
+        msg.sender.transfer({value: 0, flag: 128});
     }
 
     /*
@@ -155,8 +169,10 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
     */
     function setGameExtraSettings(uint128[] _gameExtraSettings) external onlyImageOwner {
         require(status == STATUS_GAME_DRAFT, WRONG_GAME_STATUS);
+        tvm.rawReserve(0, 4);
         farmingSpeed = uint128(_gameExtraSettings[0]);
         blockColorsProbability = uint8(_gameExtraSettings[1]);
+        msg.sender.transfer({value: 0, flag: 128});
     }
 
     function getGameExtraSettings() external view returns(GameExtraSettings){
@@ -186,7 +202,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(now >= gameStartTime, GAME_NOT_STARTED);
         require(msg.value >= MIN_CLAIM_AMOUNT, NOT_ENOUGH_TOKENS_TO_CLAIM_TILE);
-
+        tvm.rawReserve(0, 4);
         uint16[] pColors = playerColors[ownerAddress];
 
         if (pColors.empty()) {
@@ -200,7 +216,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         }
         playerColors[ownerAddress] = pColors;
         emit OperationCompleted("onClaimTiles", ownerAddress, status, now, tilesNum);
-        ownerAddress.transfer({value: 0, flag: 64});
+        ownerAddress.transfer({value: 0, flag: 128});
     }
 
     /*
@@ -224,7 +240,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         require(msg.value >= MIN_PUT_AMOUNT, NOT_ENOUGH_TOKENS_TO_PUT_TILE);
         require(amount == tokensPerPut, INVALID_TOKENS_PER_PUT);
-
+        tvm.rawReserve(0, 4);
         ColorTile[] tiles;
 
         if (!payload.toSlice().empty()) {
@@ -232,29 +248,27 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         }
         require(tiles.length <= MAX_PUT_PER_TURN, MAX_TILES_EXCEEDED);
 
-        PBGame(this).putTiles{value: 0, flag: 64}(tiles, sender);
-
+        PBGame(this).putTiles{value: 0, flag: 128}(tiles, sender);
     }
 
     function putTiles(ColorTile[] tiles, address ownerAddress) external internalMsg {
         require(msg.sender == address(this), WRONG_GAME_ADDRESS);
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
+        tvm.rawReserve(SERVICE_FEE, 4);
         addTilesToField(tiles, ownerAddress);
-        PBGame(this).postPutTiles{value: 0, flag: 64}(ownerAddress, uint128(tiles.length));
+        PBGame(this).postPutTiles(ownerAddress, uint128(tiles.length));
+        ownerAddress.transfer({value: 0, flag: 128});
     }
 
     function postPutTiles(address ownerAddress, uint128 tilesQty) external internalMsg {
         require(msg.sender == address(this), WRONG_GAME_ADDRESS);
-        tvm.rawReserve(SERVICE_FEE, 4);
-
+        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
+        tvm.accept();
         if (remainingTiles == 0) {
             status = STATUS_GAME_COMPLETED;
-            IGameHost(gameHost).onGameCompleted{value: DEPLOY_VALUE}(getInfo());
+            IGameHost(gameHost).onGameCompleted{value: MIN_MESSAGE}(getInfo());
         }
         emit OperationCompleted("onAcceptTokensTransfer", ownerAddress, status, now, tilesQty);
-
-        tvm.log(format("Before sending: {}", ownerAddress));
-
-        ownerAddress.transfer({value: 0, flag: 128});
     }
 
     function packTiles(ColorTile[] tiles) external pure returns (TvmCell){
@@ -263,7 +277,6 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
 
     function completeGame() external view internalMsg {
         require(msg.sender == gameHost, INVALID_GAME_HOST);
-        require(status == STATUS_GAME_ACTIVE, WRONG_GAME_STATUS);
         calculateRewards();
     }
 
@@ -272,29 +285,9 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         player.nft = true;
         players[playerAddress] = player;
         tvm.log(format("NFT for {}", playerAddress));
-        IGameHost(gameHost).onWinnerSet(getInfo(), playerAddress);
+        IGameHost(gameHost).onWinnerSet{value: MIN_MESSAGE}(getInfo(), playerAddress);
         emit OperationCompleted("assignWinner", playerAddress, status, now, gameId);
-    }
-
-    function claimReward() external {
-        require(status == STATUS_GAME_COMPLETED, WRONG_GAME_STATUS);
-        if (players.exists(msg.sender)) {
-            PlayerInfo player = players[msg.sender];
-            if (!player.isReceived) {
-                TvmCell payload;
-                ITokenWallet(gameWallet).transfer{value: DEPLOY_VALUE}(
-                    player.reward,
-                    msg.sender,
-                    0,
-                    address(this),
-                    false,
-                    payload
-                    );
-                player.isReceived = true;
-                players[msg.sender] = player;
-                emit OperationCompleted("claimReward", msg.sender, status, now, player.reward);
-            }
-        }
+        drain();
     }
 
     function deployFarmingWallet() external view {
@@ -314,8 +307,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
 
         new FarmingWallet {
             stateInit: initData,
-            value: 0,
-            flag: 128
+            value: 0, flag: 128
         }();
     }
 
@@ -332,89 +324,95 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
     */
     function setBlockColor(uint8[] newBlockColors) internal {
         require(newBlockColors.length == maxColors, WRONG_TILE_COLOR);
-        tvm.rawReserve(0, 4);
         blockColors = newBlockColors;
-        msg.sender.transfer({value: 0, flag: 128});
     }
 
     /*
         OP_CHANGE_FARM_SPEED Increases or decreases farming speed
     */
-    function setFarmingSpeed(address ownerAddress, uint128 newSpeed) internal view {
+    function setFarmingSpeed(address playerAddress, uint128 newSpeed) internal view {
         require(newSpeed > 0, FARMING_SPEED_MORE_THAN_ZERO);
-        tvm.rawReserve(0, 4);
-        IFarmingWallet(getFarmingAddress(ownerAddress)).setFarmingSpeed{value: 0, flag: 128}(newSpeed);
+        IFarmingWallet(getFarmingAddress(playerAddress)).setFarmingSpeed{value: 0, flag: 128}(newSpeed);
     }
 
     /*
-        Minuses the number of captured tiles
+        OP_MINUS_CAPTURED_TILES Minuses the number of captured tiles
     */
-    function setMinusPlayerCaptured(address ownerAddress, uint16 minusCaptured) internal {
-        tvm.rawReserve(0, 4);
-        PlayerInfo player = getPlayer(ownerAddress);
+    function setMinusPlayerCaptured(address playerAddress, uint16 minusCaptured) internal {
+        PlayerInfo player = getPlayer(playerAddress);
         if (player.captured > minusCaptured) {
             player.captured -= minusCaptured;
         } else {
             player.captured = 0;
         }
-        players[ownerAddress] = player;
-        msg.sender.transfer({value: 0, flag: 128});
+        players[playerAddress] = player;
     }
 
     /*
-        Pluses the number of captured tiles
+        OP_PLUS_CAPTURED_TILES Pluses the number of captured tiles
     */
-    function setPlusPlayerCaptured(address ownerAddress, uint16 plusCaptured) internal {
-        tvm.rawReserve(0, 4);
-        PlayerInfo player = getPlayer(ownerAddress);
+    function setPlusPlayerCaptured(address playerAddress, uint16 plusCaptured) internal {
+        PlayerInfo player = getPlayer(playerAddress);
         player.captured += plusCaptured;
-        players[ownerAddress] = player;
-        msg.sender.transfer({value: 0, flag: 128});
+        players[playerAddress] = player;
     }
 
     /*
-    Updates player colors
+    OP_MINUS_COLORS Updates player colors
     */
-    function setMinusPlayerColors(address ownerAddress, uint8 colorNum, uint16 minusValue) internal {
+    function setMinusPlayerColors(address playerAddress, uint8 colorNum, uint16 minusValue) internal {
         require(colorNum < maxColors, WRONG_TILE_COLOR);
-        tvm.rawReserve(0, 4);
-        uint16[] pColors = playerColors[ownerAddress];
+        uint16[] pColors = playerColors[playerAddress];
         if (pColors[colorNum] > minusValue) {
             pColors[colorNum] -= minusValue;
         } else {
             pColors[colorNum] = 0;
         }
-        playerColors[ownerAddress] = pColors;
-        msg.sender.transfer({value: 0, flag: 128});
+        playerColors[playerAddress] = pColors;
     }
 
-    function runNftAction(TvmCell opData) external view {
+    function runNftAction(uint256 nftId, TvmCell opData) external view {
         tvm.rawReserve(0, 4);
-        IOracle(oracleAddress).verifyNft{callback: onVerifyNft, flag: 128}(msg.sender, opData);
-    }
-
-    function prepareCallbackData(address _ownerAddress, uint128 _newSpeed) external pure returns (TvmCell) {
-        TvmBuilder builder;
-        builder.store(OP_CHANGE_FARM_SPEED);
-        builder.store(_ownerAddress);
-        builder.store(_newSpeed);
-        return builder.toCell();
+        IOracle(oracleAddress).verifyNftSender{value:0, flag: 128, callback: onVerifyNft}(msg.sender, nftId, opData);
     }
 
     function onVerifyNft(bool isNftVerified, TvmCell callbackData) public {
+        require(msg.sender == oracleAddress, WRONG_SENDER);
         //TODO: Specify the Oracle's address requirement
+        tvm.rawReserve(0, 4);
         if (!isNftVerified)
             return;
         TvmSlice dataSlice = callbackData.toSlice();
         uint8 opCode = dataSlice.decode(uint8);
+        address _ownerAddress = dataSlice.decode(address);
 
         if (opCode == OP_SET_BLOCK_COLOR) {
             uint8[] bColors = dataSlice.decode(uint8[]);
             setBlockColor(bColors);
-        } else if (opCode == OP_CHANGE_FARM_SPEED) {
-            (address _ownerAddress, uint128 _newSpeed) = dataSlice.decode(address, uint128);
-            setFarmingSpeed(_ownerAddress, _newSpeed);
         }
+        else if (opCode == OP_CHANGE_FARM_SPEED) {
+            address _targetPlayer = dataSlice.decode(address);
+            uint128 _newSpeed = dataSlice.decode(uint128);
+            setFarmingSpeed(_targetPlayer, _newSpeed);
+            return;
+        }
+        else if (opCode == OP_MINUS_CAPTURED_TILES) {
+            address _targetPlayer = dataSlice.decode(address);
+            uint16 _minusCaptured = uint16(dataSlice.decode(uint128));
+            setMinusPlayerCaptured(_targetPlayer, _minusCaptured);
+        }
+        else if (opCode == OP_PLUS_CAPTURED_TILES) {
+            address _targetPlayer = dataSlice.decode(address);
+            uint16 _plusCaptured = uint16(dataSlice.decode(uint128));
+            setPlusPlayerCaptured(_targetPlayer, _plusCaptured);
+        }
+        else if (opCode == OP_MINUS_COLORS) {
+            address _targetPlayer = dataSlice.decode(address);
+            uint8 _colorNum = uint8(dataSlice.decode(uint128));
+            uint16 _minusValue = uint16(dataSlice.decode(uint128));
+            setMinusPlayerColors( _targetPlayer,  _colorNum,  _minusValue);
+        }
+        _ownerAddress.transfer({value: 0, flag: 128});
     }
 
 
@@ -425,7 +423,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
     /*
         @notice A game drains itself on completion
     */
-    function drain() override internal view {
+    function drain() internal view {
         tvm.rawReserve(MIN_BALANCE, 0);
         gameHost.transfer({ value: 0, flag: 128 });
     }

@@ -29,10 +29,10 @@
                 <div class="p-4 stat-block text-center">PileBlocks requires the EVER wallet to launch. Please install the <span class="color-primary"><u><a href="https://l1.broxus.com/" target="_blank">EVER wallet</a></u></span> or update the permissions</div>
             </div>
         </div>
-        <div class="game-container" v-if="!noGames && gamePending && !this.$store.state.Ever.isLoading">
+        <div class="game-container-timer" v-if="!noGames && gamePending && !this.$store.state.Ever.isLoading">
             <game-countdown></game-countdown>
         </div>
-        <div class="game-container" v-if="noGames && !this.$store.state.Ever.isLoading">
+        <div class="game-container-timer" v-if="noGames && !this.$store.state.Ever.isLoading">
             <game-list-empty></game-list-empty>
         </div>
     </div>
@@ -105,11 +105,7 @@ export default App;
         margin-top: 1em;
     }
 
-
 }
-
-
-
 
 #loader {
     display: flex;
@@ -119,9 +115,19 @@ export default App;
 }
 
 .game-container {
-    background-image: url('~@/assets/field-background.svg');
-    background-repeat: repeat;
+    background-image: url('~@/assets/bg-main.png');
+    background-repeat: repeat-x;
     background-position: center;
+    background-size: contain;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+.game-container-timer {
+    background-image: url('~@/assets/bg-timer.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
     height: 100%;
     overflow-y: hidden;
 }
@@ -132,10 +138,6 @@ export default App;
     grid-template-columns: 1fr;
     width: 100%;
     height: 100%;
-    background-image: url('~@/assets/field-overlay.svg');
-    background-repeat: no-repeat;
-    background-size: cover;
-	background-position: center;
 }
 
 .game-error-notification {
@@ -211,6 +213,8 @@ export default App;
     grid-template-rows: 1fr;
     grid-template-columns: 3fr 1fr;
     background-image:  url('~@/assets/bottom-menu.svg');
+    background-size: contain;
+    background-repeat: repeat-x;
 
 }
 
@@ -235,6 +239,7 @@ body, html {
     justify-content: flex-start;
     grid-column: 1;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 #claim-tiles {
@@ -288,7 +293,7 @@ body, html {
 
 .modal-content {
     border: 0;
-    background-color: #5A1C80 !important;
+    background-color: #46336D !important;
     background-image: url('~@/assets/popup-background.png');
 }
 
@@ -337,7 +342,18 @@ body, html {
 
 .overlay-background {
     background-image: url('~@/assets/hero.webp');
-    background-position: right;
+    background-position: center;
     background-size: cover;
+    background-repeat: no-repeat;
+}
+@media (max-width: 576px) {
+    .game-container {
+        background-image: url('~@/assets/bg-main.png');
+        background-repeat: repeat-x;
+        background-position: center;
+        background-size: cover;
+        height: 100%;
+        overflow-y: hidden;
+    }
 }
 </style>
