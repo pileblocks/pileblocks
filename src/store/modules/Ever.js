@@ -2,12 +2,16 @@
 
 import {EverAPI} from "@/api/ever";
 import {_dataToNumbers} from "@/utils"
-import type {PlayerStats, RawPlayerStats, Contract} from "@/AppTypes";
+import type {PlayerStats, RawPlayerStats, Contract, NftJson} from "@/AppTypes";
 import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
-import {EMPTY_CELL, GENESIS_ADDRESS} from "@/AppConst";
+import {COLLECTION_ADDRESS, EMPTY_CELL, GENESIS_ADDRESS} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
 import type {PlayerAddress} from "@/AppTypes";
+import {NftContract} from "@/contract_wrappers/Nft";
+import {CollectionContract} from "@/contract_wrappers/Collection";
+import {IndexContract} from "@/contract_wrappers/NftIndex";
+
 
 export const Ever: {
     state: {
@@ -199,6 +203,47 @@ export const Ever: {
             if (wallet !== null && await EverAPI.isActiveContract(rootState.Ever.api, rootState.PlayerInfo.farmingAddress)) {
                 commit('PlayerInfo/updateFarmingEstimation', await EverAPI.farmingWallet.calcFarming(wallet, time, balance), {root: true});
             }
+        },
+        async applyNft({state, rootState}, {nftAddress, targetPlayer}) {
+            const ever = rootState.Ever.api;
+            const nftContract = new ever.Contract(NftContract.abi, nftAddress);
+            await EverAPI.nft.applyNft(nftContract,
+                rootState.PlayerInfo.playerAddress,
+                state.game._address.toString(),
+                targetPlayer)
+        },
+        async reloadNft({rootState, commit}, everx) {
+
+            const ever = rootState.Ever.api;
+
+            async function getNftByIndex(nftIndexAddresses: string[]): Promise<string[]> {
+                let nftAddresses = []
+                for (let indexAddress of nftIndexAddresses) {
+                    const nftIndexContract = new ever.Contract(IndexContract.abi, indexAddress);
+                    nftAddresses.push(await EverAPI.nftIndex.getNftAddress(nftIndexContract))
+                }
+                return nftAddresses
+            }
+            async function getNftJson(nftAddress: string): Promise<NftJson> {
+                const nftContract = new ever.Contract(NftContract.abi, nftAddress);
+                return await EverAPI.nft.getNftJson(nftContract);
+            }
+            async function getNftJsons(nftAddresses: string[]):Promise<Array<NftJson>> {
+                const nftJsons = []
+                for (const nftAddress of nftAddresses) {
+                    let nftJson:NftJson = await getNftJson(nftAddress);
+                    nftJson["nftAddress"] = nftAddress;
+                    nftJsons.push(nftJson);
+                }
+                return nftJsons
+            }
+
+            const nftCollectionContract = new ever.Contract(CollectionContract.abi, COLLECTION_ADDRESS);
+            const playerHash = await EverAPI.nftCollection.nftOwnerCodeHash(nftCollectionContract, rootState.PlayerInfo.playerAddress);
+            const nftIndexAddresses = await EverAPI.nftIndex.getPlayerNftIndexes(everx, playerHash);
+            const nftAddresses = await getNftByIndex(nftIndexAddresses);
+            const nftJsons = await getNftJsons(nftAddresses);
+            commit("Nft/updateNfts", nftJsons, {root: true});
         }
     },
 

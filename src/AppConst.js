@@ -5,6 +5,7 @@ export const TOKEN_ROOT_ADDRESS = "0:dbba0028173f5b8d09eb597e0cca88cb41a4875efdf
 export const SALE_TOKEN =         "0:4ff60d4428f7c4fb04ab3b02e1be16ca20fe459003ce78b416ce6fb18b9b1374";
 export const HOST_ADDRESS = "0:0c6586f3852fa5105d51f7f305f79d10476b2ddc35361904d4ed385f87b29eb0";
 
+export const COLLECTION_ADDRESS = "0:082928d28de2b521edd5554caa24c19586778462b33314766538639eaaf6e0c8";
 
 export const EMPTY_CELL = "te6ccgEBAgEABQABAAEAAA==";
 
@@ -17,3 +18,8 @@ export const LOADING_STATUS_EMPTY_GAME_LIST:number = 5;
 
 export const GAME_STATUS_COMPLETED = 3;
 
+export const OP_SET_BLOCK_COLOR = 1;
+export const OP_CHANGE_FARM_SPEED = 2;
+export const OP_MINUS_CAPTURED_TILES = 3;
+export const OP_PLUS_CAPTURED_TILES = 4;
+export const OP_MINUS_COLORS = 5;

@@ -15,7 +15,7 @@
                 </span>
                 <span class="btn__inner-menu">
                 </span>
-                <img class="balance-info-popup" src="~@/assets/balance-information-popup.svg" alt=""/>
+                <img class="balance-info-popup" src="~@/assets/balance-information-popup.svg" alt="" v-on:click="$bvModal.show('sale-token')"/>
             </div>
         </div>
         <div id="top-menu-game-stats">
@@ -99,19 +99,10 @@
                 <template #modal-header-close>
                     <img src="~@/assets/popup-close-button.svg"/>
                 </template>
-                <p>{{ $t('topMenu.getTokens.p1') }}<br/></p>
-                <b-input-group>
-                    <b-form-input :value="saleTokenAddress"
-                               v-on:focus="$event.target.select()"
-                               ref="tsAddress"
-                               readonly>
-                    </b-form-input>
-                    <template #append>
-                        <b-button variant="primary" v-on:click="copyAddress">Copy</b-button>
-                    </template>
-                </b-input-group>
-                <p class="mt-3">{{ $t('topMenu.getTokens.p2') }}<b>{{ $store.state.PlayerInfo.playerAddress | short }}</b><br/>{{ $t('topMenu.getTokens.p3') }}</p>
-                <p class="mt-1">{{ $t('topMenu.getTokens.p4') }}<a href="https://youtu.be/1ZBE9qspn7k" target="_blank">https://youtu.be/1ZBE9qspn7k</a>.</p>
+                <p>{{ $t('topMenu.getTokens.p1') }}</p>
+                <p><a href="https://app.octusbridge.io/bridge" target="_blank">{{ $t('topMenu.getTokens.p2') }}</a></p>
+                <p>{{ $t('topMenu.getTokens.p3') }}</p>
+                <p><a href="https://app.flatqube.io/tokens/0:dbba0028173f5b8d09eb597e0cca88cb41a4875efdf8a1815bb31292f150f800" target="_blank">{{ $t('topMenu.getTokens.p4') }}</a></p>
             </b-modal>
         </div>
         <toast-list/>

@@ -53,11 +53,8 @@ FARMING_CODE=$(cat ../src/contract_wrappers/FarmingWallet.js | grep "code:" | cu
 NONCE=$(date +%s)
 echo $GAME_CODE
 
-ORACLE="0:bd0cefdcbb2dd1fb6b1e31105dac65599c40269ecffd044612a3fbe1ea2370bd"
-COLLECTION="0:0dc4046e69824352ad8685f8979fb8d724310de43b9cf06b5d6fdebe8a2d25b0"
-
-TMP=$(everdev contract run Oracle.abi.json -n $NWK -s $SIGNER setCollection -i _collection:\"$COLLECTION\" | grep "Address:" | cut -d " " -f 4)
-echo "Oracle received the collection address"
+COLLECTION="0:082928d28de2b521edd5554caa24c19586778462b33314766538639eaaf6e0c8"
+ORACLE="0:533310eb9bf24a3289b6a0f45f704639b57dc9e1bf83bafdf67d787dbff5f3a1"
 
 echo "Deploying genesis..."
 GENESIS_ADDRESS=$(everdev contract deploy Genesis.abi.json -n $NWK -s $SIGNER -v 2400000000 -d _randomNonce:$NONCE | grep "Address:" | cut -d " " -f 4)
@@ -111,7 +108,7 @@ echo "Template provided!"
 
 echo "everdev contract run-local PBGame.abi.json -a $GAME_ADDRESS -n $NWK -s $SIGNER template"
 #_extraSettings = [farmingSpeed]
-TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameExtraSettings -i '{"_extraSettings": [5, 100]}')
+TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setGameExtraSettings -i '{"_extraSettings": [500, 100]}')
 echo "Extra settings provided!"
 
 TEMP=$(everdev contract run PlayerTest.abi.json -a $PLAYER1_ADDRESS -n $NWK -s $SIGNER setOracleAddress -i _oracleAddress:\"$ORACLE\")

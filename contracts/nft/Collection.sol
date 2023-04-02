@@ -101,6 +101,7 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
 
     function onTokenBurned(uint256 id, address owner, address manager) external override {
         require(msg.sender == _resolveNft(id));
+        tvm.accept();
         emit NftBurned(id, msg.sender, owner, manager);
         _totalSupply--;
     }
@@ -141,8 +142,8 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
 
     function setJson(address nftAddress, string json) external {
         require(msg.sender == mintAddress, sender_is_not_owner);
-        tvm.accept();
-        Nft(nftAddress).setJson{value: 0.3 ever}(json);
+        tvm.rawReserve(0, 4);
+        Nft(nftAddress).setJson{value: 0, flag: 128}(json);
     }
 
     function nftOwnerCodeHash(
@@ -153,7 +154,7 @@ contract Collection is TIP4_2Collection, TIP4_3Collection, OwnableExternal, ITok
         salt.store(address(this));
         salt.store(_nftOwner);
         TvmCell codeIndexWithSalt = tvm.setCodeSalt(_codeIndex, salt.toCell());
-        return format("{:x}", tvm.hash(codeIndexWithSalt));
+        return format("{:064x}", tvm.hash(codeIndexWithSalt));
     }
 
 }

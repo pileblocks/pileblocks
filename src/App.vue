@@ -300,8 +300,13 @@ body, html {
 .modal-body {
 
 }
+.modal-dialog {
+    max-width: 600px;
+}
+
 @media (max-width: 576px) {
     .modal-dialog {
+        max-width: 500px;
         margin: 0 !important;
     }
 }

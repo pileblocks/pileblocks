@@ -32,7 +32,7 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
 
     constructor () public {
         tvm.rawReserve(MIN_MESSAGE, 0);
-        farmingSpeed = 1;
+        farmingSpeed = 100;
         ITokenRoot(tokenRootAddress).deployWallet{value: 0, flag: 128, callback: FarmingWallet.onDeploy}(
             address(this),
             DEPLOY_VALUE
@@ -105,7 +105,7 @@ contract FarmingWallet is PBConstants, IAcceptTokensTransferCallback, GameEvents
         if (tokenBalance == 0) {
             return 0;
         }
-        return  (time * (100 + 6 * ExpMath.getNumPower(math.divr(tokenBalance, 1e9))) * ExpMath.log_2(1 + math.divr(tokenBalance, 1e9))) / (100 * 8 * farmingSpeed);
+        return  (time * (100 + 6 * ExpMath.getNumPower(math.divr(tokenBalance, 1e9))) * ExpMath.log_2(1 + math.divr(tokenBalance, 1e9))) / (8 * farmingSpeed);
     }
 
     function cropTiles(uint128 pNum) private pure returns (uint16) {

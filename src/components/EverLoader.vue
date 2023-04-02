@@ -19,7 +19,6 @@ import {GameHostContract} from "@/contract_wrappers/GameHost";
 import {GameIndexContract} from "@/contract_wrappers/GameIndex";
 import type {GameEvent, OperationCompleted, GameInfo, GameExtraSettings, GameBattle} from "@/AppTypes";
 import {_dataToNumbers} from "@/utils";
-//import {EverscaleStandaloneClient} from "everscale-standalone-client";
 
 export default {
     name: "EverLoader",
@@ -145,6 +144,7 @@ export default {
         operationCompletedHandler: async function (op: OperationCompleted) {
             if (op.player.toString() === this.$store.state.PlayerInfo.playerAddress) {
                 await this.$store.dispatch('Ever/reloadGame');
+                await this.$store.dispatch('Ever/reloadNft', this.everx);
                 this.$store.commit('Ever/isOpInProgress', false);
             } else {
                 switch (op.name) {
@@ -158,6 +158,12 @@ export default {
                         this.$store.commit('Toast/sendToast', {
                             toastName: "on-put-tiles",
                             data: {putValue: op.value}
+                        });
+                        break;
+                    case "nftApplied":
+                        this.$store.commit('Toast/sendToast', {
+                            toastName: "on-nft-applied",
+                            data: {nftType: parseInt(op.value)}
                         });
                         break;
                 }
@@ -258,12 +264,7 @@ export default {
     },
 
     async mounted() {
-        const ever = new ProviderRpcClient({
-            // fallback: () =>
-            //     EverscaleStandaloneClient.create({
-            //         connection: 'local',
-            //     }),
-        });
+        const ever = new ProviderRpcClient({ });
         if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
             this.$store.commit('Ever/toggleLoading', false);
             return;

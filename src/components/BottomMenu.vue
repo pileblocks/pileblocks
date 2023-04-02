@@ -4,6 +4,17 @@
             <div v-for="item in 5" :key="item">
                 <bottom-menu-color :btn-color="item"></bottom-menu-color>
             </div>
+            <button class="btn btn-menu" type="button" v-on:click="showNftMenu" :disabled="isLoading">
+                <span class="span p-1">{{ $t('bottomMenu.nft') }}</span>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
         </div>
         <div id="claim-tiles" v-if="isBalancePositive && !isGameCompleted">
             <div v-if="!tilesArePut" class="d-flex flex-sm-column flex-md-row">
@@ -138,6 +149,12 @@
 
             </div>
         </b-modal>
+        <b-modal id="nft-menu" hide-footer :title="$t('bottomMenu.nftMenu.title')">
+            <template #modal-header-close>
+                <img src="~@/assets/popup-close-button.svg"/>
+            </template>
+            <nft-menu/>
+        </b-modal>
     </div>
 </template>
 
@@ -145,10 +162,11 @@
 // @flow
 import BottomMenuColor from "./BottomMenuColor";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
+import NftMenu from "@/components/NftMenu";
 
 export default {
     name: "BottomMenu",
-    components: {BottomMenuColor},
+    components: {NftMenu, BottomMenuColor},
     data: function() {
         return {
             tokensToAdd: 0,
@@ -259,6 +277,9 @@ export default {
         showFarmingSettings: function () {
             this.$bvModal.show('farming-settings');
             this.$store.dispatch('Ever/updateFarmingEstimation', {time: 60, balance: (parseInt(this.tokensToAdd) + this.$store.state.PlayerInfo.farmingBalance) * 1e9 });
+        },
+        showNftMenu: function () {
+            this.$bvModal.show('nft-menu');
         }
 
     },

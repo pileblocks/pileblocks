@@ -269,5 +269,58 @@ export const EverAPI = {
                 });
         }
 
+    },
+    nftCollection: {
+        nftOwnerCodeHash: async function (collectionContract: Contract, playerAddress: string): Promise<string> {
+            const result = await collectionContract
+                .methods
+                .nftOwnerCodeHash({_nftOwner: playerAddress})
+                .call();
+            console.log("API nftOwnerCodeHash call run");
+            return result.codeHash;
+        }
+    },
+    nftIndex: {
+        getNftAddress: async function (nftIndexContract: Contract): Promise<string> {
+            const result = await nftIndexContract
+                .methods
+                .getInfo({answerId: 1})
+                .call();
+            console.log("API getNftAddress call run");
+            return result.nft._address;
+        },
+        getPlayerNftIndexes: async function (everx, ownerHash: string):Promise<string[]> {
+            let queryString = `query {
+                accounts(
+                    filter: {
+                      code_hash: {eq: "${ownerHash}"
+                      }
+                    }
+                ) {id}
+            }`
+            let response = await everx.net.query({"query": queryString});
+            return response.result.data.accounts.map((item) => item['id']);
+        }
+    },
+    nft: {
+        getNftJson: async function (nftContract: Contract): Promise<string> {
+                const result = await nftContract
+                    .methods
+                    .getJson({answerId: 1})
+                    .call();
+                console.log("API getNftAddress call run");
+                return JSON.parse(result.json);
+        },
+        applyNft: async function (nftContract: Contract, playerAddress: string, gameAddress: string, targetPlayerAddress: string) {
+            const pAddress = new Address(playerAddress);
+            await nftContract
+                .methods
+                .applyNft({_gameAddress: gameAddress, _targetPlayerAddress: targetPlayerAddress})
+                .send({
+                    from: pAddress,
+                    amount: '1000000000',
+                    bounce: true,
+                });
+        }
     }
 }

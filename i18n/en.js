@@ -1,6 +1,7 @@
 export default {
     en: {
         bottomMenu: {
+            nft: "NFT",
             join: "Join",
             claim: "Claim",
             put: "Put ",
@@ -17,6 +18,12 @@ export default {
                 youGet: "Then you'll farm approximately:",
                 tileMin: "tiles/minute.",
                 addToFarming: "Add to Farming"
+            },
+            nftMenu: {
+                title: "Your NFTs",
+                apply: "Play",
+                noNfts: "It seems that you do not own any NFTs yet. Please check out our Telegram group for options. ",
+                ourTgGroup: "Our Telegram group"
             }
         },
         home: {
@@ -42,10 +49,11 @@ export default {
             },
             getTokens: {
                 title: "Get PILE Tokens!",
-                p1: "To get PILE tokens, add the PILE token root address to FlatQube and swap for WEVER.",
-                p2: "Your connected wallet is: ",
-                p3: "Keep PILE only in this wallet to use them within the game!",
-                p4: "For the guide on how to import the PILE token, see "
+                p1: "1. If you have crypto on ETH, BNB, Polygon or other blockchains, use OctusBridge to move your coins to Everscale and exchange them to EVER.",
+                p2: "Go to OctusBridge",
+                p3: "2. To get PILE tokens, visit FlatQube (our official DEX) and exchange EVER -> PILE.",
+                p4: "Go to FlatQube"
+
             }
         },
         toast: {
@@ -75,6 +83,13 @@ export default {
             activityDetectedClaim: "Somebody has just claimed <b>{claimValue} tiles</b>.",
             starReceivedTitle: "⭐ You've Received a STAR! ⭐",
             starReceivedText1: "This ⭐star⭐ gives you  <b>+{pointsGained}</b> points!.",
+            nftAppliedText1: "Someone has applied his ⭐NFT⭐, type  <b>{nftType}</b>!",
+            nftType: {
+                trap: "Trap",
+                farmSpeed: "Farm Speed",
+                points: "Points",
+                colorTiles: "Color Tiles"
+            }
         }
     }
 }

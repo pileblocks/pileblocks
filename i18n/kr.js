@@ -1,6 +1,7 @@
 export default {
     kr: {
         bottomMenu: {
+            nft: "NFT",
             join: "가입하다",
             claim: "청구",
             put: "놓다 ",
@@ -17,6 +18,10 @@ export default {
                 youGet: "그러면 대략 다음과 같이 농사를 짓게 됩니다:",
                 tileMin: "타일/분.",
                 addToFarming: "파밍에 추가"
+            },
+            nftMenu: {
+                title: "Your NFTs",
+                apply: "Apply"
             }
         },
         home: {

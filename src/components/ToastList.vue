@@ -145,6 +145,16 @@
                     <hr/>
                 </div>
 
+                <div v-if="message.payload.toastName === 'on-nft-applied'">
+                    <div class="small">
+                        {{ new Date(message.received).toLocaleTimeString() }}
+                    </div>
+                    <div>
+                        <p v-html="$t('toast.nftAppliedText1', {nftType: resolveNftType(message.payload.data.nftType)})"></p>
+                    </div>
+                    <hr/>
+                </div>
+
             </div>
 
             <button class="btn btn-menu" type="button" v-on:click="clearNotifications">
@@ -163,6 +173,14 @@
 </template>
 
 <script>
+import {
+    OP_CHANGE_FARM_SPEED,
+    OP_MINUS_CAPTURED_TILES,
+    OP_MINUS_COLORS,
+    OP_PLUS_CAPTURED_TILES,
+    OP_SET_BLOCK_COLOR
+} from "@/AppConst";
+
 export default {
     name: "ToastList",
     data() {
@@ -181,6 +199,22 @@ export default {
         },
         clearNotifications: function () {
             this.$store.commit('Toast/clearAll');
+        },
+        resolveNftType: function(nftType: number) {
+            switch (nftType) {
+
+                case OP_SET_BLOCK_COLOR:
+                    return this.$t('toast.nftType.trap')
+
+                case OP_CHANGE_FARM_SPEED:
+                    return this.$t('toast.nftType.farmSpeed')
+
+                case OP_MINUS_CAPTURED_TILES:
+                case OP_PLUS_CAPTURED_TILES:
+                    return this.$t('toast.nftType.points')
+                case OP_MINUS_COLORS:
+                    return this.$t('toast.nftType.colorTiles')
+            }
         }
     },
     computed: {

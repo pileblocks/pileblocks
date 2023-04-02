@@ -58,21 +58,21 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, PBConstants {
         paramValue = _paramValue;
         paramArray = _paramArray;
         applyNumTimes = _applyNumTimes;
-        msg.sender.transfer({value: 0, flag: 128});
+        _manager.transfer({value: 0, flag: 128});
     }
 
     function setJson (string json) external {
         require(msg.sender == _collection, sender_is_not_collection);
         tvm.rawReserve(0, 4);
         _json = json;
-        msg.sender.transfer({value: 0, flag: 128});
+        _manager.transfer({value: 0, flag: 128});
     }
 
-    function getParams() external view returns(uint8 _paramType,uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray){
-        return (paramType, paramIndex, paramValue, paramArray);
+    function getParams() external view returns(uint8 _paramType, uint128 _paramIndex, uint128 _paramValue, uint8[] _paramArray, uint8 _applyNumTimes){
+        return (paramType, paramIndex, paramValue, paramArray, applyNumTimes);
     }
 
-    function getOpData(address targetPlayerAddress) external view returns (TvmCell) {
+    function getOpData(address targetPlayerAddress) internal view returns (TvmCell) {
         TvmBuilder opData;
         opData.store(paramType);
         opData.store(_owner);
@@ -134,19 +134,27 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, PBConstants {
         TIP4_3Nft._afterChangeOwner(oldOwner, newOwner, sendGasTo, callbacks);
     }
 
+    function burnIndex() internal view {
+        TvmCell codeIndexOwnerRoot = _buildIndexCode(_collection, _owner);
+        TvmCell stateIndexOwnerRoot = _buildIndexState(codeIndexOwnerRoot, address(this));
+        Index(address.makeAddrStd(address(this).wid, tvm.hash(stateIndexOwnerRoot))).destruct{value: MIN_MESSAGE}(_owner);
+    }
+
     function burn(address dest) external virtual onlyManager {
         tvm.accept();
-        ITokenBurned(_collection).onTokenBurned(_id, _owner, _manager);
+        ITokenBurned(_collection).onTokenBurned{value: MIN_MESSAGE}(_id, _owner, _manager);
+        burnIndex();
         selfdestruct(dest);
     }
 
-    function applyNft(address _gameAddress, TvmCell _opData) external onlyManager {
+    function applyNft(address _gameAddress, address _targetPlayerAddress) external onlyManager {
         require(msg.value >= 10 * MIN_MESSAGE, WRONG_AMOUNT);
-        tvm.rawReserve(0, 4);
         applyNumTimes -= 1;
+        TvmCell _opData = getOpData(_targetPlayerAddress);
         IPBGame(_gameAddress).runNftAction{value: msg.value - 2 * MIN_MESSAGE}(_id, _opData);
         if (applyNumTimes == 0) {
             ITokenBurned(_collection).onTokenBurned{value: MIN_MESSAGE}(_id, _owner, _manager);
+            burnIndex();
             selfdestruct(_manager);
         }
     }

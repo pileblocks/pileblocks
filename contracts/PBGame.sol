@@ -339,22 +339,26 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
         OP_MINUS_CAPTURED_TILES Minuses the number of captured tiles
     */
     function setMinusPlayerCaptured(address playerAddress, uint16 minusCaptured) internal {
-        PlayerInfo player = getPlayer(playerAddress);
-        if (player.captured > minusCaptured) {
-            player.captured -= minusCaptured;
-        } else {
-            player.captured = 0;
+        if (players.exists(playerAddress)) {
+            PlayerInfo player = getPlayer(playerAddress);
+            if (player.captured > minusCaptured) {
+                player.captured -= minusCaptured;
+            } else {
+                player.captured = 0;
+            }
+            players[playerAddress] = player;
         }
-        players[playerAddress] = player;
     }
 
     /*
         OP_PLUS_CAPTURED_TILES Pluses the number of captured tiles
     */
     function setPlusPlayerCaptured(address playerAddress, uint16 plusCaptured) internal {
-        PlayerInfo player = getPlayer(playerAddress);
-        player.captured += plusCaptured;
-        players[playerAddress] = player;
+        if (players.exists(playerAddress)) {
+            PlayerInfo player = getPlayer(playerAddress);
+            player.captured += plusCaptured;
+            players[playerAddress] = player;
+        }
     }
 
     /*
@@ -362,13 +366,15 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
     */
     function setMinusPlayerColors(address playerAddress, uint8 colorNum, uint16 minusValue) internal {
         require(colorNum < maxColors, WRONG_TILE_COLOR);
-        uint16[] pColors = playerColors[playerAddress];
-        if (pColors[colorNum] > minusValue) {
-            pColors[colorNum] -= minusValue;
-        } else {
-            pColors[colorNum] = 0;
+        if (playerColors.exists(playerAddress)) {
+            uint16[] pColors = playerColors[playerAddress];
+            if (pColors[colorNum] > minusValue) {
+                pColors[colorNum] -= minusValue;
+            } else {
+                pColors[colorNum] = 0;
+            }
+            playerColors[playerAddress] = pColors;
         }
-        playerColors[playerAddress] = pColors;
     }
 
     function runNftAction(uint256 nftId, TvmCell opData) external view {
@@ -394,6 +400,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
             address _targetPlayer = dataSlice.decode(address);
             uint128 _newSpeed = dataSlice.decode(uint128);
             setFarmingSpeed(_targetPlayer, _newSpeed);
+            emit OperationCompleted("nftApplied", _ownerAddress, status, now, opCode);
             return;
         }
         else if (opCode == OP_MINUS_CAPTURED_TILES) {
@@ -412,6 +419,7 @@ contract PBGame is PBConstants, RewardCalculatorNFT, IAcceptTokensTransferCallba
             uint16 _minusValue = uint16(dataSlice.decode(uint128));
             setMinusPlayerColors( _targetPlayer,  _colorNum,  _minusValue);
         }
+        emit OperationCompleted("nftApplied", _ownerAddress, status, now, opCode);
         _ownerAddress.transfer({value: 0, flag: 128});
     }
 

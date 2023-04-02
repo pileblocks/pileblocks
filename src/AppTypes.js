@@ -106,3 +106,15 @@ export type NotificationObj = {
     received: number,
     payload: NotificationMessage
 }
+
+export type NftJson = {
+    type: string,
+    id: number,
+    name: string,
+    description: string,
+    preview: {source: string, mimetype: string},
+    files: [{source: string, mimetype: string}],
+    attributes: [{trait_type: string, value: string}],
+    external_url: string,
+    nftAddress: string
+}

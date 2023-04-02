@@ -10,6 +10,11 @@ import store from './store'
 import './AppFilters'
 import en from "../i18n/en";
 import kr from "../i18n/kr";
+import {EverX} from "@/api/EverX";
+
+import {TonClient} from "@tonclient/core";
+import { libWeb } from '@tonclient/lib-web';
+TonClient.useBinaryLibrary(libWeb);
 
 Vue.config.productionTip = false
 
@@ -19,6 +24,7 @@ Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 Vue.use(ToastPlugin);
 Vue.use(VueI18n);
+Vue.use(EverX);
 
 const i18n = new VueI18n({
   locale: 'en',
