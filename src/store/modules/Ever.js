@@ -5,7 +5,7 @@ import {_dataToNumbers} from "@/utils"
 import type {PlayerStats, RawPlayerStats, Contract, NftJson} from "@/AppTypes";
 import {TokenWalletContract} from "@/contract_wrappers/TokenWallet";
 import {Address} from "everscale-inpage-provider";
-import {COLLECTION_ADDRESS, EMPTY_CELL, GENESIS_ADDRESS} from "@/AppConst";
+import {EMPTY_CELL} from "@/AppConst";
 import type {GameInfo} from "@/AppTypes";
 import type {PlayerAddress} from "@/AppTypes";
 import {NftContract} from "@/contract_wrappers/Nft";
@@ -137,7 +137,7 @@ export const Ever: {
 
         async claimTiles({rootState}) {
             const wallet = rootState.PlayerInfo.farmingContract;
-            await EverAPI.farmingWallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, GENESIS_ADDRESS);
+            await EverAPI.farmingWallet.claimTiles(wallet, rootState.PlayerInfo.playerAddress, process.env.VUE_APP_GENESIS_ADDRESS);
         },
 
         async joinGame({state, rootState}) {
@@ -238,7 +238,7 @@ export const Ever: {
                 return nftJsons
             }
 
-            const nftCollectionContract = new ever.Contract(CollectionContract.abi, COLLECTION_ADDRESS);
+            const nftCollectionContract = new ever.Contract(CollectionContract.abi, process.env.VUE_APP_COLLECTION_ADDRESS);
             const playerHash = await EverAPI.nftCollection.nftOwnerCodeHash(nftCollectionContract, rootState.PlayerInfo.playerAddress);
             const nftIndexAddresses = await EverAPI.nftIndex.getPlayerNftIndexes(everx, playerHash);
             const nftAddresses = await getNftByIndex(nftIndexAddresses);

@@ -113,7 +113,6 @@
 // @flow
 import BigNumber from "bignumber.js";
 import FancyNumber from "./FancyNumber";
-import {TOKEN_ROOT_ADDRESS} from "@/AppConst";
 import {GAME_STATUS_COMPLETED} from "@/AppConst";
 import ToastList from "@/components/ToastList";
 
@@ -127,7 +126,7 @@ export default {
             animatedReward: "",
             setAnimationClass: "reward-base ",
             isLoading: false,
-            saleTokenAddress: TOKEN_ROOT_ADDRESS,
+            saleTokenAddress: process.env.VUE_APP_TOKEN_ROOT_ADDRESS,
             farmingTime: 0,
             farmingBalance: 0,
             farmingResult: 0

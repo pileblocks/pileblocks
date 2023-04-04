@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex justify-content-center align-items-end">
 
-        <button class="btn btn-nav" type="button" :disabled="this.$store.state.Game.gameId <= 2" v-on:click="loadPrevGame">
+        <button class="btn btn-nav" type="button" :disabled="this.$store.state.Game.gameId <= 1" v-on:click="loadPrevGame">
             <img src="~@/assets/icon-nav-prev.svg" class="button-icon" alt="" />
             <span class="btn__inner btn__inner-nav">
                 <span class="btn__inner-shadow"></span>

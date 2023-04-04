@@ -7,10 +7,9 @@
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
 import {PBGameContract} from "@/contract_wrappers/PBGame"
 import {
-    HOST_ADDRESS, LOADING_STATUS_EMPTY_GAME_LIST, LOADING_STATUS_GAME_PENDING,
+    LOADING_STATUS_EMPTY_GAME_LIST, LOADING_STATUS_GAME_PENDING,
     LOADING_STATUS_NO_PERMISSIONS,
-    LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED,
-    TOKEN_ROOT_ADDRESS
+    LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED
 } from "@/AppConst";
 import {TokenRootContract} from "@/contract_wrappers/TokenRoot";
 import {FarmingWalletContract} from "@/contract_wrappers/FarmingWallet";
@@ -43,12 +42,12 @@ export default {
             return loadingStatus
         },
         initTokenRoot: function (ever) {
-            const tokenRootAddress = new Address(TOKEN_ROOT_ADDRESS);
+            const tokenRootAddress = new Address(process.env.VUE_APP_TOKEN_ROOT_ADDRESS);
             const tokenRoot = new ever.Contract(TokenRootContract.abi, tokenRootAddress);
             this.$store.commit("Ever/updateTokenRoot", tokenRoot);
         },
         initHost: function (ever) {
-            const hostAddress = new Address(HOST_ADDRESS);
+            const hostAddress = new Address(process.env.VUE_APP_HOST_ADDRESS);
             const host = new ever.Contract(GameHostContract.abi, hostAddress);
             this.$store.commit("Ever/updateHost", host);
         },
