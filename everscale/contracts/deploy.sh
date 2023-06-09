@@ -53,8 +53,8 @@ FARMING_CODE=$(cat ../src/contract_wrappers/FarmingWallet.js | grep "code:" | cu
 NONCE=$(date +%s)
 echo $GAME_CODE
 
-COLLECTION="0:082928d28de2b521edd5554caa24c19586778462b33314766538639eaaf6e0c8"
-ORACLE="0:533310eb9bf24a3289b6a0f45f704639b57dc9e1bf83bafdf67d787dbff5f3a1"
+COLLECTION="0:ee458f5365e45e9a209a1b00b2e882838dafb8f9f72454375aa688056f8e3f17"
+ORACLE="0:98ace2a14feae15aedd685f3791b922b1df29018c0fe07a7d83763176acc0554"
 
 echo "Deploying genesis..."
 GENESIS_ADDRESS=$(everdev contract deploy Genesis.abi.json -n $NWK -s $SIGNER -v 2400000000 -d _randomNonce:$NONCE | grep "Address:" | cut -d " " -f 4)

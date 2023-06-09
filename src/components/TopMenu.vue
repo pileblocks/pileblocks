@@ -68,6 +68,18 @@
                 </span>
             </button>
 
+            <button class="btn btn-menu" type="button" v-on:click="disconnect">
+                <span class="span text-left small-text pt-2 pb-2"><i class="bi bi-x-square"></i></span>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
+
             <b-modal id="standings-table" hide-footer :title="$t('topMenu.standings.title')">
                 <template #modal-header-close>
                     <img src="~@/assets/popup-close-button.svg"/>
@@ -133,6 +145,11 @@ export default {
         }
     },
     methods: {
+
+        disconnect: function() {
+            this.$store.state.Ever.venomApi.disconnect();
+            window.location.reload();
+        },
         animateReward: function (isRaising: boolean) {
 
             this.animatedReward = new BigNumber(this.$store.getters["Game/getPosition"]).toFixed(0);

@@ -16,6 +16,7 @@ import {IndexContract} from "@/contract_wrappers/NftIndex";
 export const Ever: {
     state: {
         api: Object,
+        venomApi: Object,
         isLoading: boolean,
         tokenRoot: Contract | null,
         host: Contract | null,
@@ -27,6 +28,7 @@ export const Ever: {
     namespaced: true,
     state: {
         api: null,
+        venomApi: null,
         isLoading: true,
         loadingStatus: 0,
         operationInProgress: false,
@@ -37,6 +39,9 @@ export const Ever: {
     mutations: {
         updateApi(state, newApi) {
             state.api = newApi;
+        },
+        updateVenomApi(state, newApi) {
+            state.venomApi = newApi;
         },
         toggleLoading(state, isLoading: boolean) {
             state.isLoading = isLoading;

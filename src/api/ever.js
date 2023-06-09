@@ -1,26 +1,71 @@
 import {Address, Contract, ProviderRpcClient} from "everscale-inpage-provider";
 import type {RawPlayerStats} from "../AppTypes";
 import type {TileCoordinatePlusColor} from "../AppTypes";
-import {LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED} from "@/AppConst";
 import {GameExtraSettings} from "../AppTypes";
+import {VenomConnect} from "venom-connect";
+import {EverscaleStandaloneClient} from "everscale-standalone-client";
 
 export const EverAPI = {
 
-    isWorking: async function (ever: ProviderRpcClient): Promise<boolean> {
-        if (await ever.hasProvider()) {
-            return LOADING_STATUS_PROVIDER_LOADED;
-        }
-        return LOADING_STATUS_PROVIDER_NOT_LOADED;
-    },
-    initWallet: async function (ever: ProviderRpcClient): Promise<string> {
+    venomInit: async () => {
+        const standaloneFallback = () =>
+            EverscaleStandaloneClient.create({
+            connection: {
+              id: 1000,
+              group: "venom_testnet",
+              type: "jrpc",
+              data: {
+                endpoint: "https://jrpc.venom.foundation/rpc",
+              },
+            },
+            });
 
-        const {accountInteraction} = await ever.requestPermissions({
-            permissions: ['basic', 'accountInteraction'],
-        });
-        if (accountInteraction == null) {
-            return "";
-        }
-        return accountInteraction.address.toString();
+        const initVenomConnect = async () => {
+            return new VenomConnect({
+            theme: "dark",
+            checkNetworkId: 1000,
+            providersOptions: {
+              venomwallet: {
+                links: {
+
+                },
+                walletWaysToConnect: [
+                  {
+                    // NPM package
+                    package: ProviderRpcClient,
+                    packageOptions: {
+                      fallback:
+                        VenomConnect.getPromise("venomwallet", "extension") ||
+                        (() => Promise.reject()),
+                      forceUseFallback: true,
+                    },
+                    packageOptionsStandalone: {
+                      fallback: standaloneFallback,
+                      forceUseFallback: false,
+                    },
+
+                    // Setup
+                    id: "extension",
+                    type: "extension",
+                  },
+                ],
+                defaultWalletWaysToConnect: [
+                  // List of enabled options
+                  "mobile",
+                  "ios",
+                  "android",
+                ],
+              },
+
+            },
+          });
+        };
+       return await initVenomConnect();
+    },
+
+    initWallet: async function (ever: ProviderRpcClient): Promise<string> {
+        const providerState = await ever.getProviderState();
+        return providerState.permissions.accountInteraction.address.toString();
     },
     isActiveContract: async function (ever: ProviderRpcClient, contractAddress: string): Promise<boolean> {
         return JSON.stringify(await ever.getFullContractState({address: contractAddress})) !== "{}";

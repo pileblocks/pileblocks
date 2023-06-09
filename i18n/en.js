@@ -31,7 +31,8 @@ export default {
             yourPoints: "Your Points:",
             totalReward: "Total Reward:",
             previousGame: "Previous Game",
-            nextGame: "Next Game"
+            nextGame: "Next Game",
+            connectWallet: "Connect Wallet"
         },
         toastList: {
           popupTitle: "Notifications",

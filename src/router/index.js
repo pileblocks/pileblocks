@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import GamePic from '../views/GamePic'
+import GamePicNumbers from "@/views/GamePicNumbers";
 //import FieldTilesPart from '../views/FieldTilesPart'
 const Home = () => import('../views/Home');
 const FieldTilesPart = () => import('../views/FieldTilesPart');
@@ -34,6 +35,12 @@ const routes = [
         path: '/gamepic/',
         name: 'GamePic',
         component: GamePic
+    },
+
+    {
+        path: '/gamepicnum/',
+        name: 'GamePicNum',
+        component: GamePicNumbers
     },
 
 ]

@@ -9,9 +9,9 @@ DEV_DELAY = 5
 PROD_MINUS = 25
 DEV_MINUS = 25
 
-ENVIRON = 'main'
+ENVIRON = 'se'
 # se dev main
-NUM_NFT = 35
+NUM_NFT = 5
 
 op_delay = 0
 op_minus = 0
@@ -28,8 +28,8 @@ if ENVIRON == 'main':
 
 elif ENVIRON == 'se':
     # SE
-    COLLECTION_ADDRESS = '0:082928d28de2b521edd5554caa24c19586778462b33314766538639eaaf6e0c8'
-    NFT_CREATOR_ADDRESS = '0:557c4ada26e4bac1677695dce33b5d404f9924a31eb78f64303b5cdc519f4c0f'
+    COLLECTION_ADDRESS = '0:69a76b244190d2ced25f86035c27f350f3e5d3414d03e3167cc3002701a7197c'
+    NFT_CREATOR_ADDRESS = '0:be6b30d65bbb3bc48ceb340dadeca004305d438ba4cf897040f5bef9977af885'
     NETWORK = 'se'
     SIGNER_NAME = 'norton'
     op_delay = DEV_DELAY

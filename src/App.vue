@@ -3,7 +3,7 @@
     <div id="app">
 
         <div class="overlay overlay-background" v-if="this.$store.state.Ever.isLoading">
-              <b-spinner  variant="primary"></b-spinner>
+              <ever-loader></ever-loader>
         </div>
         <div>
             <div id="color-1" class="color-1"></div>
@@ -11,7 +11,6 @@
             <div id="color-3" class="color-3"></div>
             <div id="color-4" class="color-4"></div>
             <div id="color-5" class="color-5"></div>
-            <ever-loader></ever-loader>
         </div>
         <div class="game-container" v-if="!noGames && !gamePending && providerLoaded && !this.$store.state.Ever.isLoading">
             <div class="game-container-wrapper">
@@ -67,6 +66,9 @@ const App: {} = {
         },
         noGames: function() {
             return this.$store.state.Ever.loadingStatus === LOADING_STATUS_EMPTY_GAME_LIST;
+        },
+        venomConnected: function() {
+            return this.$store.state.Ever.venomApi !== null;
         }
 
     },
@@ -152,7 +154,7 @@ export default App;
 #top-menu {
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 2fr 40px;
+    grid-template-columns: 1fr 1fr 2fr 80px;
     align-items: center;
     background-image: url('~@/assets/top-menu.svg');
     background-repeat-x: repeat;

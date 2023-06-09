@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NWK=main
+NWK=se
 
 #se
 #dev

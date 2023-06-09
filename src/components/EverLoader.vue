@@ -1,15 +1,27 @@
 <template>
-    <div></div>
+    <div>
+            <b-spinner variant="primary" v-if="!requiresWalletConnection"></b-spinner>
+            <button class="btn btn-menu" type="button" v-on:click="connectVenom" v-if="requiresWalletConnection">
+                <span class="span p-1">{{ $t('home.connectWallet') }}</span>
+                <span class="btn__border">
+                    <span class="btn__border-top"></span>
+                    <span class="btn__border-bot"></span>
+                </span>
+                <span class="btn__inner btn__inner-main">
+                    <span class="btn__inner-shadow"></span>
+                    <span class="btn__inner-rect"></span>
+                </span>
+            </button>
+    </div>
 </template>
 
 <script lang="js">
 // @flow
-import {Address, ProviderRpcClient} from "everscale-inpage-provider";
+import {Address} from "everscale-inpage-provider";
 import {PBGameContract} from "@/contract_wrappers/PBGame"
 import {
     LOADING_STATUS_EMPTY_GAME_LIST, LOADING_STATUS_GAME_PENDING,
-    LOADING_STATUS_NO_PERMISSIONS,
-    LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED
+    LOADING_STATUS_NO_PERMISSIONS, LOADING_STATUS_PROVIDER_LOADED, LOADING_STATUS_PROVIDER_NOT_LOADED
 } from "@/AppConst";
 import {TokenRootContract} from "@/contract_wrappers/TokenRoot";
 import {FarmingWalletContract} from "@/contract_wrappers/FarmingWallet";
@@ -18,26 +30,27 @@ import {GameHostContract} from "@/contract_wrappers/GameHost";
 import {GameIndexContract} from "@/contract_wrappers/GameIndex";
 import type {GameEvent, OperationCompleted, GameInfo, GameExtraSettings, GameBattle} from "@/AppTypes";
 import {_dataToNumbers} from "@/utils";
+import {VenomConnect} from "venom-connect";
 
 export default {
     name: "EverLoader",
     data: function () {
-        return {}
+        return {
+            requiresWalletConnection: true,
+            venomWallet: null | VenomConnect
+        }
     },
     methods: {
         initProvider: async function (ever): Promise<number> {
 
-            let loadingStatus: number = await EverAPI.isWorking(ever);
+            let loadingStatus: number = LOADING_STATUS_PROVIDER_LOADED;
 
-            if (loadingStatus === LOADING_STATUS_PROVIDER_LOADED) {
-                await ever.ensureInitialized();
-                this.$store.commit("Ever/updateApi", ever);
-                try {
-                    await EverAPI.initWallet(ever);
-                } catch (e) {
-                    loadingStatus = LOADING_STATUS_NO_PERMISSIONS;
-                }
+            try {
+                await EverAPI.initWallet(ever);
+            } catch (e) {
+                loadingStatus = LOADING_STATUS_NO_PERMISSIONS;
             }
+
             this.$store.commit("Ever/updateLoadingStatus", loadingStatus);
             return loadingStatus
         },
@@ -260,65 +273,96 @@ export default {
             this.$store.commit("Game/updateExtraSettings", settings);
         },
 
+        connectVenom: async function () {
+
+            try {
+                await this.venomWallet.connect();
+            }
+            catch (e) {
+                console.log(e)
+            }
+            const ever = await this.venomWallet.currentProvider;
+            this.$store.commit('Ever/updateApi', ever);
+            if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
+                this.$store.commit('Ever/toggleLoading', false);
+                return;
+            }
+            this.requiresWalletConnection = false;
+            this.venomWallet.on("connect", this.checkProvider);
+
+        },
+        checkProvider: function (_provider) {
+            if (_provider !== null) {
+                this.onWalletConnected(_provider)
+            } else {
+                setTimeout(() => {
+                    this.checkProvider(_provider);
+                }, 100);
+            }
+        },
+
+        onWalletConnected: async function (ever) {
+            this.$store.commit('Ever/updateApi', ever);
+            this.initTokenRoot(ever);
+            this.initHost(ever);
+            if (!await this.initGame(ever)) {
+                this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_EMPTY_GAME_LIST);
+                this.$store.commit('Ever/toggleLoading', false);
+                return;
+            }
+
+            const gameInfo = await EverAPI.game.getGameInfo(this.$store.state.Ever.game);
+
+            this.setGameId(gameInfo);
+
+            if (this.setGameStartTime(gameInfo) > new Date().getTime() / 1000) {
+                this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_GAME_PENDING);
+                this.$store.commit('Ever/toggleLoading', false);
+                return;
+            }
+
+            //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
+            await this.setTemplate();
+            this.setGameColors(gameInfo.renderConfig);
+            this.setTotalFieldFragments(gameInfo.renderConfig);
+            this.setRemainingTiles(gameInfo);
+            this.setGameName(gameInfo);
+            this.setGameInitConfig(gameInfo);
+            await this.setExtraSettings();
+
+            await this.setRewardPerGame();
+            await this.setPlayerAddress();
+            await this.setPlayerWallet();
+            await this.setFarmingWallet();
+            await this.$store.dispatch('Ever/checkFarmingWalletActive');
+
+            await this.initSubscription(ever);
+
+            let sleep = duration => new Promise(resolve => setTimeout(resolve, duration))
+            let poll = (promiseFn, duration) => promiseFn().then(
+                 sleep(duration).then(() => poll(promiseFn, duration)))
+
+            poll(() => new Promise( () => {
+                if (this.$store.state.PlayerInfo.isFarmingActive && !this.$store.state.Ever.operationInProgress && this.$store.state.PlayerInfo.farmingBalance > 0) {
+                    this.$store.dispatch('Ever/setClaimTiles');
+                }
+                if (this.$store.state.PlayerInfo.farmingBalance === 0) {
+                    this.$store.commit('PlayerInfo/updateClaimableTiles', 0);
+                }
+
+            }), 5000)
+
+            await this.$store.dispatch('Ever/reloadGame');
+            this.$store.commit('Ever/toggleLoading', false);
+        }
+
     },
 
     async mounted() {
-        const ever = new ProviderRpcClient({ });
-        if (await this.initProvider(ever) in [LOADING_STATUS_PROVIDER_NOT_LOADED, LOADING_STATUS_NO_PERMISSIONS]) {
-            this.$store.commit('Ever/toggleLoading', false);
-            return;
-        }
-        this.initTokenRoot(ever);
-        this.initHost(ever);
-        if (!await this.initGame(ever)) {
-            this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_EMPTY_GAME_LIST);
-            this.$store.commit('Ever/toggleLoading', false);
-            return;
-        }
+        this.venomWallet = await EverAPI.venomInit();
+        this.$store.commit('Ever/updateVenomApi', this.venomWallet);
+        await this.venomWallet.checkAuth();
 
-        const gameInfo = await EverAPI.game.getGameInfo(this.$store.state.Ever.game);
-
-        this.setGameId(gameInfo);
-
-        if (this.setGameStartTime(gameInfo) > new Date().getTime() / 1000) {
-            this.$store.commit('Ever/updateLoadingStatus', LOADING_STATUS_GAME_PENDING);
-            this.$store.commit('Ever/toggleLoading', false);
-            return;
-        }
-
-        //renderSettings [VERT_FRAGMENTS, HORIZ_FRAGMENTS, TOKENS_PER_PUT, MAX_COLORS, 0xfefefe, 0xaab0bc, 0x60697b, 0x2f353a, 0x1e2228]
-        await this.setTemplate();
-        this.setGameColors(gameInfo.renderConfig);
-        this.setTotalFieldFragments(gameInfo.renderConfig);
-        this.setRemainingTiles(gameInfo);
-        this.setGameName(gameInfo);
-        this.setGameInitConfig(gameInfo);
-        await this.setExtraSettings();
-
-        await this.setRewardPerGame();
-        await this.setPlayerAddress();
-        await this.setPlayerWallet();
-        await this.setFarmingWallet();
-        await this.$store.dispatch('Ever/checkFarmingWalletActive');
-
-        await this.initSubscription(ever);
-
-        let sleep = duration => new Promise(resolve => setTimeout(resolve, duration))
-        let poll = (promiseFn, duration) => promiseFn().then(
-             sleep(duration).then(() => poll(promiseFn, duration)))
-
-        poll(() => new Promise( () => {
-            if (this.$store.state.PlayerInfo.isFarmingActive && !this.$store.state.Ever.operationInProgress && this.$store.state.PlayerInfo.farmingBalance > 0) {
-                this.$store.dispatch('Ever/setClaimTiles');
-            }
-            if (this.$store.state.PlayerInfo.farmingBalance === 0) {
-                this.$store.commit('PlayerInfo/updateClaimableTiles', 0);
-            }
-
-        }), 5000)
-
-        await this.$store.dispatch('Ever/reloadGame');
-        this.$store.commit('Ever/toggleLoading', false);
     }
 
 }

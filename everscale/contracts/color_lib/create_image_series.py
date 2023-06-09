@@ -3,9 +3,9 @@ import json
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
 
-base_image = Image.open("cryptospring.png")
+base_image = Image.open("numi.png")
 
-IMG_PER_ROW = 4
+IMG_PER_ROW = 5
 IMG_WIDTH = 32
 IMG_HEIGHT = 32
 PIXEL_SIZE = 1
@@ -91,11 +91,14 @@ while y < IMG_HEIGHT * IMG_PER_ROW:
     img_fragment = base_image.crop((x, y, x + IMG_WIDTH, y + IMG_HEIGHT))
     img_reduced = img_fragment.quantize(5, Image.WEB)
 
+    '''
     if not valid_color_balance(img_reduced) or len(img_reduced.getcolors()) < 5:
         print("Error in", (x, y, x + IMG_WIDTH, y + IMG_HEIGHT))
         draw = ImageDraw(img_reduced)
         draw.line((0, 0) + img_reduced.size, fill=(255, 0, 0), width=2)
         draw.line((0, img_reduced.size[1], img_reduced.size[0], 0), fill=(255, 0, 0), width=2)
+    '''
+
 
     new_img.paste(img_reduced, (x, y))
 

@@ -134,16 +134,10 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, PBConstants {
         TIP4_3Nft._afterChangeOwner(oldOwner, newOwner, sendGasTo, callbacks);
     }
 
-    function burnIndex() internal view {
-        TvmCell codeIndexOwnerRoot = _buildIndexCode(_collection, _owner);
-        TvmCell stateIndexOwnerRoot = _buildIndexState(codeIndexOwnerRoot, address(this));
-        Index(address.makeAddrStd(address(this).wid, tvm.hash(stateIndexOwnerRoot))).destruct{value: MIN_MESSAGE}(_owner);
-    }
-
     function burn(address dest) external virtual onlyManager {
         tvm.accept();
         ITokenBurned(_collection).onTokenBurned{value: MIN_MESSAGE}(_id, _owner, _manager);
-        burnIndex();
+        _destructIndex(_manager);
         selfdestruct(dest);
     }
 
@@ -154,7 +148,7 @@ contract Nft is TIP4_1Nft, TIP4_2Nft, TIP4_3Nft, PBConstants {
         IPBGame(_gameAddress).runNftAction{value: msg.value - 2 * MIN_MESSAGE}(_id, _opData);
         if (applyNumTimes == 0) {
             ITokenBurned(_collection).onTokenBurned{value: MIN_MESSAGE}(_id, _owner, _manager);
-            burnIndex();
+            _destructIndex(_manager);
             selfdestruct(_manager);
         }
     }

@@ -17,7 +17,7 @@ MAX_FIELDS = 16
 
 ROWS = 4
 COLUMNS = 2
-ENV = 'main'
+ENV = 'se'
 # dev se main
 
 if ENV == 'main':
@@ -32,9 +32,9 @@ if ENV == 'main':
 
 elif ENV == 'se':
     # SE
-    PLAYER_ADDRESS = '0:09dd32678654fbb4aae11995199f714ccae5cf8493adfc3a1f5835e07c65bb3b'
-    QUEUE = '0:6612675859adcfb2bc4c244f4d114cae8e8f742a68b6f5c30199d1c203c29948'
-    ORACLE = "0:533310eb9bf24a3289b6a0f45f704639b57dc9e1bf83bafdf67d787dbff5f3a1"
+    PLAYER_ADDRESS = '0:e2bd303c7dcffb17fd3e7e079c1c826b9638ea5058a0aa9029acea29cd1e6b9b'
+    QUEUE = '0:dc4a6cd1fbac3bdd9c4f2f79a3a68cd84a459683d7848f6cb8aec59fac044c14'
+    ORACLE = "0:f621a5a9135639273d7bba3224eea144f2390ccd3eed47b2632457decc70c7b8"
     NETWORK = 'se'
     SIGNER_NAME = 'norton'
     op_delay = DEV_DELAY
@@ -84,10 +84,10 @@ f = open("games.json", 'r')
 
 games = json.loads(f.read())
 
-GAME_START_TIMES = [1680706800, 0, 0, 0,
-                    1680793200, 0, 0, 0,
-                    1680879600, 0, 0, 0,
-                    1680966000, 0, 0, 0]
+GAME_START_TIMES = [0, 0, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0]
 
 for idx, game in enumerate(games):
 
