@@ -1,6 +1,11 @@
 # PileBlocks 1.0
 
-## Project setup
+The project goes under the MIT license. 
+
+## Web project setup
+
+Make sure you have the correct .env file.
+
 ```
 npm install
 ```
@@ -20,8 +25,16 @@ npm run build
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Smart contracts setup
+Locate the `everscale` directory and run.
+```
+npm install
+```
+Once ready, choose the corresponding network and run the script
+
+```
+npx locklift run --network local --script scripts/1-deploy-sample.ts
+```
 
 ### Enable NFTs
 
